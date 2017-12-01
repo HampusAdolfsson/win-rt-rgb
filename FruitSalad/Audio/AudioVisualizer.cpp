@@ -1,10 +1,11 @@
 #include <cstdio>
-#include <cmath>
-#include <bitset>
 #include <iostream>
+#include <bitset>
 #include "AudioVisualizer.h"
 
-#define BUFFERS_PER_S 100
+#pragma comment(lib, "winmm.lib")
+
+#define BUFFERS_PER_S 120
 
 #define RETURN_ON_ERROR(mres) do {\
 						if (mres) {\
@@ -13,9 +14,12 @@
 						}\
 						} while(0)
 
-AudioVisualizer::AudioVisualizer(const DWORD &devId, const WAVEFORMATEX &format)
+static constexpr Color BaseColor = { 255, 255, 255 };
+
+AudioVisualizer::AudioVisualizer(const DWORD &devId, const WAVEFORMATEX &format, const std::string &addr, const int &port)
 	: deviceId(devId),
 	pwfx(format),
+	colorClient(addr, port),
 	isRunning(false) {}
 
 bool AudioVisualizer::initialize()
@@ -94,7 +98,6 @@ AudioVisualizer::~AudioVisualizer()
 void AudioVisualizer::handleWaveMessages()
 {
 	MSG msg;
-	printf("Thread started\n");
 	while (GetMessage(&msg, 0, 0, 0))
 	{
 		switch (msg.message)
@@ -104,23 +107,15 @@ void AudioVisualizer::handleWaveMessages()
 			WAVEHDR *hdr = (WAVEHDR*)msg.lParam;
 			if (hdr->dwBytesRecorded > 0)
 			{
-				int sampleSize = pwfx.wBitsPerSample / 8;
-				long sqAvg = 0;
-				for (int i = 0; i < hdr->dwBytesRecorded; i += sampleSize)
-				{
-					short sample = *((short*)(hdr->lpData + i));
-					sqAvg += sample*sample; // We square the samples to get an absolute amplitude, roughly correlating to volume.
-				}
-				sqAvg /= (hdr->dwBytesRecorded / sampleSize);
+				size_t sampleSize = pwfx.wBitsPerSample / 8;
+				colorClient.sendColor(colorStrategy.getColor(hdr->lpData, hdr->dwBytesRecorded, sampleSize));
 			}
 			waveInAddBuffer(waveInHandle, waveHeaders, sizeof(WAVEHDR));
 			continue;
 		}
 		case MM_WIM_OPEN:
-			printf("Opening device!\n");
 			continue;
 		case MM_WIM_CLOSE:
-			printf("CLOSING? BYE.\n");
 			return;
 		}
 	}
