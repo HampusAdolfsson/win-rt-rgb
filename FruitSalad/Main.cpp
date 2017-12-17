@@ -10,13 +10,43 @@
 #define EXIT_APPLICATION_KEY 0x42 // b key
 #define EXIT_APPLICATION_ID 0x2
 
+class Main
+{
+	RequestClient requestClient;
+	AudioVisualizer visualizer;
+
+public:
+	Main(const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
+		: requestClient(serverAddr, tcpPort),
+		visualizer(1, pwfx, serverAddr, udpPort)
+	{
+		visualizer.initialize();
+	}
+
+	void startVisualizer()
+	{
+		visualizer.start();
+	}
+	void stopVisualizer()
+	{
+		visualizer.stop();
+	}
+
+	void playLightEffect(const LightEffect& effect)
+	{
+		requestClient.sendLightEffect(effect, false);
+	}
+
+};
+
+// Played when launched
+LightEffect startEffect(1500000000, Breathing, { {0,0,60}, {0,0,150}, {0,0,255}, {0,0,150}, {0,0,60} });
+// Played when exiting
+LightEffect exitEffect(1500000000, Breathing, { {60,0,0}, {150,0,0}, {255,0,0}, {150,0,0}, {60,0,0} });
 
 int main(int argc, char **argv) {
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2,2), &wsa);
-
-	RequestClient cl(ADDR, TCP_PORT);
-	cl.sendLightEffect(LightEffect(1500000000, Breathing, { {0,0,60}, {0,0,150}, {0,0,255}, {0,0,150}, {0,0,60} }), true);
 
 	WAVEFORMATEX pwfx;
 	pwfx.wFormatTag = WAVE_FORMAT_PCM;
@@ -27,15 +57,15 @@ int main(int argc, char **argv) {
 	pwfx.nAvgBytesPerSec = pwfx.nBlockAlign * pwfx.nSamplesPerSec;
 	pwfx.cbSize = 0;
 	
-	AudioVisualizer cap(1, pwfx, ADDR, UDP_PORT);
-	cap.initialize();
-	cap.start();
+	Main main(pwfx, ADDR, TCP_PORT, UDP_PORT);
+	main.playLightEffect(LightEffect(startEffect));
+	main.startVisualizer();
 
 	RegisterHotKey(NULL, TOGGLE_VISUALIZER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_VISUALIZER_KEY);
 	RegisterHotKey(NULL, EXIT_APPLICATION_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, EXIT_APPLICATION_KEY);
 
 	MSG msg;
-	bool capRunning = true;
+	bool visualizerRunning = true;
 	while (GetMessage(&msg, 0, 0, 0) == 1)
 	{
 		switch (msg.message)
@@ -44,9 +74,9 @@ int main(int argc, char **argv) {
 			switch (msg.wParam)
 			{
 			case TOGGLE_VISUALIZER_ID:
-				if (capRunning) cap.stop();
-				else			cap.start();
-				capRunning = !capRunning;
+				if (visualizerRunning) main.stopVisualizer();
+				else				   main.startVisualizer();
+				visualizerRunning = !visualizerRunning;
 				break;
 			case EXIT_APPLICATION_ID:
 				goto Exit;
@@ -55,8 +85,9 @@ int main(int argc, char **argv) {
 	}
 
 	Exit:
+	main.playLightEffect(exitEffect);
 	UnregisterHotKey(NULL, TOGGLE_VISUALIZER_ID);
 
-	if (capRunning) cap.stop();
+	if (visualizerRunning) main.stopVisualizer();
 	return 0;
 }
