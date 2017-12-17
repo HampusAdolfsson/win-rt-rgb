@@ -7,14 +7,6 @@
 
 OverrideColorClient::OverrideColorClient(const std::string &serverAddr, const int &serverPort)
 {
-	static bool WSAStarted = false;
-	if (!WSAStarted)
-	{
-		WSADATA wsad;
-		WSAStartup(MAKEWORD(2,2), &wsad);
-		WSAStarted = true;
-	}
-
 	sockHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sockHandle == SOCKET_ERROR)
 	{
@@ -31,7 +23,7 @@ OverrideColorClient::~OverrideColorClient()
 	closesocket(sockHandle);
 }
 
-void OverrideColorClient::sendColor(const Color &color)
+void OverrideColorClient::sendColor(const Color &color)const
 {
 	uint8_t bytes[3] = { color.red, color.green, color.blue };
 	sendto(sockHandle, (char *) bytes, 3, 0, (struct sockaddr *) &sockAddr, sizeof(sockAddr));

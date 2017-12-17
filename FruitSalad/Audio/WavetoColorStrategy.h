@@ -2,7 +2,7 @@
 #include "Color.h"
 
 // Size of softening filter. Higher value means more smooth output, but lower responsiveness.
-#define FILTER_SIZE 8
+#define FILTER_SIZE 1 
 
 #define SCALING 50
 
@@ -18,5 +18,5 @@ class WavetoColorStrategy
 
 public:
 	WavetoColorStrategy();
-	Color getColor(char *buffer, size_t bufSiz, size_t sampleSize);
+	Color getColor(const char *buffer, const size_t& bufSiz, const size_t& sampleSize);
 };

@@ -1,5 +1,4 @@
 #pragma once
-#include <Windows.h>
 #include <thread>
 #include <vector>
 #include "OverrideColorClient.h"

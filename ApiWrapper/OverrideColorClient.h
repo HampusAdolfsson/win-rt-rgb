@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <WinSock2.h>
 #include "Color.h"
 
 /**
@@ -22,5 +23,5 @@ public:
 	/**
 	*	Send an overriding color to the server
 	*/
-	void sendColor(const Color &color);
+	void sendColor(const Color &color) const;
 };

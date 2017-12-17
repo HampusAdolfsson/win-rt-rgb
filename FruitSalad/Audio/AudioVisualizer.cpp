@@ -107,7 +107,7 @@ void AudioVisualizer::handleWaveMessages()
 			WAVEHDR *hdr = (WAVEHDR*)msg.lParam;
 			if (hdr->dwBytesRecorded > 0)
 			{
-				size_t sampleSize = pwfx.wBitsPerSample / 8;
+				size_t sampleSize = pwfx.wBitsPerSample / 8; // TODO: benchmark doing stuff here instead
 				colorClient.sendColor(colorStrategy.getColor(hdr->lpData, hdr->dwBytesRecorded, sampleSize));
 			}
 			waveInAddBuffer(waveInHandle, waveHeaders, sizeof(WAVEHDR));

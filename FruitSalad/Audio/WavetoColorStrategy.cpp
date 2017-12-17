@@ -10,7 +10,7 @@
 	memset(prevVals, 0, FILTER_SIZE * sizeof(*prevVals));
 }
 
-Color WavetoColorStrategy::getColor(char *buffer, size_t bufSiz, size_t sampleSize)
+Color WavetoColorStrategy::getColor(const char *buffer, const size_t& bufSiz, const size_t& sampleSize)
 {
 	unsigned int mean = 0;
 	for (size_t i = 0; i < bufSiz; i += sampleSize)
