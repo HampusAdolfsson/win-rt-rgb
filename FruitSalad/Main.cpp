@@ -1,6 +1,8 @@
 #include <Windows.h>
+#include "Logger.h"
 #include "RequestClient.h"
 #include "Audio\AudioVisualizer.h"
+#include "Gw2\Gw2BossNotifier.h"
 
 #define ADDR "192.168.1.25"
 #define TCP_PORT "8844"
@@ -14,11 +16,13 @@ class Main
 {
 	RequestClient requestClient;
 	AudioVisualizer visualizer;
+	Gw2BossNotifier gw2Notif;
 
 public:
 	Main(const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
 		: requestClient(serverAddr, tcpPort),
-		visualizer(1, pwfx, serverAddr, udpPort)
+		visualizer(1, pwfx, serverAddr, udpPort),
+		gw2Notif(requestClient)
 	{
 		visualizer.initialize();
 	}
@@ -34,17 +38,20 @@ public:
 
 	void playLightEffect(const LightEffect& effect)
 	{
-		requestClient.sendLightEffect(effect, false);
+		unsigned char res = requestClient.sendLightEffect(effect, false);
 	}
 
 };
 
 // Played when launched
-LightEffect startEffect(1500000000, Breathing, { {0,0,60}, {0,0,150}, {0,0,255}, {0,0,150}, {0,0,60} });
+const LightEffect startEffect(1500000000, Breathing, { {0,0,60}, {0,0,150}, {0,0,255}, {0,0,150}, {0,0,60} });
 // Played when exiting
-LightEffect exitEffect(1500000000, Breathing, { {60,0,0}, {150,0,0}, {255,0,0}, {150,0,0}, {60,0,0} });
+const LightEffect exitEffect(1500000000, Breathing, { {60,0,0}, {150,0,0}, {255,0,0}, {150,0,0}, {60,0,0} });
 
 int main(int argc, char **argv) {
+	Logger::Instance().setLogFile("log");
+	LOGINFO("Starting application");
+
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2,2), &wsa);
 
@@ -89,5 +96,6 @@ int main(int argc, char **argv) {
 	UnregisterHotKey(NULL, TOGGLE_VISUALIZER_ID);
 
 	if (visualizerRunning) main.stopVisualizer();
+	LOGINFO("Exiting application ----------------------------------------------");
 	return 0;
 }
