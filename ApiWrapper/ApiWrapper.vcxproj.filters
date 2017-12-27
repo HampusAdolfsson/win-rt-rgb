@@ -24,13 +24,13 @@
     <ClInclude Include="LightEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Statics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ApiResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RequestClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResponseCodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

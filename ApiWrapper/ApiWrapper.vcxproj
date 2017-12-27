@@ -117,7 +117,7 @@
     <ClInclude Include="LightEffect.h" />
     <ClInclude Include="RequestClient.h" />
     <ClInclude Include="OverrideColorClient.h" />
-    <ClInclude Include="Statics.h" />
+    <ClInclude Include="ResponseCodes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
