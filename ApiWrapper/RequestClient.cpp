@@ -1,4 +1,4 @@
-#include "Statics.h"
+#include "ResponseCodes.h"
 #include "RequestClient.h"
 
 #define MAX_TRIES 3
