@@ -112,7 +112,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ApiResponse.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="LightEffect.h" />
     <ClInclude Include="RequestClient.h" />

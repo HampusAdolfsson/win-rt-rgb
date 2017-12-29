@@ -24,9 +24,6 @@
     <ClInclude Include="LightEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ApiResponse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RequestClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
