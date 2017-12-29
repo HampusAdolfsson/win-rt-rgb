@@ -2,6 +2,8 @@
 #include <thread>
 #include <locale>
 #include <codecvt>
+#include "Logger.h"
+#include "ResponseCodes.h"
 #include "EvtcParser.h"
 #include "Gw2BossNotifier.h"
 
@@ -22,7 +24,7 @@ Gw2BossNotifier::Gw2BossNotifier(RequestClient& cl)
 	hDir = CreateFile(ARC_LOG_DIR, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 	if (INVALID_HANDLE_VALUE == hDir)
 	{
-		fprintf(stderr, "Error setting up directory listener: %d\n", GetLastError());
+		LOGSEVERE("Error setting up directory listener: %d\n", GetLastError());
 	}
 	directoryListener = std::thread(&Gw2BossNotifier::listenToChanges, this);
 }
@@ -47,7 +49,7 @@ void Gw2BossNotifier::listenToChanges()
 
 		if (!res || bytesRead == 0)
 		{
-			fprintf(stderr, "Failed reading directory changes: %d\n", GetLastError());
+			LOGSEVERE("Failed reading directory changes: %d\n", GetLastError());
 		}
 		else
 		{
@@ -56,6 +58,7 @@ void Gw2BossNotifier::listenToChanges()
 			{
 				buf[bytesRead] = buf[bytesRead + 1] = '\0';
 				std::string fname = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(changes->FileName);
+				LOGINFO("New file detected: %s", fname.c_str());
 				fname = ARC_LOG_DIR + fname;
 				onNewFileDetected(fname);
 			}
@@ -85,14 +88,18 @@ void Gw2BossNotifier::onNewFileDetected(const std::string& fname)
 				const std::vector<Color> colors = getColorsFromBossHp(bossInfo.finalHealthPercentage);
 				for (int i = 0; i < EFFECT_REPETITIONS; i++)
 				{
-					reqClient.sendLightEffect(LightEffect(EFFECT_LENGTH_NS, Fading, colors), false);
+					unsigned char res = reqClient.sendLightEffect(LightEffect(EFFECT_LENGTH_NS, Fading, colors), false);
+					if (res != SUCCESS)
+					{
+						LOGWARNING("Couldn't play lighteffect, server returned: %d", res);
+					}
 				}
 			}
 			createdFile.close();
 		}
 		else
 		{
-			fprintf(stderr, "Unable to open file: %s\n", fname.c_str());
+			LOGSEVERE("Unable to open file: %s\n", fname.c_str());
 		}
 	}
 }

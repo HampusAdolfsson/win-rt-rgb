@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "Logger.h"
 #include "RequestClient.h"
+#include "ResponseCodes.h"
 #include "Audio\AudioVisualizer.h"
 #include "Gw2\Gw2BossNotifier.h"
 
@@ -39,6 +40,10 @@ public:
 	void playLightEffect(const LightEffect& effect)
 	{
 		unsigned char res = requestClient.sendLightEffect(effect, false);
+		if (res != SUCCESS)
+		{
+			LOGWARNING("Couldn't play lighteffect, server returned: %d", res);
+		}
 	}
 
 };
@@ -81,11 +86,13 @@ int main(int argc, char **argv) {
 			switch (msg.wParam)
 			{
 			case TOGGLE_VISUALIZER_ID:
+				LOGINFO("Hotkey pressed, toggling visualizer");
 				if (visualizerRunning) main.stopVisualizer();
 				else				   main.startVisualizer();
 				visualizerRunning = !visualizerRunning;
 				break;
 			case EXIT_APPLICATION_ID:
+				LOGINFO("Hotkey pressed, exiting application");
 				goto Exit;
 			}
 		}
@@ -94,6 +101,7 @@ int main(int argc, char **argv) {
 	Exit:
 	main.playLightEffect(exitEffect);
 	UnregisterHotKey(NULL, TOGGLE_VISUALIZER_ID);
+	UnregisterHotKey(NULL, EXIT_APPLICATION_ID);
 
 	if (visualizerRunning) main.stopVisualizer();
 	LOGINFO("Exiting application ----------------------------------------------");

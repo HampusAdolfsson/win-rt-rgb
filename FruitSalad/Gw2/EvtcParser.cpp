@@ -1,11 +1,12 @@
 #include <cinttypes>
 #include <cmath>
+#include "Logger.h"
 #include "EvtcParser.h"
 
 #define ASSERT_NO_FAIL(is) do { \
 							if(!is.good()) { \
-							fprintf(stderr, "Unexpected eof %d\n", __LINE__); \
-							return { -1, 0 }; \
+								LOGSEVERE("Error parsing evtc, line %d", __LINE__); \
+								return { -1, 0 }; \
 							} \
 							} while(0)
 
@@ -107,7 +108,7 @@ BossFightInfo parseEvtc(std::ifstream& is)
 	{
 		CbtEvent cev;
 		is.read(reinterpret_cast<char*>(&cev), sizeof(cev));
-		if (is.eof()) return bossInfo;
+		if (is.eof()) break;
 		if (cev.is_statechange == HEALTH_UPDATE_ID)
 		{
 			bossInfo.finalHealthPercentage = ceil(cev.dst_agent / 100.0);
@@ -117,5 +118,6 @@ BossFightInfo parseEvtc(std::ifstream& is)
 			bossInfo.finalHealthPercentage = 0;
 		}
 	}
+	LOGINFO("Parsed evtc, final health was: %d%%", bossInfo.finalHealthPercentage);
 	return bossInfo;
 }
