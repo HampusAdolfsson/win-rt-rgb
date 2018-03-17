@@ -16,7 +16,7 @@
 const std::vector<Color> successColors = { {0x09, 0xff, 0x00}, {0x73, 0xba, 0x30}, {0x09, 0xff, 0x00} }; // Colors on boss killed
 // These colors are blended based on actual health percentage
 const std::vector<Color> failureColors100 = { {0xff, 0x00, 0x00}, {0xbd, 0x11, 0x36}, {0xff, 0x00, 0x00} }; // Colors on boss failed at 100%
-const std::vector<Color> failureColors0 = { {0xff, 0xff, 0x00}, {0xbd, 0xb7, 0x11}, {0xff, 0xff, 0x00} }; // Colors on boss failed at 0%
+const std::vector<Color> failureColors0 = { {0xff, 0xc4, 0x00}, {0xbd, 0x89, 0x11}, {0xff, 0xc4, 0x00} }; // Colors on boss failed at 0%
 
 Gw2BossNotifier::Gw2BossNotifier(RequestClient& cl)
 	: reqClient(cl)
@@ -62,6 +62,7 @@ void Gw2BossNotifier::listenToChanges()
 				fname = ARC_LOG_DIR + fname;
 				onNewFileDetected(fname);
 			}
+
 		}
 	}
 }
@@ -77,7 +78,7 @@ void Gw2BossNotifier::onNewFileDetected(const std::string& fname)
 		int tries = 0;
 		do
 		{
-			Sleep(100);
+			Sleep(1000);
 			createdFile.open(fname, std::ios::binary);
 		} while (!createdFile.is_open() && tries < FILE_OPEN_TRIES);
 		if (createdFile.is_open())
@@ -88,7 +89,7 @@ void Gw2BossNotifier::onNewFileDetected(const std::string& fname)
 				const std::vector<Color> colors = getColorsFromBossHp(bossInfo.finalHealthPercentage);
 				for (int i = 0; i < EFFECT_REPETITIONS; i++)
 				{
-					unsigned char res = reqClient.sendLightEffect(LightEffect(EFFECT_LENGTH_NS, Fading, colors), false);
+					unsigned char res = reqClient.sendLightEffect(LightEffect(EFFECT_LENGTH_NS, Flashing, colors), false);
 					if (res != SUCCESS)
 					{
 						LOGWARNING("Couldn't play lighteffect, server returned: %d", res);
@@ -116,7 +117,7 @@ std::vector<Color> getColorsFromBossHp(const int &bossHp)
 		std::vector<Color> blended;
 		for (size_t i = 0; i < failureColors0.size(); i++)
 		{
-			blended.push_back(blendColors(failureColors0[i], failureColors100[1], blendProgress));
+			blended.push_back(blendColors(failureColors0[i], failureColors100[i], blendProgress));
 		}
 		return blended;
 	}
