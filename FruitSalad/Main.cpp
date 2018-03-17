@@ -5,13 +5,15 @@
 #include "Audio\AudioVisualizer.h"
 #include "Gw2\Gw2BossNotifier.h"
 
-#define ADDR "192.168.1.25"
+#define ADDR "192.168.1.6"
 #define TCP_PORT "8844"
 #define UDP_PORT 8845
+#define TOGGLE_SERVER_KEY 0x43 // c key
+#define TOGGLE_SERVER_ID 0x1
 #define TOGGLE_VISUALIZER_KEY 0x56 // v key
-#define TOGGLE_VISUALIZER_ID 0x1
+#define TOGGLE_VISUALIZER_ID 0x2
 #define EXIT_APPLICATION_KEY 0x42 // b key
-#define EXIT_APPLICATION_ID 0x2
+#define EXIT_APPLICATION_ID 0x3
 
 class Main
 {
@@ -46,6 +48,20 @@ public:
 		}
 	}
 
+	void setServerOn() {
+		unsigned char res = requestClient.sendOnOffRequest(ON);
+		if (res != SUCCESS)
+		{
+			LOGWARNING("Couldn't set server on, server returned: %d", res);
+		}
+	}
+	void toggleServerOn() {
+		unsigned char res = requestClient.sendOnOffRequest(TOGGLE);
+		if (res != SUCCESS)
+		{
+			LOGWARNING("Couldn't toggle server, server returned: %d", res);
+		}
+	}
 };
 
 // Played when launched
@@ -70,9 +86,11 @@ int main(int argc, char **argv) {
 	pwfx.cbSize = 0;
 	
 	Main main(pwfx, ADDR, TCP_PORT, UDP_PORT);
+	main.setServerOn();
 	main.playLightEffect(LightEffect(startEffect));
 	main.startVisualizer();
 
+	RegisterHotKey(NULL, TOGGLE_SERVER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_SERVER_KEY);
 	RegisterHotKey(NULL, TOGGLE_VISUALIZER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_VISUALIZER_KEY);
 	RegisterHotKey(NULL, EXIT_APPLICATION_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, EXIT_APPLICATION_KEY);
 
@@ -85,6 +103,10 @@ int main(int argc, char **argv) {
 		case WM_HOTKEY:
 			switch (msg.wParam)
 			{
+			case TOGGLE_SERVER_ID:
+				LOGINFO("Hotkey pressed, toggling server");
+				main.toggleServerOn();
+				break;
 			case TOGGLE_VISUALIZER_ID:
 				LOGINFO("Hotkey pressed, toggling visualizer");
 				if (visualizerRunning) main.stopVisualizer();
@@ -100,6 +122,7 @@ int main(int argc, char **argv) {
 
 	Exit:
 	main.playLightEffect(exitEffect);
+	UnregisterHotKey(NULL, TOGGLE_SERVER_ID);
 	UnregisterHotKey(NULL, TOGGLE_VISUALIZER_ID);
 	UnregisterHotKey(NULL, EXIT_APPLICATION_ID);
 

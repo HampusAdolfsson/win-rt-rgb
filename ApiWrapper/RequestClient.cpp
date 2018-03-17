@@ -7,7 +7,7 @@
 #define MAGIC_BYTE_2 0x50
 #define PROTOCOL_VERSION 3
 
-#define REQUEST_ID_ON_OFF 1
+#define REQUEST_ID_ON_OFF 0
 #define REQUEST_ID_LIGHTEFFECT 1
 
 RequestClient::RequestClient(const std::string& addr, const std::string& port)
@@ -98,5 +98,17 @@ unsigned char RequestClient::sendLightEffect(const LightEffect& effect, bool fal
 
 unsigned char RequestClient::sendOnOffRequest(const PowerState& state)
 {
-	return true;
+	if (!ensureIsConnected()) return CONNECTION_ERROR;
+
+	std::vector<unsigned char> data = { MAGIC_BYTE_1, MAGIC_BYTE_2, PROTOCOL_VERSION, REQUEST_ID_ON_OFF, (unsigned char) state };
+	send(sockHandle, (char*) data.data(), data.size(), 0);
+
+	char response;
+	int read = recv(sockHandle, &response, 1, 0);
+	if (read == 0)
+	{
+		closesocket(sockHandle);
+		sockHandle = INVALID_SOCKET;
+	}
+	return response;
 }
