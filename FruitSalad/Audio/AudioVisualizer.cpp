@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <bitset>
+#include "Logger.h"
 #include "AudioVisualizer.h"
 
 #pragma comment(lib, "winmm.lib")
@@ -9,12 +10,10 @@
 
 #define RETURN_ON_ERROR(mres) do {\
 						if (mres) {\
-							fprintf(stderr, "ERROR: %d %s %d", mres, __FILE__, __LINE__);\
+							LOGSEVERE("Audiovisualizer got error: %d, line %d", mres, __LINE__);\
 							return false;\
 						}\
 						} while(0)
-
-static constexpr Color BaseColor = { 255, 255, 255 };
 
 AudioVisualizer::AudioVisualizer(const DWORD &devId, const WAVEFORMATEX &format, const std::string &addr, const int &port)
 	: deviceId(devId),
@@ -110,7 +109,16 @@ void AudioVisualizer::handleWaveMessages()
 				size_t sampleSize = pwfx.wBitsPerSample / 8; // TODO: benchmark doing stuff here instead
 				colorClient.sendColor(colorStrategy.getColor(hdr->lpData, hdr->dwBytesRecorded, sampleSize));
 			}
-			waveInAddBuffer(waveInHandle, waveHeaders, sizeof(WAVEHDR));
+			for (int i = 0; i < NUM_BUFFERS; i++)
+			{
+				if (hdr == waveHeaders + i) {
+					int mres = waveInAddBuffer(waveInHandle, waveHeaders + i, sizeof(waveHeaders[i]));
+					if (mres) {
+						LOGSEVERE("Audiovisualizer got error: %d, line %d", mres, __LINE__);
+						return;
+					}
+				}
+			}
 			continue;
 		}
 		case MM_WIM_OPEN:
