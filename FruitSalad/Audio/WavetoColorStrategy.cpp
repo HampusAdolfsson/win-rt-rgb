@@ -1,13 +1,15 @@
+#include <chrono>
+#include <cstdio>
 #include <cstring>
 #include <cmath>
 #include "WavetoColorStrategy.h"
 
-	WavetoColorStrategy::WavetoColorStrategy()
+WavetoColorStrategy::WavetoColorStrategy()
 	: rollingAvg(0),
 	prevValsIndex(0),
-	baseColor({ 0xff, 0xff, 0xff })
+	baseColor({ 0xFF, 0x00, 0x00 })
 {
-	memset(prevVals, 0, FILTER_SIZE * sizeof(*prevVals));
+	memset(prevMean, 0, MEAN_ORDER * sizeof(*prevMean));
 }
 
 Color WavetoColorStrategy::getColor(const char *buffer, const size_t& bufSiz, const size_t& sampleSize)
@@ -22,10 +24,10 @@ Color WavetoColorStrategy::getColor(const char *buffer, const size_t& bufSiz, co
 	mean /= (bufSiz / sampleSize);
 	mean = sqrt(mean);
 	mean *= SCALING;
-	rollingAvg -= prevVals[prevValsIndex];
-	prevVals[prevValsIndex] = mean / FILTER_SIZE;
-	rollingAvg += prevVals[prevValsIndex];
+	rollingAvg -= prevMean[prevValsIndex];
+	prevMean[prevValsIndex] = mean / MEAN_ORDER;
+	rollingAvg += prevMean[prevValsIndex];
 	prevValsIndex++;
-	if (prevValsIndex == FILTER_SIZE) prevValsIndex = 0;
+	if (prevValsIndex == MEAN_ORDER) prevValsIndex = 0;
 	return baseColor * (rollingAvg > UINT16_MAX ? 1 : (float)rollingAvg / UINT16_MAX);
 }

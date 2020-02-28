@@ -21,13 +21,13 @@
     <ClCompile Include="Audio\AudioVisualizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Audio\WavetoColorStrategy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Gw2\Gw2BossNotifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Gw2\EvtcParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\WaveToColorStrategy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,13 +35,13 @@
     <ClInclude Include="Audio\AudioVisualizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Audio\WavetoColorStrategy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Gw2\Gw2BossNotifier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Gw2\EvtcParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\WaveToColorStrategy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

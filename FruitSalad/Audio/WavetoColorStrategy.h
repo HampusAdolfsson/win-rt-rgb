@@ -1,18 +1,20 @@
 #pragma once
 #include "Color.h"
+#include <time.h>
+#include <fstream>
 
 // Size of softening filter. Higher value means more smooth output, but lower responsiveness.
-#define FILTER_SIZE 1 
+#define MEAN_ORDER 16
 
-#define SCALING 50
+#define SCALING 30
 
 /**
-*	Defines a strategy to convert waveform samples into a representative color
+*	Changes a signal into a lower frequency one
 */
 class WavetoColorStrategy
 {
 	unsigned int rollingAvg;
-	unsigned int prevVals[FILTER_SIZE];
+	unsigned int prevMean[MEAN_ORDER];
 	size_t		 prevValsIndex;
 	Color		 baseColor;
 
