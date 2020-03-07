@@ -4,6 +4,7 @@
 #include "ResponseCodes.h"
 #include "Audio\AudioVisualizer.h"
 #include "Gw2\Gw2BossNotifier.h"
+#include "DesktopCaptureController.h"
 
 #define ADDR "192.168.1.6"
 #define TCP_PORT "8844"
@@ -19,15 +20,23 @@ class Main
 {
 	RequestClient requestClient;
 	AudioVisualizer visualizer;
+	DesktopCaptureController desktopCapturer;
 	Gw2BossNotifier gw2Notif;
 
 public:
 	Main(const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
 		: requestClient(serverAddr, tcpPort),
-		visualizer(1, pwfx, serverAddr, udpPort),
+		visualizer(2, pwfx, serverAddr, udpPort),
+		desktopCapturer(0),
 		gw2Notif(requestClient)
 	{
 		visualizer.initialize();
+		OverrideColorClient colorClient(serverAddr, udpPort);
+		while (true) {
+			Color color = desktopCapturer.getColor();
+			//Sleep(5);
+			colorClient.sendColor(color);
+		}
 	}
 
 	void startVisualizer()
