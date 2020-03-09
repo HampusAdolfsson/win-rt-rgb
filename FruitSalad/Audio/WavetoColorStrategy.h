@@ -16,9 +16,9 @@ class WavetoColorStrategy
 	unsigned int rollingAvg;
 	unsigned int prevMean[MEAN_ORDER];
 	size_t		 prevValsIndex;
-	Color		 baseColor;
+	RgbColor		 baseColor;
 
 public:
 	WavetoColorStrategy();
-	Color getColor(const char *buffer, const size_t& bufSiz, const size_t& sampleSize);
+	RgbColor getColor(const char *buffer, const size_t& bufSiz, const size_t& sampleSize);
 };

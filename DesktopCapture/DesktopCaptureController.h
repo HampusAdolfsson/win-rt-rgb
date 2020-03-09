@@ -21,7 +21,7 @@ public:
 
 	void setOutput(const UINT& outputIdx);
 
-	Color getColor();
+	RgbColor getColor();
 
 	DesktopCaptureController(DesktopCaptureController const&) = delete;
 	DesktopCaptureController(DesktopCaptureController &&) = delete;

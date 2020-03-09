@@ -20,7 +20,7 @@ void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textur
 	buffer = std::make_unique<uint8_t[]>(RGBA_COLOR_SIZE * width * height);
 }
 
-Color D3DMeanColorCalculator::sample(ID3D11Texture2D* texture)
+RgbColor D3DMeanColorCalculator::sample(ID3D11Texture2D* texture)
 {
 	copyToCpu(texture);
 	uint32_t channels[RGBA_COLOR_SIZE] = { 0,0,0,0 };

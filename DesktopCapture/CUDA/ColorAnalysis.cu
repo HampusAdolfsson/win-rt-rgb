@@ -91,7 +91,7 @@ namespace CudaUtils
 	//	return c;
 	//}
 
-	Color getMeanColor(cudaGraphicsResource* texture, void* buf, int width, int height, size_t pitch) {
+	RgbColor getMeanColor(cudaGraphicsResource* texture, void* buf, int width, int height, size_t pitch) {
 		cudaArray* cuArray;
 		cudaError_t status = cudaGraphicsSubResourceGetMappedArray(&cuArray, texture, 0, 0);
 		status = cudaMemcpy2DFromArray(buf, pitch, cuArray, 0, 0, pitch, height, cudaMemcpyDeviceToDevice);

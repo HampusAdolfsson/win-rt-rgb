@@ -21,7 +21,7 @@ class D3DMeanColorCalculator
 public:
 	void initialize(ID3D11Device *device, const UINT& textureWidth, const UINT& textureHeight);
 
-	Color sample(ID3D11Texture2D *texture);
+	RgbColor sample(ID3D11Texture2D *texture);
 
 	~D3DMeanColorCalculator();
 };

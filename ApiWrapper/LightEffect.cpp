@@ -1,7 +1,7 @@
 #include <intrin.h>
 #include "LightEffect.h"
 
-LightEffect::LightEffect(const uint64_t& duration, const EffectType& type, const std::vector<Color>& colors)
+LightEffect::LightEffect(const uint64_t& duration, const EffectType& type, const std::vector<RgbColor>& colors)
 	: duration(duration),
 	type(type),
 	colors(colors) { }
@@ -19,7 +19,7 @@ std::vector<unsigned char> LightEffect::toByteVector() const
 		beDuration >>= 8;
 	}
 	serialized.push_back(colors.size());
-	for (std::vector<Color>::const_iterator it = colors.begin(); it != colors.end(); it++)
+	for (std::vector<RgbColor>::const_iterator it = colors.begin(); it != colors.end(); it++)
 	{
 		serialized.push_back((*it).red);
 		serialized.push_back((*it).green);

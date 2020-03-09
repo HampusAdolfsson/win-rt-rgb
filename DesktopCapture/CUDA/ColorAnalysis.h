@@ -6,5 +6,5 @@
 
 namespace CudaUtils
 {
-	Color getMeanColor(cudaGraphicsResource* texture, void* buf, int width, int height, size_t pitch);
+	RgbColor getMeanColor(cudaGraphicsResource* texture, void* buf, int width, int height, size_t pitch);
 };

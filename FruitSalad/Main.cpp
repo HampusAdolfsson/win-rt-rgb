@@ -27,15 +27,17 @@ public:
 	Main(const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
 		: requestClient(serverAddr, tcpPort),
 		visualizer(2, pwfx, serverAddr, udpPort),
-		desktopCapturer(0),
+		desktopCapturer(1),
 		gw2Notif(requestClient)
 	{
 		visualizer.initialize();
 		OverrideColorClient colorClient(serverAddr, udpPort);
 		while (true) {
-			Color color = desktopCapturer.getColor();
+			RgbColor color = desktopCapturer.getColor();
+			HsvColor hsv = rgbToHsv(color);
+			hsv.saturation = 255;
 			//Sleep(5);
-			colorClient.sendColor(color);
+			colorClient.sendColor(hsvToRgb(hsv));
 		}
 	}
 

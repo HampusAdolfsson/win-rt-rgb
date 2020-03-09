@@ -28,7 +28,7 @@ void DesktopCaptureController::setOutput(const UINT& outputIdx)
 	activeOutput = outputIdx;
 }
 
-Color DesktopCaptureController::getColor()
+RgbColor DesktopCaptureController::getColor()
 {
 	if (activeOutput >= samplers.size())
 	{

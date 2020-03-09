@@ -23,7 +23,7 @@ OverrideColorClient::~OverrideColorClient()
 	closesocket(sockHandle);
 }
 
-void OverrideColorClient::sendColor(const Color &color)const
+void OverrideColorClient::sendColor(const RgbColor &color)const
 {
 	uint8_t bytes[3] = { color.red, color.green, color.blue };
 	sendto(sockHandle, (char *) bytes, 3, 0, (struct sockaddr *) &sockAddr, sizeof(sockAddr));

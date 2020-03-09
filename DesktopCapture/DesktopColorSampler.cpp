@@ -75,7 +75,7 @@ void DesktopColorSampler::stop()
 	samplerThread.join();
 }
 
-Color DesktopColorSampler::getSample()
+RgbColor DesktopColorSampler::getSample()
 {
 	WaitForSingleObject(sampleAvailSemaphore, INFINITE);
 	ReleaseSemaphore(sampleRequestSemaphore, 1, NULL);

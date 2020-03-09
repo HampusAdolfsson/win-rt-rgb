@@ -23,5 +23,5 @@ public:
 	/**
 	*	Send an overriding color to the server
 	*/
-	void sendColor(const Color &color) const;
+	void sendColor(const RgbColor &color) const;
 };

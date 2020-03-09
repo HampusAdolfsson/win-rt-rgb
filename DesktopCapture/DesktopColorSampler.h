@@ -19,7 +19,7 @@ class DesktopColorSampler
 	HANDLE sampleRequestSemaphore; // Signals when a sample is needed
 	std::thread samplerThread;
 	bool isRunning;
-	Color currentSample;
+	RgbColor currentSample;
 
 	void sampleLoop();
 
@@ -31,7 +31,7 @@ public:
 	DesktopColorSampler(const UINT& outputIdx);
 	~DesktopColorSampler();
 
-	Color getSample();
+	RgbColor getSample();
 
 	void start();
 	void stop();

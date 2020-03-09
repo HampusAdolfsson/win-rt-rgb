@@ -12,7 +12,7 @@ WavetoColorStrategy::WavetoColorStrategy()
 	memset(prevMean, 0, MEAN_ORDER * sizeof(*prevMean));
 }
 
-Color WavetoColorStrategy::getColor(const char *buffer, const size_t& bufSiz, const size_t& sampleSize)
+RgbColor WavetoColorStrategy::getColor(const char *buffer, const size_t& bufSiz, const size_t& sampleSize)
 {
 	unsigned int mean = 0;
 	for (size_t i = 0; i < bufSiz; i += sampleSize)

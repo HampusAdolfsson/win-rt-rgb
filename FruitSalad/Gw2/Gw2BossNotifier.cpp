@@ -13,10 +13,10 @@
 
 #define EFFECT_REPETITIONS 5
 #define EFFECT_LENGTH_NS 500000000
-const std::vector<Color> successColors = { {0x09, 0xff, 0x00}, {0x73, 0xba, 0x30}, {0x09, 0xff, 0x00} }; // Colors on boss killed
+const std::vector<RgbColor> successColors = { {0x09, 0xff, 0x00}, {0x73, 0xba, 0x30}, {0x09, 0xff, 0x00} }; // Colors on boss killed
 // These colors are blended based on actual health percentage
-const std::vector<Color> failureColors100 = { {0xff, 0x00, 0x00}, {0xbd, 0x11, 0x36}, {0xff, 0x00, 0x00} }; // Colors on boss failed at 100%
-const std::vector<Color> failureColors0 = { {0xff, 0xc4, 0x00}, {0xbd, 0x89, 0x11}, {0xff, 0xc4, 0x00} }; // Colors on boss failed at 0%
+const std::vector<RgbColor> failureColors100 = { {0xff, 0x00, 0x00}, {0xbd, 0x11, 0x36}, {0xff, 0x00, 0x00} }; // Colors on boss failed at 100%
+const std::vector<RgbColor> failureColors0 = { {0xff, 0xc4, 0x00}, {0xbd, 0x89, 0x11}, {0xff, 0xc4, 0x00} }; // Colors on boss failed at 0%
 
 Gw2BossNotifier::Gw2BossNotifier(RequestClient& cl)
 	: reqClient(cl)
@@ -68,7 +68,7 @@ void Gw2BossNotifier::listenToChanges()
 }
 
 
-std::vector<Color> getColorsFromBossHp(const int& bossHp);
+std::vector<RgbColor> getColorsFromBossHp(const int& bossHp);
 
 void Gw2BossNotifier::onNewFileDetected(const std::string& fname)
 {
@@ -86,7 +86,7 @@ void Gw2BossNotifier::onNewFileDetected(const std::string& fname)
 			BossFightInfo bossInfo = parseEvtc(createdFile);
 			if (bossInfo.bossId != -1)
 			{
-				const std::vector<Color> colors = getColorsFromBossHp(bossInfo.finalHealthPercentage);
+				const std::vector<RgbColor> colors = getColorsFromBossHp(bossInfo.finalHealthPercentage);
 				for (int i = 0; i < EFFECT_REPETITIONS; i++)
 				{
 					unsigned char res = reqClient.sendLightEffect(LightEffect(EFFECT_LENGTH_NS, Flashing, colors), false);
@@ -105,7 +105,7 @@ void Gw2BossNotifier::onNewFileDetected(const std::string& fname)
 	}
 }
 
-std::vector<Color> getColorsFromBossHp(const int &bossHp)
+std::vector<RgbColor> getColorsFromBossHp(const int &bossHp)
 {
 	if (bossHp == 0)
 	{
@@ -114,7 +114,7 @@ std::vector<Color> getColorsFromBossHp(const int &bossHp)
 	else
 	{
 		float blendProgress = bossHp / 100.0;
-		std::vector<Color> blended;
+		std::vector<RgbColor> blended;
 		for (size_t i = 0; i < failureColors0.size(); i++)
 		{
 			blended.push_back(blendColors(failureColors0[i], failureColors100[i], blendProgress));
