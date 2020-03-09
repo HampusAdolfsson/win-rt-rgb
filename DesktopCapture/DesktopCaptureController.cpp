@@ -5,9 +5,12 @@ DesktopCaptureController::DesktopCaptureController(UINT initialOutputIdx)
 {
 	activeOutput = initialOutputIdx;
 
-    expectedErrorEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-    unexpectedErrorEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-	initialize();
+	UINT nOutputs = 1;//getNumberOfOutputs();
+	samplers = std::vector<DesktopColorSampler*>(nOutputs, nullptr);
+	for (int i = 0; i < nOutputs; i++) {
+		samplers[i] = new DesktopColorSampler(i);
+		samplers[i]->start();
+	}
 }
 
 DesktopCaptureController::~DesktopCaptureController() {
@@ -22,24 +25,13 @@ void DesktopCaptureController::setOutput(UINT outputIdx) {
 }
 
 Color DesktopCaptureController::getColor() {
-	DesktopColorSampler *sampler = samplers[activeOutput];
-	if (!sampler) {
+	if (activeOutput >= samplers.size()) {
 		LOGSEVERE("Tried to sample output for which there was no sample");
 		return { 0, 0, 0 };
 	}
+	DesktopColorSampler *sampler = samplers[activeOutput];
 	return sampler->getSample();
 }
-
-
-void DesktopCaptureController::initialize() {
-	UINT nOutputs = 1;//getNumberOfOutputs();
-	samplers = std::vector<DesktopColorSampler*>(nOutputs, nullptr);
-	for (int i = 0; i < nOutputs; i++) {
-		samplers[i] = new DesktopColorSampler(i, expectedErrorEvent, unexpectedErrorEvent);
-		samplers[i]->start();
-	}
-}
-
 
 UINT DesktopCaptureController::getNumberOfOutputs() {
 	ID3D11Device* device;
@@ -74,3 +66,4 @@ UINT DesktopCaptureController::getNumberOfOutputs() {
 	adapter->Release();
 	return nOutputs;
 }
+

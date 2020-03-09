@@ -161,7 +161,6 @@
     <ClCompile Include="DesktopCaptureController.cpp" />
     <ClCompile Include="DesktopColorSampler.cpp" />
     <ClCompile Include="DesktopDuplicator.cpp" />
-    <ClCompile Include="Errors.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CUDA\ColorAnalysis.h" />
@@ -169,7 +168,6 @@
     <ClInclude Include="DesktopCaptureController.h" />
     <ClInclude Include="DesktopColorSampler.h" />
     <ClInclude Include="DesktopDuplicator.h" />
-    <ClInclude Include="Errors.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CUDA\ColorAnalysis.cu" />

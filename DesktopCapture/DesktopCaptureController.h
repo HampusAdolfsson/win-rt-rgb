@@ -10,14 +10,10 @@
 */
 class DesktopCaptureController
 {
-	HANDLE expectedErrorEvent;
-	HANDLE unexpectedErrorEvent;
 	UINT activeOutput;
-
 	std::vector<DesktopColorSampler*> samplers;
 
 	UINT getNumberOfOutputs();
-	void initialize();
 
 public:
 	DesktopCaptureController(UINT initialOutputIdx);

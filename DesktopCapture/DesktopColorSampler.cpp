@@ -9,12 +9,10 @@
 						}\
 						} while(0)
 
-DesktopColorSampler::DesktopColorSampler(UINT outputIdx, HANDLE expectedErrorEvent, HANDLE unexpectedErrorEvent)
+DesktopColorSampler::DesktopColorSampler(UINT outputIdx)
 : desktopDuplicator(),
 frameSampler(),
-isRunning(false),
-expectedErrorEvent(expectedErrorEvent),
-unexpectedErrorEvent(unexpectedErrorEvent)
+isRunning(false)
 {
 	HRESULT hr;
 
@@ -26,7 +24,7 @@ unexpectedErrorEvent(unexpectedErrorEvent)
 #endif
 		NULL, 0, D3D11_SDK_VERSION, &device, NULL, NULL);
     if (hr != S_OK) {
-        handleError(ProcessError(nullptr, hr, nullptr));
+		LOGSEVERE("Failed to create d3d device");
         return;
     }
 	device->GetImmediateContext(&deviceContext);
@@ -44,13 +42,13 @@ unexpectedErrorEvent(unexpectedErrorEvent)
 	texDesc.Height = desktopDuplicator.getFrameHeight();
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
-	texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	texDesc.SampleDesc.Count = 1;
 	texDesc.Usage = D3D11_USAGE_STAGING;
 	texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	hr = device->CreateTexture2D(&texDesc, NULL, &frameBuffer);
     if (hr != S_OK) {
-        handleError(ProcessError(nullptr, hr, nullptr));
+		LOGSEVERE("Failed to create texture");
         return;
     }
 }
@@ -80,59 +78,15 @@ Color DesktopColorSampler::getSample() {
 
 // run by worker thread
 void DesktopColorSampler::sampleLoop() {
-
-    // Get desktop
-	//DuplReturn_t res;
- //   HDESK currentDesktop = nullptr;
- //   currentDesktop = OpenInputDesktop(0, FALSE, GENERIC_ALL);
- //   if (!currentDesktop)
- //   {
- //       // We do not have access to the desktop so request a retry
- //       handleError(DUPL_RETURN_ERROR_EXPECTED);
- //       return;
- //   }
-
- //   // Attach desktop to this thread
- //   bool desktopAttached = SetThreadDesktop(currentDesktop) != 0;
- //   CloseDesktop(currentDesktop);
- //   currentDesktop = nullptr;
- //   if (!desktopAttached)
- //   {
- //       // We do not have access to the desktop so request a retry
- //       handleError(DUPL_RETURN_ERROR_EXPECTED);
- //       return;
- //   }
-
-    // Main duplication loop
     bool WaitToProcessCurrentFrame = false;
-	ID3D11Texture2D* frame;
 	while (isRunning) {
 		WaitForSingleObject(sampleRequestSemaphore, INFINITE); // TODO: wait finite time
-		bool timedOut;
-		DuplReturn_t res = desktopDuplicator.captureFrame(&frame, &timedOut);
-		if (res != DUPL_RETURN_SUCCESS)
-		{
-			handleError(res);
-			continue;
-		}
-		if (!timedOut)
-		{
+		ID3D11Texture2D* frame = desktopDuplicator.captureFrame();
+		if (frame) {
 			deviceContext->CopyResource(frameBuffer, frame);
 			currentSample = frameSampler.sample(frameBuffer);
+			desktopDuplicator.releaseFrame();
 		}
-		desktopDuplicator.releaseFrame();
 		ReleaseSemaphore(sampleAvailSemaphore, 1, NULL);
 	}
-}
-
-void DesktopColorSampler::handleError(DuplReturn_t error)
-{
-    if (error == DUPL_RETURN_ERROR_EXPECTED)
-    {
-        SetEvent(expectedErrorEvent);
-    }
-    else if (error == DUPL_RETURN_ERROR_UNEXPECTED)
-    {
-        SetEvent(unexpectedErrorEvent);
-    }
 }

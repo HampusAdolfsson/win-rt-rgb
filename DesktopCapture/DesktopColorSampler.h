@@ -21,20 +21,14 @@ class DesktopColorSampler
 	bool isRunning;
 	Color currentSample;
 
-	HANDLE expectedErrorEvent;
-	HANDLE unexpectedErrorEvent;
-
 	void sampleLoop();
-	void handleError(DuplReturn_t error);
 
 public:
 	/**
 	*	Create a new sampler.
 	*	@param outputIdx The index of the output (monitor) to sample
-	*	@param outputIdx The index of the output (monitor) to sample TODO:
-	*	@param outputIdx The index of the output (monitor) to sample
 	*/
-	DesktopColorSampler(UINT outputIdx, HANDLE expectedErrorEvent, HANDLE unexpectedErrorEvent);
+	DesktopColorSampler(UINT outputIdx);
 	~DesktopColorSampler();
 
 	Color getSample();

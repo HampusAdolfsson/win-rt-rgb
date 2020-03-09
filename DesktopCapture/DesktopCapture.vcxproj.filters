@@ -21,9 +21,6 @@
     <ClCompile Include="DesktopColorSampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Errors.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="D3DMeanColorCalculator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DesktopColorSampler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Errors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D3DMeanColorCalculator.h">
