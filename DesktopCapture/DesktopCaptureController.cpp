@@ -5,7 +5,7 @@ DesktopCaptureController::DesktopCaptureController(const UINT& initialOutputIdx)
 {
 	activeOutput = initialOutputIdx;
 
-	UINT nOutputs = 1;//getNumberOfOutputs();
+	UINT nOutputs = getNumberOfOutputs();
 	samplers = std::vector<DesktopColorSampler*>(nOutputs, nullptr);
 	for (int i = 0; i < nOutputs; i++) {
 		samplers[i] = new DesktopColorSampler(i);
