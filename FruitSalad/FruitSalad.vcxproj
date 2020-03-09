@@ -135,15 +135,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Audio\AudioVisualizer.cpp" />
-    <ClCompile Include="Audio\WaveToColorStrategy.cpp" />
+    <ClCompile Include="App.cpp" />
+    <ClCompile Include="Audio\AudioMonitor.cpp" />
+    <ClCompile Include="Audio\WaveToIntensityStrategy.cpp" />
     <ClCompile Include="Gw2\Gw2BossNotifier.cpp" />
     <ClCompile Include="Gw2\EvtcParser.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Audio\AudioVisualizer.h" />
-    <ClInclude Include="Audio\WaveToColorStrategy.h" />
+    <ClInclude Include="App.h" />
+    <ClInclude Include="Audio\AudioMonitor.h" />
+    <ClInclude Include="Audio\WaveToIntensityStrategy.h" />
     <ClInclude Include="Gw2\EvtcParser.h" />
     <ClInclude Include="Gw2\Gw2BossNotifier.h" />
   </ItemGroup>

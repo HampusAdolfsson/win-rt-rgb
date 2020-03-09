@@ -15,10 +15,10 @@
 						}\
 						} while(0)
 
-AudioMonitor::AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format)
+AudioMonitor::AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(uint8_t)> callback)
 	: deviceId(devId),
 	pwfx(format),
-	intensity(0),
+    callback(callback),
 	isRunning(false) {}
 
 bool AudioMonitor::initialize()
@@ -59,11 +59,6 @@ bool AudioMonitor::stop()
 
 	isRunning = false;
 	return true;
-}
-
-uint8_t AudioMonitor::getIntensity() const
-{
-	return intensity;
 }
 
 bool AudioMonitor::openDevice()
@@ -112,7 +107,8 @@ void AudioMonitor::handleWaveMessages()
 			if (hdr->dwBytesRecorded > 0)
 			{
 				size_t sampleSize = pwfx.wBitsPerSample / 8; // TODO: benchmark doing stuff here instead
-				intensity = waveStrategy.getIntensity(hdr->lpData, hdr->dwBytesRecorded, sampleSize);
+				uint8_t intensity = waveStrategy.getIntensity(hdr->lpData, hdr->dwBytesRecorded, sampleSize);
+                callback(intensity);
 			}
 			for (int i = 0; i < NUM_BUFFERS; i++)
 			{

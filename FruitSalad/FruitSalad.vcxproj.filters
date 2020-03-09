@@ -18,30 +18,36 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Audio\AudioVisualizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Gw2\Gw2BossNotifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Gw2\EvtcParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Audio\WaveToColorStrategy.cpp">
+    <ClCompile Include="Audio\AudioMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\WaveToIntensityStrategy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Audio\AudioVisualizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Gw2\Gw2BossNotifier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Gw2\EvtcParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Audio\WaveToColorStrategy.h">
+    <ClInclude Include="Audio\AudioMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\WaveToIntensityStrategy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

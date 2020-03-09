@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 #include <vector>
+#include <functional>
 #include "OverrideColorClient.h"
 #include "WavetoIntensityStrategy.h"
 
@@ -16,7 +17,8 @@ class AudioMonitor
 	std::vector<char>	buffer;
 	std::thread			handlerThread;
 	bool				isRunning;
-	volatile uint8_t intensity;
+
+    std::function<void(uint8_t)> callback;
 
 	WaveToIntensityStrategy waveStrategy;
 	DWORD				deviceId;
@@ -32,8 +34,9 @@ public:
 	*	the output is one-dimensional anyway.
 	*	@param devId ID of the device to record from, as given by waveInGetDevCaps
 	*	@param format the format to record audio in
+    *	@param callback to call when a new intensity value is generated
 	*/
-	AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format);
+	AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(uint8_t)> callback);
 	~AudioMonitor();
 
 	/**
@@ -55,9 +58,4 @@ public:
 	*/
 	bool stop();
 
-	/**
-	*	Gets the current audio intensity (0-255)
-	*	@return The current audio intensity
-	*/
-	uint8_t getIntensity() const;
 };

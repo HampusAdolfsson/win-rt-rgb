@@ -2,7 +2,8 @@
 #include <cstdio>
 #include <cstring>
 #include <cmath>
-#include "WavetoColorStrategy.h"
+#include <algorithm>
+#include "WaveToIntensityStrategy.h"
 
 WaveToIntensityStrategy::WaveToIntensityStrategy()
 	: sum(0),
