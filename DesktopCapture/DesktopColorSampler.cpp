@@ -10,9 +10,9 @@
 						} while(0)
 
 DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx)
-: desktopDuplicator(),
-frameSampler(),
-isRunning(false)
+	: desktopDuplicator(),
+	frameSampler(),
+	isRunning(false)
 {
 	HRESULT hr;
 
@@ -23,10 +23,11 @@ isRunning(false)
 		0,
 #endif
 		NULL, 0, D3D11_SDK_VERSION, &device, NULL, NULL);
-    if (hr != S_OK) {
+	if (hr != S_OK)
+	{
 		LOGSEVERE("Failed to create d3d device");
-        return;
-    }
+		return;
+	}
 	device->GetImmediateContext(&deviceContext);
 
 	desktopDuplicator.initialize(device, outputIdx);
@@ -34,8 +35,8 @@ isRunning(false)
 
 	sampleAvailSemaphore = CreateSemaphore(NULL, 0, 1, NULL);
 	sampleRequestSemaphore = CreateSemaphore(NULL, 0, 1, NULL);
-    
-    // allocate our buffer
+
+	// allocate our buffer
 	D3D11_TEXTURE2D_DESC texDesc;
 	RtlZeroMemory(&texDesc, sizeof(texDesc));
 	texDesc.Width = desktopDuplicator.getFrameWidth();
@@ -47,42 +48,50 @@ isRunning(false)
 	texDesc.Usage = D3D11_USAGE_STAGING;
 	texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	hr = device->CreateTexture2D(&texDesc, NULL, &frameBuffer);
-    if (hr != S_OK) {
+	if (hr != S_OK)
+	{
 		LOGSEVERE("Failed to create texture");
-        return;
-    }
+		return;
+	}
 }
 
-DesktopColorSampler::~DesktopColorSampler() {
-    device->Release();
+DesktopColorSampler::~DesktopColorSampler()
+{
+	device->Release();
 	deviceContext->Release();
 }
 
-void DesktopColorSampler::start() {
+void DesktopColorSampler::start()
+{
 	isRunning = true;
 	samplerThread = std::thread(&DesktopColorSampler::sampleLoop, this);
 	ReleaseSemaphore(sampleRequestSemaphore, 1, NULL);
 }
 
-void DesktopColorSampler::stop() {
+void DesktopColorSampler::stop()
+{
 	isRunning = false;
 	// TODO: should maybe claim the semaphore
 	samplerThread.join();
 }
 
-Color DesktopColorSampler::getSample() {
+Color DesktopColorSampler::getSample()
+{
 	WaitForSingleObject(sampleAvailSemaphore, INFINITE);
 	ReleaseSemaphore(sampleRequestSemaphore, 1, NULL);
 	return currentSample;
 }
 
 // run by worker thread
-void DesktopColorSampler::sampleLoop() {
-    bool WaitToProcessCurrentFrame = false;
-	while (isRunning) {
+void DesktopColorSampler::sampleLoop()
+{
+	bool WaitToProcessCurrentFrame = false;
+	while (isRunning)
+	{
 		WaitForSingleObject(sampleRequestSemaphore, INFINITE); // TODO: wait finite time
 		ID3D11Texture2D* frame = desktopDuplicator.captureFrame();
-		if (frame) {
+		if (frame)
+		{
 			deviceContext->CopyResource(frameBuffer, frame);
 			currentSample = frameSampler.sample(frameBuffer);
 			desktopDuplicator.releaseFrame();

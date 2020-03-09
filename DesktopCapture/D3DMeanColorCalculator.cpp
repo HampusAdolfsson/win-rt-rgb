@@ -12,28 +12,33 @@
 						}\
 						} while(0)
 
-void D3DMeanColorCalculator::initialize(ID3D11Device *device, const UINT& textureWidth, const UINT& textureHeight) {
+void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight)
+{
 	width = textureWidth;
 	height = textureHeight;
 	device->GetImmediateContext(&deviceContext);
 	buffer = std::make_unique<uint8_t[]>(RGBA_COLOR_SIZE * width * height);
 }
 
-Color D3DMeanColorCalculator::sample(ID3D11Texture2D *texture) {
+Color D3DMeanColorCalculator::sample(ID3D11Texture2D* texture)
+{
 	copyToCpu(texture);
-	uint32_t channels[RGBA_COLOR_SIZE] = {0,0,0,0};
-	for (int i = 0; i < RGBA_COLOR_SIZE * width * height; i++) {
+	uint32_t channels[RGBA_COLOR_SIZE] = { 0,0,0,0 };
+	for (int i = 0; i < RGBA_COLOR_SIZE * width * height; i++)
+	{
 		channels[i % RGBA_COLOR_SIZE] += buffer[i];
 	}
 
-	for (int i = 0; i < RGBA_COLOR_SIZE; i++) {
+	for (int i = 0; i < RGBA_COLOR_SIZE; i++)
+	{
 		channels[i] /= width * height;
 	}
 
 	return { static_cast<uint8_t>(channels[2]), static_cast<uint8_t>(channels[1]), static_cast<uint8_t>(channels[0]) };
 }
 
-void D3DMeanColorCalculator::copyToCpu(ID3D11Texture2D *texture) {
+void D3DMeanColorCalculator::copyToCpu(ID3D11Texture2D* texture)
+{
 	HRESULT hr;
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -43,17 +48,20 @@ void D3DMeanColorCalculator::copyToCpu(ID3D11Texture2D *texture) {
 
 	uint8_t* src = (uint8_t*)mappedResource.pData;
 	uint8_t* dst = buffer.get();
-	memcpy(dst, src,  RGBA_COLOR_SIZE * width * height);
+	memcpy(dst, src, RGBA_COLOR_SIZE * width * height);
 	deviceContext->Unmap(texture, 0);
 }
 
-D3DMeanColorCalculator::~D3DMeanColorCalculator() {
-	if (deviceContext) {
+D3DMeanColorCalculator::~D3DMeanColorCalculator()
+{
+	if (deviceContext)
+	{
 		deviceContext->Release();
 	}
 }
 
-void D3DMeanColorCalculator::saveAsBitmap(std::unique_ptr<uint8_t[]>& data, const UINT& width, const UINT& height) {
+void D3DMeanColorCalculator::saveAsBitmap(std::unique_ptr<uint8_t[]>& data, const UINT& width, const UINT& height)
+{
 	Gdiplus::GdiplusStartupInput m_gdiplusStartupInput;
 	ULONG_PTR m_gdiplusToken;
 	Gdiplus::GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);

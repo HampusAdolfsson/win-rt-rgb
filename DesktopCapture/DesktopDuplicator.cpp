@@ -13,14 +13,15 @@ constexpr HRESULT duplicationExpectedErrors[] = {
 };
 
 DesktopDuplicator::DesktopDuplicator()
-: device(nullptr),
-outputDuplication(nullptr),
-currentFrame(nullptr)
+	: device(nullptr),
+	outputDuplication(nullptr),
+	currentFrame(nullptr)
 {
 	RtlZeroMemory(&outputDesc, sizeof(outputDesc));
 }
 
-void DesktopDuplicator::initialize(ID3D11Device *device, const UINT& outputIdx) {
+void DesktopDuplicator::initialize(ID3D11Device* device, const UINT& outputIdx)
+{
 
 	this->device = device;
 	this->device->AddRef();
@@ -29,27 +30,34 @@ void DesktopDuplicator::initialize(ID3D11Device *device, const UINT& outputIdx) 
 }
 
 // TODO: use mutex
-ID3D11Texture2D* DesktopDuplicator::captureFrame() {
-    IDXGIResource* desktopResource = nullptr;
-    DXGI_OUTDUPL_FRAME_INFO frameInfo;
+ID3D11Texture2D* DesktopDuplicator::captureFrame()
+{
+	IDXGIResource* desktopResource = nullptr;
+	DXGI_OUTDUPL_FRAME_INFO frameInfo;
 	HRESULT hr;
 
-    // Get new frame
-	while (true) {
+	// Get new frame
+	while (true)
+	{
 		hr = outputDuplication->AcquireNextFrame(FRAME_TIMEOUT, &frameInfo, &desktopResource);
-		if (SUCCEEDED(hr) && (frameInfo.TotalMetadataBufferSize > 0 || frameInfo.LastPresentTime.QuadPart > 0)) {
+		if (SUCCEEDED(hr) && (frameInfo.TotalMetadataBufferSize > 0 || frameInfo.LastPresentTime.QuadPart > 0))
+		{
 			break;
 		}
-		else if (FAILED(hr)) {
-			if (isExpectedError(hr)) {
+		else if (FAILED(hr))
+		{
+			if (isExpectedError(hr))
+			{
 				LOGINFO("Reinitializing duplication");
 				reInitialize();
 				continue;
 			}
-			else if (hr == DXGI_ERROR_WAIT_TIMEOUT) {
+			else if (hr == DXGI_ERROR_WAIT_TIMEOUT)
+			{
 				LOGWARNING("Frame duplication timed out");
 			}
-			else {
+			else
+			{
 				LOGSEVERE("Unexpected error occured for desktop duplication");
 				throw(hr);
 			}
@@ -57,53 +65,59 @@ ID3D11Texture2D* DesktopDuplicator::captureFrame() {
 		outputDuplication->ReleaseFrame();
 	}
 
-    // If still holding old frame, destroy it
-    if (currentFrame)
-    {
-        currentFrame->Release();
-        currentFrame = nullptr;
-    }
+	// If still holding old frame, destroy it
+	if (currentFrame)
+	{
+		currentFrame->Release();
+		currentFrame = nullptr;
+	}
 
-    // QI for IDXGIResource
-    hr = desktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&currentFrame));
-    desktopResource->Release();
-    desktopResource = nullptr;
-    if (FAILED(hr))
-    {
+	// QI for IDXGIResource
+	hr = desktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&currentFrame));
+	desktopResource->Release();
+	desktopResource = nullptr;
+	if (FAILED(hr))
+	{
 		LOGSEVERE("Failed to query for frame");
 		return nullptr;
-    }
+	}
 
 	return currentFrame;
 }
 
-void DesktopDuplicator::releaseFrame() {
-    HRESULT hr = outputDuplication->ReleaseFrame();
-    if (FAILED(hr))
-    {
+void DesktopDuplicator::releaseFrame()
+{
+	HRESULT hr = outputDuplication->ReleaseFrame();
+	if (FAILED(hr))
+	{
 		LOGSEVERE("Failed to release frame");
 		return;
-    }
+	}
 
-    if (currentFrame)
-    {
-        currentFrame->Release();
-        currentFrame = nullptr;
-    }
+	if (currentFrame)
+	{
+		currentFrame->Release();
+		currentFrame = nullptr;
+	}
 }
 
-const UINT DesktopDuplicator::getFrameWidth() const {
+const UINT DesktopDuplicator::getFrameWidth() const
+{
 	return outputDesc.DesktopCoordinates.right - outputDesc.DesktopCoordinates.left;
 }
-const UINT DesktopDuplicator::getFrameHeight() const {
+const UINT DesktopDuplicator::getFrameHeight() const
+{
 	return outputDesc.DesktopCoordinates.bottom - outputDesc.DesktopCoordinates.top;
 }
 
-void DesktopDuplicator::reInitialize() {
-	if (outputDuplication) {
+void DesktopDuplicator::reInitialize()
+{
+	if (outputDuplication)
+	{
 		outputDuplication->Release();
 	}
-	if (currentFrame) {
+	if (currentFrame)
+	{
 		currentFrame->Release();
 
 	}
@@ -111,16 +125,18 @@ void DesktopDuplicator::reInitialize() {
 	HRESULT hr;
 
 	// get adapter from device
-	IDXGIDevice *dxgiDevice;
-	hr = device->QueryInterface(__uuidof(IDXGIDevice), (void**) &dxgiDevice);
-	if (FAILED(hr)) {
+	IDXGIDevice* dxgiDevice;
+	hr = device->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
+	if (FAILED(hr))
+	{
 		LOGSEVERE("Failed to get dxgiDevice");
 		return;
 	}
 	IDXGIAdapter1* adapter;
 	hr = dxgiDevice->GetParent(__uuidof(IDXGIAdapter), reinterpret_cast<void**>(&adapter));
 	dxgiDevice->Release();
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		LOGSEVERE("Failed to get adapter");
 		return;
 	}
@@ -137,7 +153,7 @@ void DesktopDuplicator::reInitialize() {
 	output->GetDesc(&outputDesc);
 
 	IDXGIOutput1* output1;
-	hr = output->QueryInterface(__uuidof(IDXGIOutput1), (void**) &output1);
+	hr = output->QueryInterface(__uuidof(IDXGIOutput1), (void**)&output1);
 	output->Release();
 	if (FAILED(hr))
 	{
@@ -155,7 +171,8 @@ void DesktopDuplicator::reInitialize() {
 	}
 }
 
-bool DesktopDuplicator::isExpectedError(const HRESULT& hr) {
+bool DesktopDuplicator::isExpectedError(const HRESULT& hr)
+{
 	const HRESULT* error = duplicationExpectedErrors;
 	while (*error != S_OK)
 	{
@@ -167,14 +184,18 @@ bool DesktopDuplicator::isExpectedError(const HRESULT& hr) {
 	return false;
 }
 
-DesktopDuplicator::~DesktopDuplicator() {
-	if (device) {
+DesktopDuplicator::~DesktopDuplicator()
+{
+	if (device)
+	{
 		device->Release();
 	}
-	if (outputDuplication) {
+	if (outputDuplication)
+	{
 		outputDuplication->Release();
 	}
-    if (currentFrame) {
-        currentFrame->Release();
-    }
+	if (currentFrame)
+	{
+		currentFrame->Release();
+	}
 }
