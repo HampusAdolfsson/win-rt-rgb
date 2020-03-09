@@ -19,24 +19,25 @@
 class Main
 {
 	RequestClient requestClient;
-	AudioVisualizer visualizer;
+	AudioMonitor visualizer;
 	DesktopCaptureController desktopCapturer;
 	Gw2BossNotifier gw2Notif;
 
 public:
 	Main(const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
 		: requestClient(serverAddr, tcpPort),
-		visualizer(2, pwfx, serverAddr, udpPort),
-		desktopCapturer(1),
+		visualizer(2, pwfx),
+		desktopCapturer(0),
 		gw2Notif(requestClient)
 	{
 		visualizer.initialize();
+		visualizer.start();
 		OverrideColorClient colorClient(serverAddr, udpPort);
 		while (true) {
 			RgbColor color = desktopCapturer.getColor();
 			HsvColor hsv = rgbToHsv(color);
 			hsv.saturation = 255;
-			//Sleep(5);
+			hsv.value = visualizer.getIntensity();
 			colorClient.sendColor(hsvToRgb(hsv));
 		}
 	}

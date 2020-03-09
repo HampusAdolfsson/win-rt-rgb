@@ -2,24 +2,23 @@
 #include <thread>
 #include <vector>
 #include "OverrideColorClient.h"
-#include "WavetoColorStrategy.h"
+#include "WavetoIntensityStrategy.h"
 
 #define NUM_BUFFERS 5
 
 /**
-*	Captures audio from an input device (preferably a loopback device) and visualizes the audio using a fruitypi server.
-*	Audio is visualized on-dimensionally, based simply on loudness, no fourier transforms involved.
+*	Captures audio from an input device (preferably a loopback device) and monitors the audio intensity.
 */
-class AudioVisualizer
+class AudioMonitor
 {
 	HWAVEIN				waveInHandle;
 	WAVEHDR				waveHeaders[NUM_BUFFERS];
 	std::vector<char>	buffer;
 	std::thread			handlerThread;
 	bool				isRunning;
+	volatile uint8_t intensity;
 
-	OverrideColorClient colorClient;
-	WavetoColorStrategy colorStrategy;
+	WaveToIntensityStrategy waveStrategy;
 	DWORD				deviceId;
 	WAVEFORMATEX		pwfx;
 
@@ -27,34 +26,38 @@ class AudioVisualizer
 	bool openDevice();
 public:
 	/**
-	*	Starts an audio visualizer for the given device, recording with the given format.
+	*	Starts an audio monitor for the given device, recording with the given format.
 	*	For performance reasons, parts of the class is written specifically for 16-bit samples,
 	*	so other sample sizes may not work. Also, it could be a good idea to use mono format, since
 	*	the output is one-dimensional anyway.
 	*	@param devId ID of the device to record from, as given by waveInGetDevCaps
 	*	@param format the format to record audio in
-	*	@param addr IP address of the server to use
-	*	@param port UDP port on the server
 	*/
-	AudioVisualizer(const DWORD &devId, const WAVEFORMATEX &format, const std::string &addr, const int &port);
-	~AudioVisualizer();
+	AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format);
+	~AudioMonitor();
 
 	/**
-	*	Initializes the visualizer, readying it to receive audio. Should be called ONCE before
+	*	Initializes the monitor, readying it to receive audio. Should be called ONCE before
 	*	calling any other methods.
 	*	@return true on success
 	*/
 	bool initialize();
 
 	/**
-	*	Starts the visualizer, if not already running.
+	*	Starts recording audio, if not already running.
 	*	@return true on success
 	*/
 	bool start();
 
 	/**
-	*	Stops the visualizer, if it's running. It can then be started again by calling start()
+	*	Stops recording audio, if it's running. It can then be started again by calling start()
 	*	@return true on success
 	*/
 	bool stop();
+
+	/**
+	*	Gets the current audio intensity (0-255)
+	*	@return The current audio intensity
+	*/
+	uint8_t getIntensity() const;
 };

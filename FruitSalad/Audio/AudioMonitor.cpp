@@ -2,7 +2,7 @@
 #include <iostream>
 #include <bitset>
 #include "Logger.h"
-#include "AudioVisualizer.h"
+#include "AudioMonitor.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -15,13 +15,13 @@
 						}\
 						} while(0)
 
-AudioVisualizer::AudioVisualizer(const DWORD &devId, const WAVEFORMATEX &format, const std::string &addr, const int &port)
+AudioMonitor::AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format)
 	: deviceId(devId),
 	pwfx(format),
-	colorClient(addr, port),
+	intensity(0),
 	isRunning(false) {}
 
-bool AudioVisualizer::initialize()
+bool AudioMonitor::initialize()
 {
 	bool opened = openDevice();
 	if (!opened) return false;
@@ -44,7 +44,7 @@ bool AudioVisualizer::initialize()
 	return true;
 }
 
-bool AudioVisualizer::start()
+bool AudioMonitor::start()
 {
 	MMRESULT mres = waveInStart(waveInHandle);
 	RETURN_ON_ERROR(mres);
@@ -52,7 +52,7 @@ bool AudioVisualizer::start()
 	return true;
 }
 
-bool AudioVisualizer::stop()
+bool AudioMonitor::stop()
 {
 	MMRESULT mres = waveInStop(waveInHandle);
 	RETURN_ON_ERROR(mres);
@@ -61,11 +61,16 @@ bool AudioVisualizer::stop()
 	return true;
 }
 
-bool AudioVisualizer::openDevice()
+uint8_t AudioMonitor::getIntensity() const
+{
+	return intensity;
+}
+
+bool AudioMonitor::openDevice()
 {
 
 	DWORD threadId;
-	handlerThread = std::thread(&AudioVisualizer::handleWaveMessages, this);
+	handlerThread = std::thread(&AudioMonitor::handleWaveMessages, this);
 	threadId = GetThreadId(handlerThread.native_handle());
 
 	MMRESULT mres = waveInOpen(&waveInHandle, deviceId, &pwfx, threadId, 0, CALLBACK_THREAD);
@@ -73,7 +78,7 @@ bool AudioVisualizer::openDevice()
 	return true;
 }
 
-AudioVisualizer::~AudioVisualizer()
+AudioMonitor::~AudioMonitor()
 {
 
 	if (isRunning) waveInStop(waveInHandle);
@@ -94,7 +99,7 @@ AudioVisualizer::~AudioVisualizer()
 	}
 }
 
-void AudioVisualizer::handleWaveMessages()
+void AudioMonitor::handleWaveMessages()
 {
 	MSG msg;
 	while (GetMessage(&msg, 0, 0, 0))
@@ -107,7 +112,7 @@ void AudioVisualizer::handleWaveMessages()
 			if (hdr->dwBytesRecorded > 0)
 			{
 				size_t sampleSize = pwfx.wBitsPerSample / 8; // TODO: benchmark doing stuff here instead
-				colorClient.sendColor(colorStrategy.getColor(hdr->lpData, hdr->dwBytesRecorded, sampleSize));
+				intensity = waveStrategy.getIntensity(hdr->lpData, hdr->dwBytesRecorded, sampleSize);
 			}
 			for (int i = 0; i < NUM_BUFFERS; i++)
 			{
