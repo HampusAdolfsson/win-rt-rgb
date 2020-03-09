@@ -1,7 +1,7 @@
 #include "DesktopCaptureController.h"
 #include "Logger.h"
 
-DesktopCaptureController::DesktopCaptureController(UINT initialOutputIdx)
+DesktopCaptureController::DesktopCaptureController(const UINT& initialOutputIdx)
 {
 	activeOutput = initialOutputIdx;
 
@@ -20,7 +20,7 @@ DesktopCaptureController::~DesktopCaptureController() {
 	}
 }
 
-void DesktopCaptureController::setOutput(UINT outputIdx) {
+void DesktopCaptureController::setOutput(const UINT& outputIdx) {
 	activeOutput = outputIdx;
 }
 
@@ -33,7 +33,7 @@ Color DesktopCaptureController::getColor() {
 	return sampler->getSample();
 }
 
-UINT DesktopCaptureController::getNumberOfOutputs() {
+const UINT DesktopCaptureController::getNumberOfOutputs() const {
 	ID3D11Device* device;
     HRESULT hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, NULL, 0, D3D11_SDK_VERSION, &device, NULL, NULL);
     if (hr != S_OK) {

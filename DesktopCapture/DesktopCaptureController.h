@@ -13,13 +13,13 @@ class DesktopCaptureController
 	UINT activeOutput;
 	std::vector<DesktopColorSampler*> samplers;
 
-	UINT getNumberOfOutputs();
+	const UINT getNumberOfOutputs() const;
 
 public:
-	DesktopCaptureController(UINT initialOutputIdx);
+	DesktopCaptureController(const UINT& initialOutputIdx);
 	~DesktopCaptureController();
 
-	void setOutput(UINT outputIdx);
+	void setOutput(const UINT& outputIdx);
 
 	Color getColor();
 

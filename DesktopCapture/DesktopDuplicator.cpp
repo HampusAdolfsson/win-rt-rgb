@@ -20,7 +20,7 @@ currentFrame(nullptr)
 	RtlZeroMemory(&outputDesc, sizeof(outputDesc));
 }
 
-void DesktopDuplicator::initialize(ID3D11Device *device, UINT outputIdx) {
+void DesktopDuplicator::initialize(ID3D11Device *device, const UINT& outputIdx) {
 
 	this->device = device;
 	this->device->AddRef();
@@ -92,10 +92,10 @@ void DesktopDuplicator::releaseFrame() {
     }
 }
 
-UINT DesktopDuplicator::getFrameWidth() {
+const UINT DesktopDuplicator::getFrameWidth() const {
 	return outputDesc.DesktopCoordinates.right - outputDesc.DesktopCoordinates.left;
 }
-UINT DesktopDuplicator::getFrameHeight() {
+const UINT DesktopDuplicator::getFrameHeight() const {
 	return outputDesc.DesktopCoordinates.bottom - outputDesc.DesktopCoordinates.top;
 }
 
@@ -155,7 +155,7 @@ void DesktopDuplicator::reInitialize() {
 	}
 }
 
-bool DesktopDuplicator::isExpectedError(HRESULT hr) {
+bool DesktopDuplicator::isExpectedError(const HRESULT& hr) {
 	const HRESULT* error = duplicationExpectedErrors;
 	while (*error != S_OK)
 	{

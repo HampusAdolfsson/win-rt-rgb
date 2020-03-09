@@ -16,10 +16,10 @@ class D3DMeanColorCalculator
 	void copyToCpu(ID3D11Texture2D* texture);
 
 	// for debugging purposes
-	void saveAsBitmap(std::unique_ptr<uint8_t[]>& data, UINT width, UINT height);
+	void saveAsBitmap(std::unique_ptr<uint8_t[]>& data, const UINT& width, const UINT& height);
 
 public:
-	void initialize(ID3D11Device *device, UINT textureWidth, UINT textureHeight);
+	void initialize(ID3D11Device *device, const UINT& textureWidth, const UINT& textureHeight);
 
 	Color sample(ID3D11Texture2D *texture);
 

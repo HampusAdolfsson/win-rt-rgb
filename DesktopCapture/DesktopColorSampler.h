@@ -28,7 +28,7 @@ public:
 	*	Create a new sampler.
 	*	@param outputIdx The index of the output (monitor) to sample
 	*/
-	DesktopColorSampler(UINT outputIdx);
+	DesktopColorSampler(const UINT& outputIdx);
 	~DesktopColorSampler();
 
 	Color getSample();

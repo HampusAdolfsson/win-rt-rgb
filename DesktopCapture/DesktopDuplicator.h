@@ -14,7 +14,7 @@ class DesktopDuplicator
 
 	ID3D11Texture2D* currentFrame;
 
-	bool isExpectedError(HRESULT hr);
+	static bool isExpectedError(const HRESULT& hr);
 	void reInitialize();
 
 public:
@@ -24,13 +24,13 @@ public:
 	*	@param device The device to capture from.
 	*	@param outputIdx The index of the output (monitor) to capture
 	*/
-	void initialize(ID3D11Device *device, UINT outputIdx);
+	void initialize(ID3D11Device *device, const UINT& outputIdx);
 
 	ID3D11Texture2D* captureFrame();
 	void releaseFrame();
 
-	UINT getFrameWidth();
-	UINT getFrameHeight();
+	const UINT getFrameWidth() const;
+	const UINT getFrameHeight() const;
 
 	DesktopDuplicator();
 	~DesktopDuplicator();

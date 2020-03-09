@@ -12,7 +12,7 @@
 						}\
 						} while(0)
 
-void D3DMeanColorCalculator::initialize(ID3D11Device *device, UINT textureWidth, UINT textureHeight) {
+void D3DMeanColorCalculator::initialize(ID3D11Device *device, const UINT& textureWidth, const UINT& textureHeight) {
 	width = textureWidth;
 	height = textureHeight;
 	device->GetImmediateContext(&deviceContext);
@@ -53,7 +53,7 @@ D3DMeanColorCalculator::~D3DMeanColorCalculator() {
 	}
 }
 
-void D3DMeanColorCalculator::saveAsBitmap(std::unique_ptr<uint8_t[]>& data, UINT width, UINT height) {
+void D3DMeanColorCalculator::saveAsBitmap(std::unique_ptr<uint8_t[]>& data, const UINT& width, const UINT& height) {
 	Gdiplus::GdiplusStartupInput m_gdiplusStartupInput;
 	ULONG_PTR m_gdiplusToken;
 	Gdiplus::GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);

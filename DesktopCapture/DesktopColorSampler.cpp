@@ -9,7 +9,7 @@
 						}\
 						} while(0)
 
-DesktopColorSampler::DesktopColorSampler(UINT outputIdx)
+DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx)
 : desktopDuplicator(),
 frameSampler(),
 isRunning(false)
