@@ -22,12 +22,13 @@ const LightEffect startEffect(1500000000, Breathing, { {0,0,60}, {0,0,150}, {0,0
 // Played when exiting
 const LightEffect exitEffect(1500000000, Breathing, { {60,0,0}, {150,0,0}, {255,0,0}, {150,0,0}, {60,0,0} });
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
 	Logger::Instance().setLogFile("log");
 	LOGINFO("Starting application");
 
 	WSAData wsa;
-	WSAStartup(MAKEWORD(2,2), &wsa);
+	WSAStartup(MAKEWORD(2, 2), &wsa);
 
 	WAVEFORMATEX pwfx;
 	pwfx.wFormatTag = WAVE_FORMAT_PCM;
@@ -37,7 +38,7 @@ int main(int argc, char **argv) {
 	pwfx.nBlockAlign = pwfx.nChannels * (pwfx.wBitsPerSample / 8);
 	pwfx.nAvgBytesPerSec = pwfx.nBlockAlign * pwfx.nSamplesPerSec;
 	pwfx.cbSize = 0;
-	
+
 	App app(pwfx, ADDR, TCP_PORT, UDP_PORT);
 	app.setServerOn();
 	app.playLightEffect(LightEffect(startEffect));
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	Exit:
+Exit:
 	app.playLightEffect(exitEffect);
 	UnregisterHotKey(NULL, TOGGLE_SERVER_ID);
 	UnregisterHotKey(NULL, TOGGLE_AUDIO_VISUALIZER_ID);

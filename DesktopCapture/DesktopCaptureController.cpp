@@ -1,7 +1,7 @@
 #include "DesktopCaptureController.h"
 #include "Logger.h"
 
-DesktopCaptureController::DesktopCaptureController(const UINT &initialOutputIdx, std::function<void(const RgbColor&)> callback)
+DesktopCaptureController::DesktopCaptureController(const UINT& initialOutputIdx, std::function<void(const RgbColor&)> callback)
 	: isActive(false)
 {
 	activeOutput = initialOutputIdx;
