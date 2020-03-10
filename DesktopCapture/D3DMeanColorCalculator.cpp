@@ -1,6 +1,9 @@
 #include "D3DMeanColorCalculator.h"
+#include "CUDA/ColorAnalysis.h"
 #include "Logger.h"
 #include <gdiplus.h>
+#include <cuda_runtime_api.h>
+#include <cuda_d3d11_interop.h>
 #pragma comment(lib, "Gdiplus.lib")
 
 #define RGBA_COLOR_SIZE 4
@@ -20,21 +23,35 @@ void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textur
 	buffer = std::make_unique<uint8_t[]>(RGBA_COLOR_SIZE * width * height);
 }
 
+void* buf = nullptr;
+cudaGraphicsResource* res;
+size_t pitch;
+
 RgbColor D3DMeanColorCalculator::sample(ID3D11Texture2D* texture)
 {
-	copyToCpu(texture);
-	uint32_t channels[RGBA_COLOR_SIZE] = { 0,0,0,0 };
-	for (int i = 0; i < RGBA_COLOR_SIZE * width * height; i++)
-	{
-		channels[i % RGBA_COLOR_SIZE] += buffer[i];
-	}
+	// copyToCpu(texture);
+	// uint32_t channels[RGBA_COLOR_SIZE] = { 0,0,0,0 };
+	// for (int i = RGBA_COLOR_SIZE*width*880; i < RGBA_COLOR_SIZE * width * height; i++)
+	// {
+	// 	channels[i % RGBA_COLOR_SIZE] += buffer[i];
+	// }
 
-	for (int i = 0; i < RGBA_COLOR_SIZE; i++)
-	{
-		channels[i] /= width * height;
-	}
+	// for (int i = 0; i < RGBA_COLOR_SIZE; i++)
+	// {
+	// 	channels[i] /= width * 200;//height;
+	// }
+	//return { static_cast<uint8_t>(channels[2]), static_cast<uint8_t>(channels[1]), static_cast<uint8_t>(channels[0]) };
 
-	return { static_cast<uint8_t>(channels[2]), static_cast<uint8_t>(channels[1]), static_cast<uint8_t>(channels[0]) };
+	if (!buf)
+	{
+		cudaError_t err = cudaMallocPitch(&buf, &pitch, width*4, height);
+		err = cudaGraphicsD3D11RegisterResource(&res, texture, cudaGraphicsRegisterFlagsNone);
+	}
+	cudaStream_t stream = 0;
+	cudaError_t st = cudaGraphicsMapResources(1, &res, stream);
+	RgbColor result =  CudaUtils::getMeanColor(res, buf, width, height, pitch);
+	st = cudaGraphicsUnmapResources(1, &res, stream);
+	return result;
 }
 
 void D3DMeanColorCalculator::copyToCpu(ID3D11Texture2D* texture)
