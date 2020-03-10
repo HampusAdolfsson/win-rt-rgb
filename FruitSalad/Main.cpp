@@ -8,10 +8,12 @@
 #define UDP_PORT 8845
 #define TOGGLE_SERVER_KEY 0x43 // c key
 #define TOGGLE_SERVER_ID 0x1
-#define TOGGLE_VISUALIZER_KEY 0x56 // v key
-#define TOGGLE_VISUALIZER_ID 0x2
-#define EXIT_APPLICATION_KEY 0x42 // b key
-#define EXIT_APPLICATION_ID 0x3
+#define TOGGLE_AUDIO_VISUALIZER_KEY 0x56 // v key
+#define TOGGLE_AUDIO_VISUALIZER_ID 0x2
+#define TOGGLE_DESKTOP_VISUALIZER_KEY 0x42 // b key
+#define TOGGLE_DESKTOP_VISUALIZER_ID 0x3
+#define EXIT_APPLICATION_KEY 0x4e // n key
+#define EXIT_APPLICATION_ID 0x4
 
 
 
@@ -39,14 +41,17 @@ int main(int argc, char **argv) {
 	App app(pwfx, ADDR, TCP_PORT, UDP_PORT);
 	app.setServerOn();
 	app.playLightEffect(LightEffect(startEffect));
-	app.startVisualizer();
+	app.startAudioVisualizer();
+	app.startDesktopVisualizer();
 
 	RegisterHotKey(NULL, TOGGLE_SERVER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_SERVER_KEY);
-	RegisterHotKey(NULL, TOGGLE_VISUALIZER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_VISUALIZER_KEY);
+	RegisterHotKey(NULL, TOGGLE_AUDIO_VISUALIZER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_AUDIO_VISUALIZER_KEY);
+	RegisterHotKey(NULL, TOGGLE_DESKTOP_VISUALIZER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_DESKTOP_VISUALIZER_KEY);
 	RegisterHotKey(NULL, EXIT_APPLICATION_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, EXIT_APPLICATION_KEY);
 
 	MSG msg;
-	bool visualizerRunning = true;
+	bool audioVisualizerRunning = true;
+	bool desktopVisualizerRunning = true;
 	while (GetMessage(&msg, 0, 0, 0) == 1)
 	{
 		switch (msg.message)
@@ -58,11 +63,17 @@ int main(int argc, char **argv) {
 				LOGINFO("Hotkey pressed, toggling server");
 				app.toggleServerOn();
 				break;
-			case TOGGLE_VISUALIZER_ID:
-				LOGINFO("Hotkey pressed, toggling visualizer");
-				if (visualizerRunning) app.stopVisualizer();
-				else				   app.startVisualizer();
-				visualizerRunning = !visualizerRunning;
+			case TOGGLE_AUDIO_VISUALIZER_ID:
+				LOGINFO("Hotkey pressed, toggling audio visualizer");
+				if (audioVisualizerRunning) app.stopAudioVisualizer();
+				else						app.startAudioVisualizer();
+				audioVisualizerRunning = !audioVisualizerRunning;
+				break;
+			case TOGGLE_DESKTOP_VISUALIZER_ID:
+				LOGINFO("Hotkey pressed, toggling desktop visualizer");
+				if (desktopVisualizerRunning) app.stopDesktopVisualizer();
+				else						  app.startDesktopVisualizer();
+				desktopVisualizerRunning = !desktopVisualizerRunning;
 				break;
 			case EXIT_APPLICATION_ID:
 				LOGINFO("Hotkey pressed, exiting application");
@@ -74,10 +85,11 @@ int main(int argc, char **argv) {
 	Exit:
 	app.playLightEffect(exitEffect);
 	UnregisterHotKey(NULL, TOGGLE_SERVER_ID);
-	UnregisterHotKey(NULL, TOGGLE_VISUALIZER_ID);
+	UnregisterHotKey(NULL, TOGGLE_AUDIO_VISUALIZER_ID);
+	UnregisterHotKey(NULL, TOGGLE_DESKTOP_VISUALIZER_ID);
 	UnregisterHotKey(NULL, EXIT_APPLICATION_ID);
 
-	if (visualizerRunning) app.stopVisualizer();
+	if (audioVisualizerRunning) app.stopAudioVisualizer();
 	LOGINFO("Exiting application ----------------------------------------------");
 	return 0;
 }

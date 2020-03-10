@@ -18,7 +18,7 @@ class AudioMonitor
 	std::thread			handlerThread;
 	bool				isRunning;
 
-    std::function<void(uint8_t)> callback;
+    std::function<void(const uint8_t&)> callback;
 
 	WaveToIntensityStrategy waveStrategy;
 	DWORD				deviceId;
@@ -36,7 +36,7 @@ public:
 	*	@param format the format to record audio in
     *	@param callback to call when a new intensity value is generated
 	*/
-	AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(uint8_t)> callback);
+	AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(const uint8_t&)> callback);
 	~AudioMonitor();
 
 	/**

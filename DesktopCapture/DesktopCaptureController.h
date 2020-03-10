@@ -3,6 +3,7 @@
 #include "DesktopColorSampler.h"
 #include "Color.h"
 #include <vector>
+#include <functional>
 
 /**
 *	Manages/multiplexes DesktopColorSamplers for different outputs, and restarts them when errors occur
@@ -12,16 +13,18 @@ class DesktopCaptureController
 {
 	UINT activeOutput;
 	std::vector<DesktopColorSampler*> samplers;
+	bool isActive;
 
 	const UINT getNumberOfOutputs() const;
 
 public:
-	DesktopCaptureController(const UINT& initialOutputIdx);
+	DesktopCaptureController(const UINT& initialOutputIdx, std::function<void(const RgbColor&)> callback);
 	~DesktopCaptureController();
 
 	void setOutput(const UINT& outputIdx);
 
-	RgbColor getColor();
+	void start();
+	void stop();
 
 	DesktopCaptureController(DesktopCaptureController const&) = delete;
 	DesktopCaptureController(DesktopCaptureController &&) = delete;

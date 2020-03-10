@@ -15,7 +15,7 @@
 						}\
 						} while(0)
 
-AudioMonitor::AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(uint8_t)> callback)
+AudioMonitor::AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(const uint8_t&)> callback)
 	: deviceId(devId),
 	pwfx(format),
     callback(callback),

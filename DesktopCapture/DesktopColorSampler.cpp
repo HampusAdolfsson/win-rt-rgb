@@ -9,10 +9,11 @@
 						}\
 						} while(0)
 
-DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx)
+DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx, std::function<void(const RgbColor&)> callback)
 	: desktopDuplicator(),
 	frameSampler(),
-	isRunning(false)
+	isRunning(false),
+	callback(callback)
 {
 	HRESULT hr;
 
@@ -32,9 +33,6 @@ DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx)
 
 	desktopDuplicator.initialize(device, outputIdx);
 	frameSampler.initialize(device, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight());
-
-	sampleAvailSemaphore = CreateSemaphore(NULL, 0, 1, NULL);
-	sampleRequestSemaphore = CreateSemaphore(NULL, 0, 1, NULL);
 
 	// allocate our buffer
 	D3D11_TEXTURE2D_DESC texDesc;
@@ -65,21 +63,12 @@ void DesktopColorSampler::start()
 {
 	isRunning = true;
 	samplerThread = std::thread(&DesktopColorSampler::sampleLoop, this);
-	ReleaseSemaphore(sampleRequestSemaphore, 1, NULL);
 }
 
 void DesktopColorSampler::stop()
 {
 	isRunning = false;
-	// TODO: should maybe claim the semaphore
 	samplerThread.join();
-}
-
-RgbColor DesktopColorSampler::getSample()
-{
-	WaitForSingleObject(sampleAvailSemaphore, INFINITE);
-	ReleaseSemaphore(sampleRequestSemaphore, 1, NULL);
-	return currentSample;
 }
 
 // run by worker thread
@@ -88,14 +77,12 @@ void DesktopColorSampler::sampleLoop()
 	bool WaitToProcessCurrentFrame = false;
 	while (isRunning)
 	{
-		WaitForSingleObject(sampleRequestSemaphore, INFINITE); // TODO: wait finite time
 		ID3D11Texture2D* frame = desktopDuplicator.captureFrame();
 		if (frame)
 		{
 			deviceContext->CopyResource(frameBuffer, frame);
-			currentSample = frameSampler.sample(frameBuffer);
 			desktopDuplicator.releaseFrame();
+			callback(frameSampler.sample(frameBuffer));
 		}
-		ReleaseSemaphore(sampleAvailSemaphore, 1, NULL);
 	}
 }

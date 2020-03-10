@@ -3,6 +3,7 @@
 #include "D3DMeanColorCalculator.h"
 #include "Color.h"
 #include <thread>
+#include <functional>
 
 /**
 *	Samples the screen and returns a color representing its content.
@@ -15,11 +16,9 @@ class DesktopColorSampler
 	ID3D11DeviceContext* deviceContext;
 	ID3D11Texture2D* frameBuffer;
 
-	HANDLE sampleAvailSemaphore; // Signals when a sample is available
-	HANDLE sampleRequestSemaphore; // Signals when a sample is needed
 	std::thread samplerThread;
 	bool isRunning;
-	RgbColor currentSample;
+	std::function<void(const RgbColor&)> callback;
 
 	void sampleLoop();
 
@@ -27,11 +26,10 @@ public:
 	/**
 	*	Create a new sampler.
 	*	@param outputIdx The index of the output (monitor) to sample
+	*	@param callback To call when a sample is generated
 	*/
-	DesktopColorSampler(const UINT& outputIdx);
+	DesktopColorSampler(const UINT& outputIdx, std::function<void(const RgbColor&)> callback);
 	~DesktopColorSampler();
-
-	RgbColor getSample();
 
 	void start();
 	void stop();

@@ -7,7 +7,7 @@ App::App(const WAVEFORMATEX &pwfx, const std::string &serverAddr, const std::str
     : requestClient(serverAddr, tcpPort),
       audioMonitor(2, pwfx, std::bind(&App::audioCallback, this, std::placeholders::_1)),
       audioActive(false),
-      desktopCapturer(0),
+      desktopCapturer(0, std::bind(&App::desktopCallback, this, std::placeholders::_1)),
       desktopActive(false),
       realtimeClient(serverAddr, udpPort),
       gw2Notif(requestClient)
@@ -24,15 +24,26 @@ App::App(const WAVEFORMATEX &pwfx, const std::string &serverAddr, const std::str
     //}
 }
 
-void App::startVisualizer()
+void App::startAudioVisualizer()
 {
     audioActive = true;
     audioMonitor.start();
 }
-void App::stopVisualizer()
+void App::stopAudioVisualizer()
 {
     audioActive = false;
     audioMonitor.stop();
+}
+
+void App::startDesktopVisualizer()
+{
+    desktopActive = true;
+    desktopCapturer.start();
+}
+void App::stopDesktopVisualizer()
+{
+    desktopActive = false;
+    desktopCapturer.stop();
 }
 
 void App::playLightEffect(const LightEffect &effect)
@@ -61,19 +72,24 @@ void App::toggleServerOn()
     }
 }
 
-void App::audioCallback(uint8_t intensity)
+void App::audioCallback(const uint8_t& intensity)
 {
-    if (!audioActive) return;
-    if (desktopActive)
-    {
-        HsvColor hsv = rgbToHsv(desktopColor);
-        hsv.saturation = min(hsv.saturation + 100, 255);
-        hsv.value = intensity;
-        realtimeClient.sendColor(hsvToRgb(hsv));
-    }
-    else
-    {
-        RgbColor base = {255, 0, 0};
-        realtimeClient.sendColor(base * (intensity / 255.0));
-    }
+	if (!audioActive) return;
+	if (desktopActive)
+	{
+		HsvColor hsv = rgbToHsv(desktopColor);
+		hsv.saturation = min(hsv.saturation + 100, 255);
+		hsv.value = 255;
+		realtimeClient.sendColor(hsvToRgb(hsv) * (intensity / 255.0));
+	}
+	else
+	{
+		RgbColor base = { 255, 0, 0 };
+		realtimeClient.sendColor(base * (intensity / 255.0));
+	}
+}
+void App::desktopCallback(const RgbColor& color)
+{
+	if (!desktopActive) return;
+	desktopColor = color;
 }

@@ -16,14 +16,17 @@ class App
 
 	Gw2BossNotifier gw2Notif;
 
-	void audioCallback(uint8_t intensity);
-	void desktopCallback();
+	void audioCallback(const uint8_t& intensity);
+	void desktopCallback(const RgbColor& color);
 
 public:
 	App(const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort);
 
-	void startVisualizer();
-	void stopVisualizer();
+	void startAudioVisualizer();
+	void stopAudioVisualizer();
+
+	void startDesktopVisualizer();
+	void stopDesktopVisualizer();
 
 	void playLightEffect(const LightEffect& effect);
 

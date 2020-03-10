@@ -1,42 +1,53 @@
 #include "DesktopCaptureController.h"
 #include "Logger.h"
 
-DesktopCaptureController::DesktopCaptureController(const UINT& initialOutputIdx)
+DesktopCaptureController::DesktopCaptureController(const UINT &initialOutputIdx, std::function<void(const RgbColor&)> callback)
+	: isActive(false)
 {
 	activeOutput = initialOutputIdx;
 
 	UINT nOutputs = getNumberOfOutputs();
 	samplers = std::vector<DesktopColorSampler*>(nOutputs, nullptr);
-	for (int i = 0; i < nOutputs; i++)
+	for (UINT i = 0; i < nOutputs; i++)
 	{
-		samplers[i] = new DesktopColorSampler(i);
-		samplers[i]->start();
+		samplers[i] = new DesktopColorSampler(i, callback);
 	}
 }
 
 DesktopCaptureController::~DesktopCaptureController()
 {
+	samplers[activeOutput]->stop();
 	for (int i = 0; i < samplers.size(); i++)
 	{
-		samplers[i]->stop();
 		delete samplers[i];
 	}
 }
 
 void DesktopCaptureController::setOutput(const UINT& outputIdx)
 {
+	if (outputIdx >= samplers.size())
+	{
+		LOGSEVERE("Tried to sample output that does not exist");
+		return;
+	}
+	if (isActive)
+	{
+		samplers[activeOutput]->stop();
+		samplers[outputIdx]->start();
+	}
 	activeOutput = outputIdx;
 }
-
-RgbColor DesktopCaptureController::getColor()
+void DesktopCaptureController::start()
 {
-	if (activeOutput >= samplers.size())
-	{
-		LOGSEVERE("Tried to sample output for which there was no sample");
-		return { 0, 0, 0 };
-	}
-	DesktopColorSampler* sampler = samplers[activeOutput];
-	return sampler->getSample();
+	if (isActive) return;
+	isActive = true;
+	samplers[activeOutput]->start();
+}
+void DesktopCaptureController::stop()
+{
+	if (!isActive) return;
+	isActive = false;
+	samplers[activeOutput]->stop();
 }
 
 const UINT DesktopCaptureController::getNumberOfOutputs() const
