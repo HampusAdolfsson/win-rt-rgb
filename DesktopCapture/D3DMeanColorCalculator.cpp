@@ -1,95 +1,84 @@
 #include "D3DMeanColorCalculator.h"
 #include "CUDA/ColorAnalysis.h"
 #include "Logger.h"
+#include <assert.h>
 #include <gdiplus.h>
-#include <cuda_runtime_api.h>
 #include <cuda_d3d11_interop.h>
 #pragma comment(lib, "Gdiplus.lib")
-
-#define RGBA_COLOR_SIZE 4
-
-#define RETURN_ON_ERROR(hr) do {\
-						if (hr != S_OK) {\
-							LOGSEVERE("D3dColorSampler got error: %d, line %d", hr, __LINE__);\
-							return;\
-						}\
-						} while(0)
 
 void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight)
 {
 	width = textureWidth;
 	height = textureHeight;
 	device->GetImmediateContext(&deviceContext);
-	buffer = std::make_unique<uint8_t[]>(RGBA_COLOR_SIZE * width * height);
-}
 
-void* buf = nullptr;
-cudaGraphicsResource* res;
-size_t pitch;
-
-RgbColor D3DMeanColorCalculator::sample(ID3D11Texture2D* texture)
-{
-	// copyToCpu(texture);
-	// uint32_t channels[RGBA_COLOR_SIZE] = { 0,0,0,0 };
-	// for (int i = RGBA_COLOR_SIZE*width*880; i < RGBA_COLOR_SIZE * width * height; i++)
-	// {
-	// 	channels[i % RGBA_COLOR_SIZE] += buffer[i];
-	// }
-
-	// for (int i = 0; i < RGBA_COLOR_SIZE; i++)
-	// {
-	// 	channels[i] /= width * 200;//height;
-	// }
-	//return { static_cast<uint8_t>(channels[2]), static_cast<uint8_t>(channels[1]), static_cast<uint8_t>(channels[0]) };
-
-	if (!buf)
+	// allocate our buffer
+	D3D11_TEXTURE2D_DESC texDesc;
+	RtlZeroMemory(&texDesc, sizeof(texDesc));
+	texDesc.Width = textureWidth;
+	texDesc.Height = textureHeight;
+	texDesc.MipLevels = 1;
+	texDesc.ArraySize = 1;
+	texDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	texDesc.SampleDesc.Count = 1;
+	texDesc.Usage = D3D11_USAGE_DEFAULT;
+	HRESULT hr = device->CreateTexture2D(&texDesc, NULL, &frameBuffer);
+	if (hr != S_OK)
 	{
-		cudaError_t err = cudaMallocPitch(&buf, &pitch, width*4, height);
-		err = cudaGraphicsD3D11RegisterResource(&res, texture, cudaGraphicsRegisterFlagsNone);
+		LOGSEVERE("Failed to create texture");
+		return;
 	}
-	cudaStream_t stream = 0;
-	cudaError_t st = cudaGraphicsMapResources(1, &res, stream);
-	RgbColor result =  CudaUtils::getMeanColor(res, buf, width, height, pitch);
-	st = cudaGraphicsUnmapResources(1, &res, stream);
-	return result;
+
+	cudaError_t status = cudaMallocPitch(&cudaBuffer, &cudaBufferPitch, width*sizeof(uint32_t), height);
+	if (status != cudaSuccess)
+	{
+		LOGSEVERE("cudaMalloc failed");
+	}
+	assert(cudaBufferPitch == width * sizeof(uint32_t)); // parts of the code assumes no padding
+	status = cudaGraphicsD3D11RegisterResource(&cudaResource, frameBuffer, cudaGraphicsRegisterFlagsNone);
+	if (status != cudaSuccess)
+	{
+		LOGSEVERE("Failed to register D3D resource with cuda");
+	}
 }
 
-void D3DMeanColorCalculator::copyToCpu(ID3D11Texture2D* texture)
+void D3DMeanColorCalculator::setFrameData(ID3D11Texture2D *frame)
 {
-	HRESULT hr;
+	deviceContext->CopyResource(frameBuffer, frame);
+}
 
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	// this or mapsubresource?
-	hr = deviceContext->Map(texture, 0, D3D11_MAP_READ, 0, &mappedResource);
-	RETURN_ON_ERROR(hr);
-
-	uint8_t* src = (uint8_t*)mappedResource.pData;
-	uint8_t* dst = buffer.get();
-	memcpy(dst, src, RGBA_COLOR_SIZE * width * height);
-	deviceContext->Unmap(texture, 0);
+RgbColor D3DMeanColorCalculator::sample()
+{
+	cudaError_t status = cudaGraphicsMapResources(1, &cudaResource, nullptr);
+	if (status != cudaSuccess)
+	{
+		LOGSEVERE("Failed to map cuda resource");
+	}
+	RgbColor result =  CudaUtils::getMeanColor(cudaResource, cudaBuffer, width, height, cudaBufferPitch);
+	status = cudaGraphicsUnmapResources(1, &cudaResource, nullptr);
+	if (status != cudaSuccess)
+	{
+		LOGSEVERE("Failed to unmap cuda resource");
+	}
+	return result;
 }
 
 D3DMeanColorCalculator::~D3DMeanColorCalculator()
 {
+	if (cudaBuffer)
+	{
+		cudaFree(cudaBuffer);
+	}
+	if (frameBuffer)
+	{
+		frameBuffer->Release();
+	}
 	if (deviceContext)
 	{
 		deviceContext->Release();
 	}
-}
-
-void D3DMeanColorCalculator::saveAsBitmap(std::unique_ptr<uint8_t[]>& data, const UINT& width, const UINT& height)
-{
-	Gdiplus::GdiplusStartupInput m_gdiplusStartupInput;
-	ULONG_PTR m_gdiplusToken;
-	Gdiplus::GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);
-	Gdiplus::Bitmap bitmap(width, height, PixelFormat32bppRGB);
-	Gdiplus::Rect rect(0, 0, width, height);
-	Gdiplus::BitmapData lockedData;
-	bitmap.LockBits(&rect, Gdiplus::ImageLockModeRead, PixelFormat32bppRGB, &lockedData);
-	memcpy(lockedData.Scan0, data.get(), RGBA_COLOR_SIZE * width * height);
-	bitmap.UnlockBits(&lockedData);
-	//Save to PNG
-	CLSID pngClsid;
-	CLSIDFromString(L"{557CF406-1A04-11D3-9A73-0000F81EF32E}", &pngClsid);
-	Gdiplus::Status st = bitmap.Save(L"file.png", &pngClsid, NULL);
+	if (cudaResource)
+	{
+		cudaGraphicsUnregisterResource(cudaResource);
+	}
 }

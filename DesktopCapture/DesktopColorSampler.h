@@ -12,9 +12,6 @@ class DesktopColorSampler
 {
 	DesktopDuplicator desktopDuplicator;
 	D3DMeanColorCalculator frameSampler;
-	ID3D11Device* device;
-	ID3D11DeviceContext* deviceContext;
-	ID3D11Texture2D* frameBuffer;
 
 	std::thread samplerThread;
 	bool isRunning;
@@ -29,7 +26,6 @@ public:
 	*	@param callback To call when a sample is generated
 	*/
 	DesktopColorSampler(const UINT& outputIdx, std::function<void(const RgbColor&)> callback);
-	~DesktopColorSampler();
 
 	void start();
 	void stop();
