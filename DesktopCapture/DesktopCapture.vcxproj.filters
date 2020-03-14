@@ -44,6 +44,9 @@
     <ClInclude Include="CUDA\ColorAnalysis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Rect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CUDA\ColorAnalysis.cu" />

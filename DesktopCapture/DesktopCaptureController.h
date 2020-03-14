@@ -21,7 +21,7 @@ public:
 	DesktopCaptureController(const UINT& initialOutputIdx, std::function<void(const RgbColor&)> callback);
 	~DesktopCaptureController();
 
-	void setOutput(const UINT& outputIdx);
+	void setOutput(const UINT& outputIdx, Rect captureRegion);
 
 	void start();
 	void stop();

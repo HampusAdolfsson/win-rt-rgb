@@ -1,5 +1,6 @@
 #pragma once
 #include "Color.h"
+#include "Rect.h"
 #include <d3d11.h>
 #include <cuda_runtime_api.h>
 
@@ -33,7 +34,7 @@ public:
 	/**
 	 *	Calculate the mean color of the current frame
 	 */
-	RgbColor sample();
+	RgbColor sample(Rect activeRegion);
 
 	~D3DMeanColorCalculator();
 };

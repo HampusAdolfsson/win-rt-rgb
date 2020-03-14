@@ -168,6 +168,7 @@
     <ClInclude Include="DesktopCaptureController.h" />
     <ClInclude Include="DesktopColorSampler.h" />
     <ClInclude Include="DesktopDuplicator.h" />
+    <ClInclude Include="Rect.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CUDA\ColorAnalysis.cu" />

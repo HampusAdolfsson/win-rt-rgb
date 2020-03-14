@@ -25,7 +25,14 @@ DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx, std::function<vo
 
 	desktopDuplicator.initialize(device, outputIdx);
 	frameSampler.initialize(device, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight());
+	// by default, capture entire screen
+	captureRegion = { 0, 0, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight() };
 
+}
+
+void DesktopColorSampler::setCaptureRegion(Rect captureRegion)
+{
+	this->captureRegion = captureRegion;
 }
 
 void DesktopColorSampler::start()
@@ -50,7 +57,7 @@ void DesktopColorSampler::sampleLoop()
 		{
 			frameSampler.setFrameData(frame);
 			desktopDuplicator.releaseFrame();
-			callback(frameSampler.sample());
+			callback(frameSampler.sample(captureRegion));
 		}
 	}
 }

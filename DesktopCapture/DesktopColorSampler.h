@@ -2,6 +2,7 @@
 #include "DesktopDuplicator.h"
 #include "D3DMeanColorCalculator.h"
 #include "Color.h"
+#include "Rect.h"
 #include <thread>
 #include <functional>
 
@@ -12,6 +13,7 @@ class DesktopColorSampler
 {
 	DesktopDuplicator desktopDuplicator;
 	D3DMeanColorCalculator frameSampler;
+	Rect captureRegion;
 
 	std::thread samplerThread;
 	bool isRunning;
@@ -26,6 +28,8 @@ public:
 	*	@param callback To call when a sample is generated
 	*/
 	DesktopColorSampler(const UINT& outputIdx, std::function<void(const RgbColor&)> callback);
+
+	void setCaptureRegion(Rect captureRegion);
 
 	void start();
 	void stop();

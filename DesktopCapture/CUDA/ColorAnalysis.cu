@@ -9,13 +9,14 @@
 __device__ unsigned int output[4] = { 0, 0, 0, 0 };
 
 __global__
-void calculateMeanColor(uint32_t *screen, int width, int height)
+void calculateMeanColor(uint8_t *screen, int width, int height, size_t pitch)
 {
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
 	if (x >= width || y >= height) return;
 
-	uint32_t val = screen[y * width + x];
+	uint32_t* pixel = (uint32_t*)(screen + y * pitch + x * sizeof(uint32_t));
+	uint32_t val = *pixel;
 	// TODO: make this more efficient
 	atomicAdd(output, val & 0xFF);
 	atomicAdd(output + 1, (val >> 8) & 0xFF);
@@ -25,19 +26,24 @@ void calculateMeanColor(uint32_t *screen, int width, int height)
 
 namespace CudaUtils
 {
-	RgbColor getMeanColor(cudaGraphicsResource* texture, void* buf, int width, int height, size_t pitch)
+	RgbColor getMeanColor(cudaGraphicsResource* texture, void* buf, size_t pitch, int width, int height, Rect activeRegion)
 	{
 		assert(texture && buf);
+		activeRegion.width = min(activeRegion.width, width - activeRegion.left);
+		activeRegion.height = min(activeRegion.height, height - activeRegion.top);
+
 		cudaArray* cuArray;
 		cudaError_t status = cudaGraphicsSubResourceGetMappedArray(&cuArray, texture, 0, 0);
-		status = cudaMemcpy2DFromArray(buf, pitch, cuArray, 0, 0, pitch, height, cudaMemcpyDeviceToDevice);
-
+		status = cudaMemcpy2DFromArray(buf, pitch, cuArray,
+		 								activeRegion.left, activeRegion.top,
+		 								sizeof(uint32_t)*activeRegion.width, activeRegion.height,
+		 								cudaMemcpyDeviceToDevice);
 		unsigned int result[4] = { 0,0,0,0 };
 		status = cudaMemcpyToSymbol(output, result, sizeof(result), 0, cudaMemcpyHostToDevice);
 
 		dim3 Db = dim3(16, 16);   // block dimensions are fixed to be 256 threads
-		dim3 Dg = dim3((width + Db.x - 1) / Db.x, (height + Db.y - 1) / Db.y);
-		calculateMeanColor<<<Dg, Db>>>((uint32_t*) buf, width, height);
+		dim3 Dg = dim3((activeRegion.width + Db.x - 1) / Db.x, (activeRegion.height + Db.y - 1) / Db.y);
+		calculateMeanColor<<<Dg, Db>>>((uint8_t*) buf, activeRegion.width, activeRegion.height, pitch);
 
 		cudaError_t error = cudaDeviceSynchronize();
 		if (error != cudaSuccess)
@@ -46,7 +52,7 @@ namespace CudaUtils
 			return { 0,0,0 };
 		}
 		status = cudaMemcpyFromSymbol(result, output, sizeof(result), 0, cudaMemcpyDeviceToHost);
-		int pixelCount = width * height;
+		int pixelCount = activeRegion.width * activeRegion.height;
 		RgbColor c = { static_cast<uint8_t>(result[2] / pixelCount), static_cast<uint8_t>(result[1] / pixelCount), static_cast<uint8_t>(result[0] / pixelCount) };
 		return c;
 	}

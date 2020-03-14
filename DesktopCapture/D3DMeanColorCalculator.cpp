@@ -2,9 +2,7 @@
 #include "CUDA/ColorAnalysis.h"
 #include "Logger.h"
 #include <assert.h>
-#include <gdiplus.h>
 #include <cuda_d3d11_interop.h>
-#pragma comment(lib, "Gdiplus.lib")
 
 void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight)
 {
@@ -47,14 +45,14 @@ void D3DMeanColorCalculator::setFrameData(ID3D11Texture2D *frame)
 	deviceContext->CopyResource(frameBuffer, frame);
 }
 
-RgbColor D3DMeanColorCalculator::sample()
+RgbColor D3DMeanColorCalculator::sample(Rect activeRegion)
 {
 	cudaError_t status = cudaGraphicsMapResources(1, &cudaResource, nullptr);
 	if (status != cudaSuccess)
 	{
 		LOGSEVERE("Failed to map cuda resource");
 	}
-	RgbColor result =  CudaUtils::getMeanColor(cudaResource, cudaBuffer, width, height, cudaBufferPitch);
+	RgbColor result =  CudaUtils::getMeanColor(cudaResource, cudaBuffer, cudaBufferPitch, width, height, activeRegion);
 	status = cudaGraphicsUnmapResources(1, &cudaResource, nullptr);
 	if (status != cudaSuccess)
 	{

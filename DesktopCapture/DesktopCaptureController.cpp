@@ -23,19 +23,23 @@ DesktopCaptureController::~DesktopCaptureController()
 	}
 }
 
-void DesktopCaptureController::setOutput(const UINT& outputIdx)
+void DesktopCaptureController::setOutput(const UINT& outputIdx, Rect captureRegion)
 {
-	if (outputIdx >= samplers.size())
+	if (outputIdx != activeOutput)
 	{
-		LOGSEVERE("Tried to sample output that does not exist");
-		return;
+		if (outputIdx >= samplers.size())
+		{
+			LOGSEVERE("Tried to sample output that does not exist");
+			return;
+		}
+		if (isActive)
+		{
+			samplers[activeOutput]->stop();
+			samplers[outputIdx]->start();
+		}
+		activeOutput = outputIdx;
 	}
-	if (isActive)
-	{
-		samplers[activeOutput]->stop();
-		samplers[outputIdx]->start();
-	}
-	activeOutput = outputIdx;
+	samplers[activeOutput]->setCaptureRegion(captureRegion);
 }
 void DesktopCaptureController::start()
 {
