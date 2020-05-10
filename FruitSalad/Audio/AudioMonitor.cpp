@@ -15,8 +15,9 @@
 						}\
 						} while(0)
 
-AudioMonitor::AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(const uint8_t&)> callback)
-	: deviceId(devId),
+AudioMonitor::AudioMonitor(const std::regex &deviceNameSpec, const WAVEFORMATEX &format, std::function<void(const uint8_t&)> callback)
+	: deviceNameSpec(deviceNameSpec),
+	waveInHandle(0),
 	pwfx(format),
     callback(callback),
 	isRunning(false) {}
@@ -67,6 +68,19 @@ bool AudioMonitor::openDevice()
 	DWORD threadId;
 	handlerThread = std::thread(&AudioMonitor::handleWaveMessages, this);
 	threadId = GetThreadId(handlerThread.native_handle());
+
+	DWORD deviceId = 0;
+	UINT numDevs = waveInGetNumDevs();
+	for (UINT i = 0; i < numDevs; i++)
+	{
+		WAVEINCAPSA caps;
+		waveInGetDevCaps(i, &caps, sizeof(caps));
+		if (std::regex_search(caps.szPname, deviceNameSpec))
+		{
+			LOGINFO("Found waveIn device with id: %d", i);
+			deviceId = i;
+		}
+	}
 
 	MMRESULT mres = waveInOpen(&waveInHandle, deviceId, &pwfx, threadId, 0, CALLBACK_THREAD);
 	RETURN_ON_ERROR(mres);

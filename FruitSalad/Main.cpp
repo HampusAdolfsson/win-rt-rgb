@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include "App.h"
 #include "Logger.h"
+#include "Profiles/ProfileManager.h"
+#include "Profiles/ApplicationProfile.h"
 
 
 #define ADDR "192.168.1.6"
@@ -12,9 +14,12 @@
 #define TOGGLE_AUDIO_VISUALIZER_ID 0x2
 #define TOGGLE_DESKTOP_VISUALIZER_KEY 0x42 // b key
 #define TOGGLE_DESKTOP_VISUALIZER_ID 0x3
+#define SWITCH_CAPTURED_OUTPUT_KEY 0x4b // k key
+#define SWITCH_CAPTURED_OUTPUT_ID 0x4
+#define LOCK_PROFILE_KEY 0x4c // l key
+#define LOCK_PROFILE_ID 0x5
 #define EXIT_APPLICATION_KEY 0x4e // n key
-#define EXIT_APPLICATION_ID 0x4
-
+#define EXIT_APPLICATION_ID 0x6
 
 
 // Played when launched
@@ -39,15 +44,39 @@ int main(int argc, char** argv)
 	pwfx.nAvgBytesPerSec = pwfx.nBlockAlign * pwfx.nSamplesPerSec;
 	pwfx.cbSize = 0;
 
-	App app(pwfx, ADDR, TCP_PORT, UDP_PORT);
+	App app(std::regex("Stereo Mix"), pwfx, ADDR, TCP_PORT, UDP_PORT);
 	app.setServerOn();
 	app.playLightEffect(LightEffect(startEffect));
 	app.startAudioVisualizer();
 	app.startDesktopVisualizer();
 
+	int capturedOutput = 0;
+	const Rect defaultCaptureRegion = { 0, 0, 1920, 1080 };
+	bool locked = false;
+
+	ProfileManager::start([&](std::optional<std::pair<ApplicationProfile, unsigned int>> profileData) {
+		if (profileData.has_value())
+		{
+			if (!locked)
+			{
+				app.setDesktopRegion(profileData->second, profileData->first.captureRegion);
+			}
+		}
+		else
+		{
+			if (!locked)
+			{
+				app.setDesktopRegion(capturedOutput, defaultCaptureRegion);
+			}
+		}
+	}, Profiles::dynamicProfiles);
+
+
 	RegisterHotKey(NULL, TOGGLE_SERVER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_SERVER_KEY);
 	RegisterHotKey(NULL, TOGGLE_AUDIO_VISUALIZER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_AUDIO_VISUALIZER_KEY);
 	RegisterHotKey(NULL, TOGGLE_DESKTOP_VISUALIZER_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, TOGGLE_DESKTOP_VISUALIZER_KEY);
+	RegisterHotKey(NULL, SWITCH_CAPTURED_OUTPUT_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, SWITCH_CAPTURED_OUTPUT_KEY);
+	RegisterHotKey(NULL, LOCK_PROFILE_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, LOCK_PROFILE_KEY);
 	RegisterHotKey(NULL, EXIT_APPLICATION_ID, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, EXIT_APPLICATION_KEY);
 
 	MSG msg;
@@ -75,6 +104,15 @@ int main(int argc, char** argv)
 				if (desktopVisualizerRunning) app.stopDesktopVisualizer();
 				else						  app.startDesktopVisualizer();
 				desktopVisualizerRunning = !desktopVisualizerRunning;
+				break;
+			case SWITCH_CAPTURED_OUTPUT_ID:
+				LOGINFO("Hotkey pressed, switching captured monitor");
+				capturedOutput = capturedOutput == 0 ? 1 : 0;
+				app.setDesktopRegion(capturedOutput, defaultCaptureRegion);
+				break;
+			case LOCK_PROFILE_ID:
+				LOGINFO("Hotkey pressed, toggling capture profile lock");
+				locked = !locked;
 				break;
 			case EXIT_APPLICATION_ID:
 				LOGINFO("Hotkey pressed, exiting application");

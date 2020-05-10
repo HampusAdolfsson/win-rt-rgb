@@ -3,9 +3,9 @@
 #include "Logger.h"
 #include <algorithm>
 
-App::App(const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
+App::App(const std::regex& deviceNameSpec, const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
 	: requestClient(serverAddr, tcpPort),
-	audioMonitor(2, pwfx, std::bind(&App::audioCallback, this, std::placeholders::_1)),
+	audioMonitor(deviceNameSpec, pwfx, std::bind(&App::audioCallback, this, std::placeholders::_1)),
 	audioActive(false),
 	desktopCapturer(0, std::bind(&App::desktopCallback, this, std::placeholders::_1)),
 	desktopActive(false),
@@ -64,6 +64,11 @@ void App::toggleServerOn()
 	}
 }
 
+void App::setDesktopRegion(const unsigned int& outputIdx, const Rect& region)
+{
+	desktopCapturer.setOutput(outputIdx, region);
+}
+
 void App::audioCallback(const uint8_t& intensity)
 {
 	if (!audioActive) return;
@@ -83,5 +88,15 @@ void App::audioCallback(const uint8_t& intensity)
 void App::desktopCallback(const RgbColor& color)
 {
 	if (!desktopActive) return;
-	desktopColor = color;
+	if (audioActive)
+	{
+		desktopColor = color;
+	}
+	else
+	{
+		HsvColor hsv = rgbToHsv(color);
+		hsv.saturation = min(hsv.saturation + 100, 255);
+		hsv.value = 255;
+		realtimeClient.sendColor(hsvToRgb(hsv));
+	}
 }

@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include <functional>
+#include <regex>
 #include "OverrideColorClient.h"
 #include "WavetoIntensityStrategy.h"
 
@@ -21,8 +22,8 @@ class AudioMonitor
     std::function<void(const uint8_t&)> callback;
 
 	WaveToIntensityStrategy waveStrategy;
-	DWORD				deviceId;
-	WAVEFORMATEX		pwfx;
+	std::regex				deviceNameSpec;
+	WAVEFORMATEX			pwfx;
 
 	void handleWaveMessages();
 	bool openDevice();
@@ -32,11 +33,11 @@ public:
 	*	For performance reasons, parts of the class is written specifically for 16-bit samples,
 	*	so other sample sizes may not work. Also, it could be a good idea to use mono format, since
 	*	the output is one-dimensional anyway.
-	*	@param devId ID of the device to record from, as given by waveInGetDevCaps
+	*	@param deviceNameSpec regex to match against the name of the audio device. Will use the first device matching this regex
 	*	@param format the format to record audio in
     *	@param callback to call when a new intensity value is generated
 	*/
-	AudioMonitor(const DWORD &devId, const WAVEFORMATEX &format, std::function<void(const uint8_t&)> callback);
+	AudioMonitor(const std::regex &deviceNameSpec, const WAVEFORMATEX &format, std::function<void(const uint8_t&)> callback);
 	~AudioMonitor();
 
 	/**
