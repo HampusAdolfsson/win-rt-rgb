@@ -4,31 +4,45 @@
 #include <cmath>
 #include <algorithm>
 #include "WaveToIntensityStrategy.h"
+#include "Logger.h"
 
-WaveToIntensityStrategy::WaveToIntensityStrategy()
+WaveToIntensityStrategy::WaveToIntensityStrategy(const unsigned int& sampleRate)
 	: sum(0),
-	prevValsIndex(0)
+	maxSum(0),
+	meanPrevVals(MEAN_ORDER, 0),
+	sampleRate(sampleRate)
 {
-	memset(prevVals, 0, MEAN_ORDER * sizeof(*prevVals));
 }
 
-uint8_t WaveToIntensityStrategy::getIntensity(const char *buffer, const size_t& bufSiz, const size_t& sampleSize)
+float WaveToIntensityStrategy::getIntensity(const char* buffer, const size_t& bufSiz, const size_t& sampleSize)
 {
-	unsigned int mean = 0;
+	unsigned int sampleSum = 0;
 	for (size_t i = 0; i < bufSiz; i += sampleSize)
 	{
 		long sample = *((int16_t*)(buffer + i));
 		sample = sample < 0 ? -sample : sample;
-		mean += sample* sample;
+		sampleSum += sample * sample;
 	}
-	mean /= (bufSiz / sampleSize);
+	unsigned int nSamples = bufSiz / sampleSize;
+	float mean = float(sampleSum) / nSamples;
 	mean = sqrt(mean);
-	sum -= prevVals[prevValsIndex];
-	prevVals[prevValsIndex] = mean / MEAN_ORDER;
-	sum += prevVals[prevValsIndex];
-	prevValsIndex++;
-	if (prevValsIndex == MEAN_ORDER) prevValsIndex = 0;
-	int normalizedSum = sum * SCALING;
-	normalizedSum /= 128; // fit to (0-255)*SCALING range
-	return normalizedSum > UINT8_MAX ? UINT8_MAX : normalizedSum;
+
+	{
+		float newVal = float(mean) / MEAN_ORDER;
+		sum += newVal;
+		sum -= meanPrevVals.putAndGet(newVal);
+	}
+	if (sum > maxSum)
+	{
+		maxSum = sum;
+	}
+	else
+	{
+		if (maxSum > 50)
+		{
+			maxSum -= MAX_VAL_DECAY_SPEED * INT16_MAX / (sampleRate / nSamples);
+		}
+	}
+
+	return  sum / maxSum;
 }

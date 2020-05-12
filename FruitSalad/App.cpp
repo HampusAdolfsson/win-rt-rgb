@@ -69,7 +69,7 @@ void App::setDesktopRegion(const unsigned int& outputIdx, const Rect& region)
 	desktopCapturer.setOutput(outputIdx, region);
 }
 
-void App::audioCallback(const uint8_t& intensity)
+void App::audioCallback(const float& intensity)
 {
 	if (!audioActive) return;
 	if (desktopActive)
@@ -77,12 +77,12 @@ void App::audioCallback(const uint8_t& intensity)
 		HsvColor hsv = rgbToHsv(desktopColor);
 		hsv.saturation = min(hsv.saturation + 100, 255);
 		hsv.value = 255;
-		realtimeClient.sendColor(hsvToRgb(hsv) * (intensity / 255.0));
+		realtimeClient.sendColor(hsvToRgb(hsv) * intensity);
 	}
 	else
 	{
 		RgbColor base = { 255, 0, 0 };
-		realtimeClient.sendColor(base * (intensity / 255.0));
+		realtimeClient.sendColor(base * intensity);
 	}
 }
 void App::desktopCallback(const RgbColor& color)

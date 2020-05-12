@@ -15,9 +15,10 @@
 						}\
 						} while(0)
 
-AudioMonitor::AudioMonitor(const std::regex &deviceNameSpec, const WAVEFORMATEX &format, std::function<void(const uint8_t&)> callback)
+AudioMonitor::AudioMonitor(const std::regex &deviceNameSpec, const WAVEFORMATEX &format, std::function<void(const float&)> callback)
 	: deviceNameSpec(deviceNameSpec),
 	waveInHandle(0),
+	waveStrategy(format.nSamplesPerSec),
 	pwfx(format),
     callback(callback),
 	isRunning(false) {}
@@ -121,7 +122,7 @@ void AudioMonitor::handleWaveMessages()
 			if (hdr->dwBytesRecorded > 0)
 			{
 				size_t sampleSize = pwfx.wBitsPerSample / 8; // TODO: benchmark doing stuff here instead
-				uint8_t intensity = waveStrategy.getIntensity(hdr->lpData, hdr->dwBytesRecorded, sampleSize);
+				float intensity = waveStrategy.getIntensity(hdr->lpData, hdr->dwBytesRecorded, sampleSize);
                 callback(intensity);
 			}
 			for (int i = 0; i < NUM_BUFFERS; i++)

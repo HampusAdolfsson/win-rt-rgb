@@ -18,7 +18,7 @@ class App
 
 	Gw2BossNotifier gw2Notif;
 
-	void audioCallback(const uint8_t& intensity);
+	void audioCallback(const float& intensity);
 	void desktopCallback(const RgbColor& color);
 
 public:
