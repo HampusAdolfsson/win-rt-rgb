@@ -117,6 +117,7 @@
       <AdditionalDependencies>curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;ApiWrapper.lib;DesktopCapture.lib;Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>NotSet</SubSystem>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,10 +136,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;ApiWrapper.lib;DesktopCapture.lib;Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\lib\x64;$(SolutionDir)\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="Profiles\ProfileManager.cpp" />
     <ClCompile Include="Profiles\ApplicationProfile.cpp" />
     <ClCompile Include="Audio\AudioMonitor.cpp" />
@@ -150,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Audio\RingBuffer.h" />
+    <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="Profiles\ProfileManager.h" />
     <ClInclude Include="Profiles\ApplicationProfile.h" />
     <ClInclude Include="Audio\AudioMonitor.h" />
