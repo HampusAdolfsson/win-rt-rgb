@@ -38,7 +38,7 @@ float WaveToIntensityStrategy::getIntensity(const char* buffer, const size_t& bu
 	}
 	else
 	{
-		if (maxSum > 50)
+		if (maxSum > 100)
 		{
 			maxSum -= MAX_VAL_DECAY_SPEED * INT16_MAX / (sampleRate / nSamples);
 		}

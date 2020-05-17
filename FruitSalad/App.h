@@ -1,6 +1,7 @@
 #pragma once
 #include "RequestClient.h"
-#include "Audio\AudioMonitor.h"
+#include "OverrideColorClient.h"
+#include "AudioMonitor.h"
 #include "Gw2\Gw2BossNotifier.h"
 #include "DesktopCaptureController.h"
 #include "Profiles/ApplicationProfile.h"

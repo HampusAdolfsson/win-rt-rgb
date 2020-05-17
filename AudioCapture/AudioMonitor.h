@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 #include <regex>
-#include "OverrideColorClient.h"
+#include <Windows.h>
 #include "WavetoIntensityStrategy.h"
 
 #define NUM_BUFFERS 5

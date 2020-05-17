@@ -75,7 +75,7 @@ bool AudioMonitor::openDevice()
 	for (UINT i = 0; i < numDevs; i++)
 	{
 		WAVEINCAPSA caps;
-		waveInGetDevCaps(i, &caps, sizeof(caps));
+		waveInGetDevCapsA(i, &caps, sizeof(caps));
 		if (std::regex_search(caps.szPname, deviceNameSpec))
 		{
 			LOGINFO("Found waveIn device with id: %d", i);
