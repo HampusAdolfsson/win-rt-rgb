@@ -145,12 +145,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioMonitor.cpp" />
-    <ClCompile Include="WaveToIntensityStrategy.cpp" />
+    <ClCompile Include="dsp\ExpFilter.cpp" />
+    <ClCompile Include="WaveHandler.cpp" />
+    <ClCompile Include="WaveToIntensityConverter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioMonitor.h" />
+    <ClInclude Include="dsp\ExpFilter.h" />
     <ClInclude Include="RingBuffer.h" />
-    <ClInclude Include="WaveToIntensityStrategy.h" />
+    <ClInclude Include="WaveHandler.h" />
+    <ClInclude Include="WaveToIntensityConverter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,7 +2,6 @@
 #include "RequestClient.h"
 #include "OverrideColorClient.h"
 #include "AudioMonitor.h"
-#include "Gw2\Gw2BossNotifier.h"
 #include "DesktopCaptureController.h"
 #include "Profiles/ApplicationProfile.h"
 
@@ -17,13 +16,11 @@ class App
 	bool desktopActive;
 	RgbColor desktopColor;
 
-	Gw2BossNotifier gw2Notif;
-
 	void audioCallback(const float& intensity);
 	void desktopCallback(const RgbColor& color);
 
 public:
-	App(const std::regex& deviceNameSpec, const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort);
+	App(const std::string& serverAddr, const std::string& tcpPort, const int& udpPort);
 
 	void startAudioVisualizer();
 	void stopAudioVisualizer();

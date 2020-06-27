@@ -1,26 +1,32 @@
-#include <cstdio>
+#include <cassert>
 #include <iostream>
 #include <bitset>
+#include <mmdeviceapi.h>
 #include "Logger.h"
 #include "AudioMonitor.h"
 
-#pragma comment(lib, "winmm.lib")
+// #pragma comment(lib, "winmm.lib")
 
-#define BUFFERS_PER_S 120
+#define REFTIMES_PER_SEC  10000000
+#define REFTIMES_PER_MILLISEC  10000
 
-#define RETURN_ON_ERROR(mres) do {\
-						if (mres) {\
-							LOGSEVERE("Audiovisualizer got error: %d, line %d", mres, __LINE__);\
-							return false;\
+static const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
+static const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
+static const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
+static const IID IID_IAudioClient = __uuidof(IAudioClient);
+
+#define EXIT_ON_ERROR(hr) do {\
+						if (FAILED(hr)) {\
+							LOGSEVERE("Audiomonitor got error: 0x%08lx, line %d", hr, __LINE__);\
+							goto Exit;\
 						}\
 						} while(0)
 
-AudioMonitor::AudioMonitor(const std::regex &deviceNameSpec, const WAVEFORMATEX &format, std::function<void(const float&)> callback)
-	: deviceNameSpec(deviceNameSpec),
-	waveInHandle(0),
-	waveStrategy(format.nSamplesPerSec),
-	pwfx(format),
-    callback(callback),
+AudioMonitor::AudioMonitor(std::unique_ptr<WaveHandler> handler)
+	: audioClient(nullptr),
+	captureClient(nullptr),
+	hnsRequestedDuration(REFTIMES_PER_SEC / 30),
+	handler(std::move(handler)),
 	isRunning(false) {}
 
 bool AudioMonitor::initialize()
@@ -28,78 +34,98 @@ bool AudioMonitor::initialize()
 	bool opened = openDevice();
 	if (!opened) return false;
 
-	int buffer_len = pwfx.nBlockAlign * (pwfx.nSamplesPerSec / BUFFERS_PER_S);
-	buffer.reserve(buffer_len * NUM_BUFFERS);
-	MMRESULT mres;
-	for (int i = 0; i < NUM_BUFFERS; i++)
+	WAVEFORMATEX* pwfx = nullptr;
+	HRESULT hr = audioClient->GetMixFormat(&pwfx);
+	EXIT_ON_ERROR(hr);
+
+	WAVEFORMATEXTENSIBLE* ex;
+	ex = reinterpret_cast<WAVEFORMATEXTENSIBLE*>(pwfx);
+	if (pwfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE || ex->SubFormat != KSDATAFORMAT_SUBTYPE_IEEE_FLOAT)
 	{
-		waveHeaders[i].dwBufferLength = buffer_len;
-		waveHeaders[i].lpData = buffer.data() + buffer_len * i;
-		mres = waveInPrepareHeader(waveInHandle, waveHeaders + i, sizeof(waveHeaders[i]));
-		RETURN_ON_ERROR(mres);
+		LOGSEVERE("The audio format used by the audio mixer is not supported by this application!");
+		return false;
 	}
-	for (int i = 0; i < NUM_BUFFERS; i++)
+
+	hr = audioClient->Initialize(AUDCLNT_SHAREMODE_SHARED,
+									AUDCLNT_STREAMFLAGS_LOOPBACK,
+									hnsRequestedDuration,
+									0,
+									pwfx,
+									nullptr);
+	EXIT_ON_ERROR(hr);
+
+	UINT32 bufferSize;
+    hr = audioClient->GetBufferSize(&bufferSize);
+    EXIT_ON_ERROR(hr);
+
+	hr = audioClient->GetService(IID_IAudioCaptureClient, (void**) &captureClient);
+	EXIT_ON_ERROR(hr);
+
+	handler->setFormat(pwfx->nSamplesPerSec, pwfx->nChannels);
+
+	hnsActualDuration = (double)REFTIMES_PER_SEC * bufferSize / pwfx->nSamplesPerSec;
+
+Exit:
+	if (pwfx)
 	{
-		mres = waveInAddBuffer(waveInHandle, waveHeaders + i, sizeof(waveHeaders[i]));
-		RETURN_ON_ERROR(mres);
+		CoTaskMemFree(pwfx);
 	}
 	return true;
 }
 
 bool AudioMonitor::start()
 {
-	MMRESULT mres = waveInStart(waveInHandle);
-	RETURN_ON_ERROR(mres);
+	HRESULT hr = audioClient->Start();
+	EXIT_ON_ERROR(hr);
 	isRunning = true;
+
+	handlerThread = std::thread(&AudioMonitor::handleWaveMessages, this);
+
 	return true;
+Exit:
+	return false;
 }
 
 bool AudioMonitor::stop()
 {
-	MMRESULT mres = waveInStop(waveInHandle);
-	RETURN_ON_ERROR(mres);
-
 	isRunning = false;
 	return true;
 }
 
 bool AudioMonitor::openDevice()
 {
+	bool success = false;
 
-	DWORD threadId;
-	handlerThread = std::thread(&AudioMonitor::handleWaveMessages, this);
-	threadId = GetThreadId(handlerThread.native_handle());
+	IMMDeviceEnumerator* enumerator = nullptr;
+	IMMDevice *device = nullptr;
 
-	DWORD deviceId = 0;
-	UINT numDevs = waveInGetNumDevs();
-	for (UINT i = 0; i < numDevs; i++)
-	{
-		WAVEINCAPSA caps;
-		waveInGetDevCapsA(i, &caps, sizeof(caps));
-		if (std::regex_search(caps.szPname, deviceNameSpec))
-		{
-			LOGINFO("Found waveIn device with id: %d", i);
-			deviceId = i;
-		}
-	}
+	HRESULT hr = CoCreateInstance(
+		CLSID_MMDeviceEnumerator, NULL,
+		CLSCTX_ALL, IID_IMMDeviceEnumerator,
+		(void **)&enumerator);
+	EXIT_ON_ERROR(hr);
 
-	MMRESULT mres = waveInOpen(&waveInHandle, deviceId, &pwfx, threadId, 0, CALLBACK_THREAD);
-	RETURN_ON_ERROR(mres);
-	return true;
+	hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
+	EXIT_ON_ERROR(hr);
+
+	hr = device->Activate(IID_IAudioClient, CLSCTX_ALL, NULL, (void**) &audioClient);
+	EXIT_ON_ERROR(hr);
+
+	success = true;
+
+Exit:
+	if (enumerator != nullptr) enumerator->Release();
+	if (device != nullptr) device->Release();
+
+	return success;
 }
 
 AudioMonitor::~AudioMonitor()
 {
+	if (audioClient != nullptr) audioClient->Release();
+	if (captureClient != nullptr) audioClient->Release();
 
-	if (isRunning) waveInStop(waveInHandle);
-	MMRESULT mres;
-	for (int i = 0; i < NUM_BUFFERS; i++)
-	{
-		mres = waveInUnprepareHeader(waveInHandle, waveHeaders + i, sizeof(waveHeaders[i]));
-		if (mres) break;
-	}
-	MMRESULT mres2 = waveInClose(waveInHandle);
-	if (!mres && !mres2 && handlerThread.joinable())
+	if (handlerThread.joinable())
 	{
 		handlerThread.join();
 	}
@@ -111,36 +137,37 @@ AudioMonitor::~AudioMonitor()
 
 void AudioMonitor::handleWaveMessages()
 {
-	MSG msg;
-	while (GetMessage(&msg, 0, 0, 0))
+	while (isRunning)
 	{
-		switch (msg.message)
+		// Sleep for half the buffer duration.
+        Sleep(hnsActualDuration / 2 / REFTIMES_PER_MILLISEC);
+
+		UINT32 packetSize;
+        HRESULT hr = captureClient->GetNextPacketSize(&packetSize);
+		EXIT_ON_ERROR(hr);
+
+		while (packetSize > 0)
 		{
-		case MM_WIM_DATA: {
-			if (pwfx.wBitsPerSample != 16) printf("%s %d : WARNING! This code only supports 16-bit samples.\nPlease change the code.\n", __FILE__, __LINE__); // For performance reasons
-			WAVEHDR *hdr = (WAVEHDR*)msg.lParam;
-			if (hdr->dwBytesRecorded > 0)
+			BYTE* packetData;
+			UINT nFrames;
+			DWORD flags;
+			hr = captureClient->GetBuffer(&packetData, &nFrames, &flags, nullptr, nullptr);
+			EXIT_ON_ERROR(hr);
+
+			if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
 			{
-				size_t sampleSize = pwfx.wBitsPerSample / 8; // TODO: benchmark doing stuff here instead
-				float intensity = waveStrategy.getIntensity(hdr->lpData, hdr->dwBytesRecorded, sampleSize);
-                callback(intensity);
+				break;
 			}
-			for (int i = 0; i < NUM_BUFFERS; i++)
-			{
-				if (hdr == waveHeaders + i) {
-					int mres = waveInAddBuffer(waveInHandle, waveHeaders + i, sizeof(waveHeaders[i]));
-					if (mres) {
-						LOGSEVERE("Audiovisualizer got error: %d, line %d", mres, __LINE__);
-						return;
-					}
-				}
-			}
-			continue;
-		}
-		case MM_WIM_OPEN:
-			continue;
-		case MM_WIM_CLOSE:
-			return;
+
+			handler->receiveBuffer(reinterpret_cast<float*>(packetData), nFrames);
+
+			hr = captureClient->ReleaseBuffer(nFrames);
+			EXIT_ON_ERROR(hr);
+			hr = captureClient->GetNextPacketSize(&packetSize);
+			EXIT_ON_ERROR(hr);
 		}
 	}
+
+Exit:
+	audioClient->Stop();
 }

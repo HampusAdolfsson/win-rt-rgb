@@ -4,40 +4,33 @@
 #include <functional>
 #include <regex>
 #include <Windows.h>
-#include "WavetoIntensityStrategy.h"
+#include <audioclient.h>
+#include "WaveHandler.h"
 
 #define NUM_BUFFERS 5
 
 /**
-*	Captures audio from an input device (preferably a loopback device) and monitors the audio intensity.
+*	Captures audio from an output device and monitors the audio intensity.
 */
 class AudioMonitor
 {
-	HWAVEIN				waveInHandle;
-	WAVEHDR				waveHeaders[NUM_BUFFERS];
-	std::vector<char>	buffer;
-	std::thread			handlerThread;
-	bool				isRunning;
+	IAudioClient*			audioClient;
+	IAudioCaptureClient*	captureClient;
+	REFERENCE_TIME			hnsRequestedDuration;
+	REFERENCE_TIME			hnsActualDuration;
 
-    std::function<void(const float&)> callback;
-
-	WaveToIntensityStrategy waveStrategy;
-	std::regex				deviceNameSpec;
-	WAVEFORMATEX			pwfx;
+	std::thread				handlerThread;
+	bool					isRunning;
+	std::unique_ptr<WaveHandler> handler;
 
 	void handleWaveMessages();
 	bool openDevice();
 public:
 	/**
-	*	Starts an audio monitor for the given device, recording with the given format.
-	*	For performance reasons, parts of the class is written specifically for 16-bit samples,
-	*	so other sample sizes may not work. Also, it could be a good idea to use mono format, since
-	*	the output is one-dimensional anyway.
-	*	@param deviceNameSpec regex to match against the name of the audio device. Will use the first device matching this regex
-	*	@param format the format to record audio in
-    *	@param callback to call when a new intensity value is generated
+	*	Starts an audio monitor for the default output device, capturing its output.
+    *	@param handler to pass all captured audio onto
 	*/
-	AudioMonitor(const std::regex &deviceNameSpec, const WAVEFORMATEX &format, std::function<void(const float&)> callback);
+	AudioMonitor(std::unique_ptr<WaveHandler> handler);
 	~AudioMonitor();
 
 	/**

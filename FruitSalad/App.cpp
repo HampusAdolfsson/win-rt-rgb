@@ -1,16 +1,16 @@
 #include "App.h"
 #include "ResponseCodes.h"
 #include "Logger.h"
+#include "WaveToIntensityConverter.h"
 #include <algorithm>
 
-App::App(const std::regex& deviceNameSpec, const WAVEFORMATEX& pwfx, const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
+App::App(const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
 	: requestClient(serverAddr, tcpPort),
-	audioMonitor(deviceNameSpec, pwfx, std::bind(&App::audioCallback, this, std::placeholders::_1)),
+	audioMonitor(std::make_unique<WaveToIntensityConverter>(std::bind(&App::audioCallback, this, std::placeholders::_1))),
 	audioActive(false),
 	desktopCapturer(0, std::bind(&App::desktopCallback, this, std::placeholders::_1)),
 	desktopActive(false),
-	realtimeClient(serverAddr, udpPort),
-	gw2Notif(requestClient)
+	realtimeClient(serverAddr, udpPort)
 {
 	audioMonitor.initialize();
 	OverrideColorClient colorClient(serverAddr, udpPort);
@@ -75,7 +75,10 @@ void App::audioCallback(const float& intensity)
 	if (desktopActive)
 	{
 		HsvColor hsv = rgbToHsv(desktopColor);
-		hsv.saturation = min(hsv.saturation + 100, 255);
+		if (hsv.saturation > 6)
+		{
+			hsv.saturation = min(hsv.saturation + 100, 255);
+		}
 		hsv.value = 255;
 		realtimeClient.sendColor(hsvToRgb(hsv) * intensity);
 	}

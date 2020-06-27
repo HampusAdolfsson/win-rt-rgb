@@ -19,19 +19,12 @@ int main(int argc, char** argv)
 	Logger::Instance().setLogFile("log");
 	LOGINFO("Starting application");
 
+	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	WAVEFORMATEX pwfx;
-	pwfx.wFormatTag = WAVE_FORMAT_PCM;
-	pwfx.nChannels = 1;
-	pwfx.nSamplesPerSec = 48000;
-	pwfx.wBitsPerSample = 16;
-	pwfx.nBlockAlign = pwfx.nChannels * (pwfx.wBitsPerSample / 8);
-	pwfx.nAvgBytesPerSec = pwfx.nBlockAlign * pwfx.nSamplesPerSec;
-	pwfx.cbSize = 0;
-
-	App app(std::regex("Microphone.*Realtek"), pwfx, ADDR, TCP_PORT, UDP_PORT);
+	App app(ADDR, TCP_PORT, UDP_PORT);
 	app.setServerOn();
 	app.playLightEffect(LightEffect(startEffect));
 	app.startAudioVisualizer();
