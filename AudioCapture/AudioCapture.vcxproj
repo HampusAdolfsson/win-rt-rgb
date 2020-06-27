@@ -145,7 +145,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioMonitor.cpp" />
-    <ClCompile Include="dsp\ExpFilter.cpp" />
     <ClCompile Include="WaveHandler.cpp" />
     <ClCompile Include="WaveToIntensityConverter.cpp" />
   </ItemGroup>

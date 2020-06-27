@@ -18,9 +18,6 @@
     <ClCompile Include="AudioMonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dsp\ExpFilter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WaveHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

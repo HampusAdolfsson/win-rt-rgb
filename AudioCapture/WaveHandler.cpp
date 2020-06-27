@@ -1,7 +1,8 @@
 #include "WaveHandler.h"
 
 WaveHandler::WaveHandler()
-: sampleRate(0)
+: sampleRate(0),
+nChannels(0)
 {
 }
 
