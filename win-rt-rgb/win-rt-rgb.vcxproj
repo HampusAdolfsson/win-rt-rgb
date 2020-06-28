@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{25623100-29DD-4050-B45D-7813E23D7FF1}</ProjectGuid>
-    <RootNamespace>FruitSalad</RootNamespace>
+    <RootNamespace>win-rt-rgb</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
