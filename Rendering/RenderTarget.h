@@ -19,14 +19,9 @@ public:
 	{
 		return colors;
 	}
-	inline const std::vector<bool>& getDirty() const
-	{
-		return dirty;
-	}
 
 private:
 	unsigned int size;
 	std::vector<RgbColor> colors;
-	std::vector<bool> dirty;
 };
 
