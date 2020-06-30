@@ -31,6 +31,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationListener", "Dis
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AudioCapture", "AudioCapture\AudioCapture.vcxproj", "{1659561E-C329-481F-A9F2-2BFA403BE9CF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rendering", "Rendering\Rendering.vcxproj", "{57803E96-7EAE-4CFF-9E27-64091F336E15}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1F1D7916-4CBD-49A9-9E0C-6DFA493AB657} = {1F1D7916-4CBD-49A9-9E0C-6DFA493AB657}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +160,20 @@ Global
 		{1659561E-C329-481F-A9F2-2BFA403BE9CF}.Release|x64.Build.0 = Release|x64
 		{1659561E-C329-481F-A9F2-2BFA403BE9CF}.Release|x86.ActiveCfg = Release|Win32
 		{1659561E-C329-481F-A9F2-2BFA403BE9CF}.Release|x86.Build.0 = Release|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Debug|ARM.ActiveCfg = Debug|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Debug|x64.ActiveCfg = Debug|x64
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Debug|x64.Build.0 = Debug|x64
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Debug|x86.ActiveCfg = Debug|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Debug|x86.Build.0 = Debug|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Release|Any CPU.ActiveCfg = Release|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Release|ARM.ActiveCfg = Release|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Release|ARM64.ActiveCfg = Release|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Release|x64.ActiveCfg = Release|x64
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Release|x64.Build.0 = Release|x64
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Release|x86.ActiveCfg = Release|Win32
+		{57803E96-7EAE-4CFF-9E27-64091F336E15}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
