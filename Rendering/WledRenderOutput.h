@@ -4,11 +4,11 @@
 #include <vector>
 #include <string>
 
-class WledRenderOutput : RenderOutput
+class WledRenderOutput : public RenderOutput
 {
 public:
 	WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port);
-	~WledRenderOutput();
+	~WledRenderOutput() override;
 
 	void draw(const RenderTarget& target);
 

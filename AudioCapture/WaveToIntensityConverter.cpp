@@ -1,20 +1,25 @@
 #include "WaveToIntensityConverter.h"
 #include "Logger.h"
 #include <cassert>
+#include <algorithm>
 #include <mmeapi.h>
 #include <mmreg.h>
 
 // Size of softening filter. Higher value means more smooth output, but lower responsiveness (more delay).
-#define MEAN_ORDER 16
+#define MEAN_ORDER 8
 // Determines how fast the max value decays (as the time in seconds it takes for it to decay from max to 0).
 // Higher values mean more stable normalization, but it will be slower to adjust to decreased volumes.
-#define MAX_VAL_DECAY_TIME 280
+#define MAX_VAL_DECAY_TIME 330
 
 WaveToIntensityConverter::WaveToIntensityConverter(std::function<void(const float&)> callback)
 	: sum(0),
 	maxSum(0),
 	meanPrevVals(MEAN_ORDER, 0),
-	callback(callback) {
+	callback(callback)
+{
+}
+WaveToIntensityConverter::~WaveToIntensityConverter()
+{
 }
 
 void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrames) {
@@ -56,5 +61,5 @@ void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrame
 	//float roof = std::max(0.1f, roofFilter.getOutput());
 	//return std::min(1.0f, outputFilter.getOutput() / roof);
 	LOGINFO("%f, %f", max(0, sum / maxSum), maxSum);
-	callback(max(0, sum / maxSum));
+	callback(std::clamp(sum / maxSum, 0.0f, 1.0f));
 }

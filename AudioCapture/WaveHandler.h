@@ -9,6 +9,7 @@ class WaveHandler
 {
 public:
 	WaveHandler();
+	virtual ~WaveHandler() = 0;
 
 	/**
 	*	Called when a buffer is ready, to let this handler do something with it

@@ -7,7 +7,6 @@
 WledRenderOutput::WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port)
 : outputBuffer(2 + 3 * size, 0)
 {
-	assert(size <= 255);
 	sockHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sockHandle == SOCKET_ERROR)
 	{
@@ -32,7 +31,10 @@ void WledRenderOutput::draw(const RenderTarget& target)
 	const auto& colors = target.getColors();
 	for (int i = 0; i < colors.size(); i++)
 	{
-		outputBuffer[2 + 3*i];
+		const auto& color = colors[i];
+		outputBuffer[2 + 3*i] = color.red;
+		outputBuffer[2 + 3*i + 1] = color.green;
+		outputBuffer[2 + 3*i + 2] = color.blue;
 	}
 	sendto(sockHandle, (char *) outputBuffer.data(), outputBuffer.size(), 0, (struct sockaddr *) &sockAddr, sizeof(sockAddr));
 }

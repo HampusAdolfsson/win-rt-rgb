@@ -4,12 +4,21 @@
 
 RgbColor operator*(const RgbColor& c, const float& factor)
 {
-	assert(factor >= 0);
+	assert(factor >= 0 && factor <= 1);
 	return {
 		static_cast<uint8_t>(c.red * factor),
 		static_cast<uint8_t>(c.green * factor),
 		static_cast<uint8_t>(c.blue * factor)
 	};
+}
+
+bool operator==(const RgbColor& c1, const RgbColor& c2)
+{
+    return c1.red == c2.red && c1.green == c2.green && c1.blue == c2.blue;
+}
+bool operator!=(const RgbColor& c1, const RgbColor& c2)
+{
+    return c1.red != c2.red || c1.green != c2.green || c1.blue != c2.blue;
 }
 
 RgbColor blendColors(RgbColor c1, RgbColor c2, const float& progress)

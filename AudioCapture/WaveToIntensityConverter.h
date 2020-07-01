@@ -7,6 +7,7 @@
 class WaveToIntensityConverter : public WaveHandler {
 public:
 	WaveToIntensityConverter(std::function<void(const float&)> callback);
+	~WaveToIntensityConverter() override;
 	void receiveBuffer(float* samples, unsigned int nSamples) override;
 
 private:

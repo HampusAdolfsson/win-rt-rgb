@@ -11,3 +11,7 @@ void WaveHandler::setFormat(const unsigned int& samplesPerSec, const unsigned in
 	this->sampleRate = samplesPerSec;
 	this->nChannels = nChannels;
 }
+
+WaveHandler::~WaveHandler()
+{
+}

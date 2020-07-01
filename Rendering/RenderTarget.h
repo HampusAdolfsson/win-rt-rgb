@@ -9,9 +9,9 @@
 class RenderTarget
 {
 public:
-	RenderTarget(unsigned int& size);
+	RenderTarget(const unsigned int& size);
 
-	void drawRange(unsigned int& startIndex, unsigned int& length, const RgbColor* toDraw);
+	void drawRange(const unsigned int& startIndex, const unsigned int& length, const RgbColor* toDraw);
 
 	void beginFrame();
 

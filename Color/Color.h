@@ -16,6 +16,8 @@ HsvColor rgbToHsv(RgbColor rgb);
 
 
 RgbColor operator*(const RgbColor& c, const float &factor);
+bool operator==(const RgbColor& c1, const RgbColor &c2);
+bool operator!=(const RgbColor& c1, const RgbColor &c2);
 
 /**
 *	Blends two colors together.
