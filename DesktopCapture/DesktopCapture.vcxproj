@@ -157,13 +157,15 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CUDA\CudaMeanColorCalculator.cpp" />
     <ClCompile Include="D3DMeanColorCalculator.cpp" />
     <ClCompile Include="DesktopCaptureController.cpp" />
     <ClCompile Include="DesktopColorSampler.cpp" />
     <ClCompile Include="DesktopDuplicator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CUDA\ColorAnalysis.h" />
+    <ClInclude Include="CUDA\CudaMeanColorCalculator.h" />
+    <ClInclude Include="CUDA\CudaKernels.h" />
     <ClInclude Include="D3DMeanColorCalculator.h" />
     <ClInclude Include="DesktopCaptureController.h" />
     <ClInclude Include="DesktopColorSampler.h" />
@@ -171,7 +173,7 @@
     <ClInclude Include="Rect.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="CUDA\ColorAnalysis.cu" />
+    <CudaCompile Include="CUDA\CudaKernels.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

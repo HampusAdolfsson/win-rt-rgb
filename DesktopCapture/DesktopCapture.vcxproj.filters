@@ -27,6 +27,9 @@
     <ClCompile Include="DesktopCaptureController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CUDA\CudaMeanColorCalculator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DesktopDuplicator.h">
@@ -41,14 +44,17 @@
     <ClInclude Include="DesktopCaptureController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CUDA\ColorAnalysis.h">
+    <ClInclude Include="Rect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rect.h">
+    <ClInclude Include="CUDA\CudaMeanColorCalculator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CUDA\CudaKernels.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="CUDA\ColorAnalysis.cu" />
+    <CudaCompile Include="CUDA\CudaKernels.cu" />
   </ItemGroup>
 </Project>

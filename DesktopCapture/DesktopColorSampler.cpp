@@ -2,7 +2,7 @@
 #include "Logger.h"
 #include <d3d11.h>
 
-DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx, std::function<void(const RgbColor&)> callback)
+DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx, const UINT& nSamples, std::function<void(RgbColor*)> callback)
 	: desktopDuplicator(),
 	frameSampler(),
 	isRunning(false),
@@ -24,7 +24,7 @@ DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx, std::function<vo
 	}
 
 	desktopDuplicator.initialize(device, outputIdx);
-	frameSampler.initialize(device, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight());
+	frameSampler.initialize(device, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight(), nSamples);
 	// by default, capture entire screen
 	captureRegion = { 0, 0, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight() };
 
@@ -57,7 +57,8 @@ void DesktopColorSampler::sampleLoop()
 		{
 			frameSampler.setFrameData(frame);
 			desktopDuplicator.releaseFrame();
-			callback(frameSampler.sample(captureRegion));
+			auto result = frameSampler.sample(captureRegion);
+			callback(result);
 		}
 	}
 }

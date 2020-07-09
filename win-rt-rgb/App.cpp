@@ -8,7 +8,7 @@ App::App(const std::string& serverAddr, const std::string& tcpPort, const int& u
 	: requestClient(serverAddr, tcpPort),
 	audioMonitor(std::make_unique<WaveToIntensityConverter>(std::bind(&App::audioCallback, this, std::placeholders::_1))),
 	audioActive(false),
-	desktopCapturer(0, std::bind(&App::desktopCallback, this, std::placeholders::_1)),
+	desktopCapturer(0, 1, std::bind(&App::desktopCallback, this, std::placeholders::_1)),
 	desktopActive(false),
 	realtimeClient(serverAddr, udpPort)
 {
@@ -88,16 +88,16 @@ void App::audioCallback(const float& intensity)
 		realtimeClient.sendColor(base * intensity);
 	}
 }
-void App::desktopCallback(const RgbColor& color)
+void App::desktopCallback(RgbColor* color)
 {
 	if (!desktopActive) return;
 	if (audioActive)
 	{
-		desktopColor = color;
+		desktopColor = color[0];
 	}
 	else
 	{
-		HsvColor hsv = rgbToHsv(color);
+		HsvColor hsv = rgbToHsv(color[0]);
 		hsv.saturation = min(hsv.saturation + 100, 255);
 		hsv.value = 255;
 		realtimeClient.sendColor(hsvToRgb(hsv));

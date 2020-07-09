@@ -17,7 +17,7 @@ class App
 	RgbColor desktopColor;
 
 	void audioCallback(const float& intensity);
-	void desktopCallback(const RgbColor& color);
+	void desktopCallback(RgbColor* colors);
 
 public:
 	App(const std::string& serverAddr, const std::string& tcpPort, const int& udpPort);

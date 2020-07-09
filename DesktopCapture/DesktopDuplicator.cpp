@@ -54,7 +54,7 @@ ID3D11Texture2D* DesktopDuplicator::captureFrame()
 			}
 			else if (hr == DXGI_ERROR_WAIT_TIMEOUT)
 			{
-				LOGWARNING("Frame duplication timed out");
+				//LOGWARNING("Frame duplication timed out");
 			}
 			else
 			{
@@ -121,6 +121,7 @@ void DesktopDuplicator::reInitialize()
 		currentFrame->Release();
 
 	}
+	outputDuplication = nullptr;
 
 	HRESULT hr;
 
@@ -164,7 +165,12 @@ void DesktopDuplicator::reInitialize()
 	// create duplicator for output
 	hr = output1->DuplicateOutput(device, &outputDuplication);
 	output1->Release();
-	if (FAILED(hr))
+	if (hr == E_ACCESSDENIED)
+	{
+		Sleep(100);
+		reInitialize();
+	}
+	else if (FAILED(hr))
 	{
 		LOGSEVERE("Failed to duplicate output");
 		return;
