@@ -19,6 +19,9 @@ public:
 	{
 		return colors;
 	}
+	inline const int& getSize() const {
+		return size;
+	}
 
 private:
 	unsigned int size;

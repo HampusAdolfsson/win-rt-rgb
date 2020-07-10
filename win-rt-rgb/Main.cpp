@@ -1,18 +1,12 @@
 #include <Windows.h>
+#include "Config.h"
 #include "App.h"
 #include "Logger.h"
 #include "Profiles/ProfileManager.h"
 #include "Profiles/ApplicationProfile.h"
 #include "HotkeyManager.h"
-
-#define ADDR "192.168.1.6"
-#define TCP_PORT "8844"
-#define UDP_PORT 8845
-
-// Played when launched
-const LightEffect startEffect(1500000000, Breathing, { {0,0,60}, {0,0,150}, {0,0,255}, {0,0,150}, {0,0,60} });
-// Played when exiting
-const LightEffect exitEffect(1500000000, Breathing, { {60,0,0}, {150,0,0}, {255,0,0}, {150,0,0}, {60,0,0} });
+#include "RenderTarget.h"
+#include "WledRenderOutput.h"
 
 int main(int argc, char** argv)
 {
@@ -24,9 +18,12 @@ int main(int argc, char** argv)
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	App app(ADDR, TCP_PORT, UDP_PORT);
+	auto output = std::unique_ptr<RenderOutput>(new WledRenderOutput(NUMBER_OF_LEDS, WLED_ADDRESS, WLED_UDP_PORT));
+	RenderTarget target(NUMBER_OF_LEDS);
+
+	App app(target, std::move(output));
 	app.setServerOn();
-	app.playLightEffect(LightEffect(startEffect));
+	//app.playLightEffect(LightEffect(startEffect));
 	app.startAudioVisualizer();
 	app.startDesktopVisualizer();
 
@@ -89,7 +86,7 @@ int main(int argc, char** argv)
 
 	hotkeys.runHandlerLoop();
 
-	app.playLightEffect(exitEffect);
+	// app.playLightEffect(exitEffect);
 
 	if (audioVisualizerRunning) app.stopAudioVisualizer();
 	if (desktopVisualizerRunning) app.stopDesktopVisualizer();

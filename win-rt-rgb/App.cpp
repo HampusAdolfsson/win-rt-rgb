@@ -4,22 +4,21 @@
 #include "WaveToIntensityConverter.h"
 #include <algorithm>
 
-App::App(const std::string& serverAddr, const std::string& tcpPort, const int& udpPort)
-	: requestClient(serverAddr, tcpPort),
+App::App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput)
+	: renderTarget(renderTarget),
+	renderOutput(std::move(renderOutput)),
 	audioMonitor(std::make_unique<WaveToIntensityConverter>(std::bind(&App::audioCallback, this, std::placeholders::_1))),
 	audioActive(false),
-	desktopCapturer(0, 1, std::bind(&App::desktopCallback, this, std::placeholders::_1)),
-	desktopActive(false),
-	realtimeClient(serverAddr, udpPort)
+	desktopCapturer(0, renderTarget.getColors().size(), std::bind(&App::desktopCallback, this, std::placeholders::_1)),
+	desktopActive(false)
 {
 	audioMonitor.initialize();
-	OverrideColorClient colorClient(serverAddr, udpPort);
 }
 
 void App::startAudioVisualizer()
 {
-	audioActive = true;
-	audioMonitor.start();
+	// audioActive = true;
+	// audioMonitor.start();
 }
 void App::stopAudioVisualizer()
 {
@@ -38,30 +37,13 @@ void App::stopDesktopVisualizer()
 	desktopCapturer.stop();
 }
 
-void App::playLightEffect(const LightEffect& effect)
-{
-	unsigned char res = requestClient.sendLightEffect(effect, false);
-	if (res != SUCCESS)
-	{
-		LOGWARNING("Couldn't play lighteffect, server returned: %d", res);
-	}
-}
-
 void App::setServerOn()
 {
-	unsigned char res = requestClient.sendOnOffRequest(ON);
-	if (res != SUCCESS)
-	{
-		LOGWARNING("Couldn't set server on, server returned: %d", res);
-	}
+
 }
 void App::toggleServerOn()
 {
-	unsigned char res = requestClient.sendOnOffRequest(TOGGLE);
-	if (res != SUCCESS)
-	{
-		LOGWARNING("Couldn't toggle server, server returned: %d", res);
-	}
+
 }
 
 void App::setDesktopRegion(const unsigned int& outputIdx, const Rect& region)
@@ -80,26 +62,29 @@ void App::audioCallback(const float& intensity)
 			hsv.saturation = min(hsv.saturation + 100, 255);
 		}
 		hsv.value = 255;
-		realtimeClient.sendColor(hsvToRgb(hsv) * intensity);
+		//realtimeClient.sendColor(hsvToRgb(hsv) * intensity);
 	}
 	else
 	{
 		RgbColor base = { 255, 0, 0 };
-		realtimeClient.sendColor(base * intensity);
+		//realtimeClient.sendColor(base * intensity);
 	}
 }
-void App::desktopCallback(RgbColor* color)
+void App::desktopCallback(RgbColor* colors)
 {
 	if (!desktopActive) return;
+	renderTarget.beginFrame();
+	renderTarget.drawRange(0, renderTarget.getSize(), colors);
 	if (audioActive)
 	{
-		desktopColor = color[0];
+		desktopColor = colors[0];
 	}
 	else
 	{
-		HsvColor hsv = rgbToHsv(color[0]);
+		HsvColor hsv = rgbToHsv(colors[0]);
 		hsv.saturation = min(hsv.saturation + 100, 255);
 		hsv.value = 255;
-		realtimeClient.sendColor(hsvToRgb(hsv));
+		renderOutput->draw(renderTarget);
+		// realtimeClient.sendColor(hsvToRgb(hsv));
 	}
 }

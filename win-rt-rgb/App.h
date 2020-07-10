@@ -1,14 +1,14 @@
 #pragma once
-#include "RequestClient.h"
-#include "OverrideColorClient.h"
 #include "AudioMonitor.h"
 #include "DesktopCaptureController.h"
 #include "Profiles/ApplicationProfile.h"
+#include "RenderTarget.h"
+#include "RenderOutput.h"
 
 class App
 {
-	RequestClient requestClient;
-    OverrideColorClient realtimeClient;
+	RenderTarget renderTarget;
+	std::unique_ptr<RenderOutput> renderOutput;
 
 	AudioMonitor audioMonitor;
 	bool audioActive;
@@ -20,15 +20,13 @@ class App
 	void desktopCallback(RgbColor* colors);
 
 public:
-	App(const std::string& serverAddr, const std::string& tcpPort, const int& udpPort);
+	App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput);
 
 	void startAudioVisualizer();
 	void stopAudioVisualizer();
 
 	void startDesktopVisualizer();
 	void stopDesktopVisualizer();
-
-	void playLightEffect(const LightEffect& effect);
 
 	void setServerOn();
 	void toggleServerOn();
