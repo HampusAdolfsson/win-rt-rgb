@@ -1,5 +1,4 @@
 #include "App.h"
-#include "ResponseCodes.h"
 #include "Logger.h"
 #include "WaveToIntensityConverter.h"
 #include <algorithm>
