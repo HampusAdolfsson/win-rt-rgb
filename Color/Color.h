@@ -1,19 +1,17 @@
 #pragma once
 #include <cinttypes>
 
+typedef float ColorChannel;
+
 typedef struct
 {
-	uint8_t red, green, blue;
+	ColorChannel blue, green, red;
 } RgbColor;
 
 typedef struct
 {
-	uint8_t hue, saturation, value;
+	float hue, saturation, value;
 } HsvColor;
-
-RgbColor hsvToRgb(HsvColor hsv);
-HsvColor rgbToHsv(RgbColor rgb);
-
 
 RgbColor operator*(const RgbColor& c, const float &factor);
 bool operator==(const RgbColor& c1, const RgbColor &c2);

@@ -55,12 +55,6 @@ void App::audioCallback(const float& intensity)
 	if (!audioActive) return;
 	if (desktopActive)
 	{
-		HsvColor hsv = rgbToHsv(desktopColor);
-		if (hsv.saturation > 6)
-		{
-			hsv.saturation = min(hsv.saturation + 100, 255);
-		}
-		hsv.value = 255;
 		//realtimeClient.sendColor(hsvToRgb(hsv) * intensity);
 	}
 	else
@@ -80,9 +74,6 @@ void App::desktopCallback(RgbColor* colors)
 	}
 	else
 	{
-		HsvColor hsv = rgbToHsv(colors[0]);
-		hsv.saturation = min(hsv.saturation + 100, 255);
-		hsv.value = 255;
 		renderOutput->draw(renderTarget);
 		// realtimeClient.sendColor(hsvToRgb(hsv));
 	}

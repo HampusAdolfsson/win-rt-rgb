@@ -85,7 +85,7 @@ void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, RgbColor* out)
 
 	CudaKernels::averageAndAdjustColors((unsigned int*)intermediaryBuffer,
 										activeRegion.height * (activeRegion.width / nSamplesPerFrame),
-										(uint8_t*)outputBuffer, nSamplesPerFrame, sizeof(RgbColor));
+										(RgbColor*)outputBuffer, nSamplesPerFrame);
 
 	status = cudaDeviceSynchronize();
 	if (status != cudaSuccess)

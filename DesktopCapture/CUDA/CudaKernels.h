@@ -21,5 +21,5 @@ namespace CudaKernels
 	/**
 	 * Averages out a set of color channels produced by calculateMeanColors and produces an array of RgbColor:s
 	 */
-	void averageAndAdjustColors(unsigned int* channels, int pixelsPerChannel, uint8_t* colorOutputs, int outputSize, int outputPitch);
+	void averageAndAdjustColors(unsigned int* channels, int pixelsPerChannel, RgbColor* colorOutputs, int outputSize);
 };
