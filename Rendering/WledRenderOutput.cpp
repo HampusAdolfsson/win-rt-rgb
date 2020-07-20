@@ -32,9 +32,9 @@ void WledRenderOutput::draw(const RenderTarget& target)
 	for (int i = 0; i < colors.size(); i++)
 	{
 		const auto& color = colors[i];
-		outputBuffer[2 + 3*i] = static_cast<uint8_t>(color.blue);
-		outputBuffer[2 + 3*i + 1] = static_cast<uint8_t>(color.green);
-		outputBuffer[2 + 3*i + 2] = static_cast<uint8_t>(color.red);
+		outputBuffer[2 + 3*i] = static_cast<uint8_t>(color.blue * 0xff);
+		outputBuffer[2 + 3*i + 1] = static_cast<uint8_t>(color.green * 0xff);
+		outputBuffer[2 + 3*i + 2] = static_cast<uint8_t>(color.red * 0xff);
 	}
 	sendto(sockHandle, (char *) outputBuffer.data(), outputBuffer.size(), 0, (struct sockaddr *) &sockAddr, sizeof(sockAddr));
 }

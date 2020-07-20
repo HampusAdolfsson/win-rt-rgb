@@ -39,4 +39,5 @@ private:
 	size_t textureBufferPitch;
 	void* intermediaryBuffer;
 	void* outputBuffer;
+	void* outputBufferBlurred;
 };
