@@ -4,6 +4,7 @@
 #include "Profiles/ApplicationProfile.h"
 #include "RenderTarget.h"
 #include "RenderOutput.h"
+#include <chrono>
 
 class App
 {
@@ -15,6 +16,9 @@ class App
 	DesktopCaptureController desktopCapturer;
 	bool desktopActive;
 	RgbColor desktopColor;
+
+	std::chrono::time_point<std::chrono::system_clock> lastFpsTime;
+	unsigned int frames;
 
 	void audioCallback(const float& intensity);
 	void desktopCallback(RgbColor* colors);

@@ -9,7 +9,9 @@ App::App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput)
 	audioMonitor(std::make_unique<WaveToIntensityConverter>(std::bind(&App::audioCallback, this, std::placeholders::_1))),
 	audioActive(false),
 	desktopCapturer(0, renderTarget.getColors().size(), std::bind(&App::desktopCallback, this, std::placeholders::_1)),
-	desktopActive(false)
+	desktopActive(false),
+	lastFpsTime(std::chrono::system_clock::now()),
+	frames(0)
 {
 	audioMonitor.initialize();
 }
@@ -27,6 +29,7 @@ void App::stopAudioVisualizer()
 
 void App::startDesktopVisualizer()
 {
+	lastFpsTime = std::chrono::system_clock::now();
 	desktopActive = true;
 	desktopCapturer.start();
 }
@@ -75,6 +78,12 @@ void App::desktopCallback(RgbColor* colors)
 	else
 	{
 		renderOutput->draw(renderTarget);
-		// realtimeClient.sendColor(hsvToRgb(hsv));
+		frames++;
+		auto timeSinceLastFps = std::chrono::system_clock::now() - lastFpsTime;
+		if (timeSinceLastFps > std::chrono::seconds(1)) {
+			LOGINFO("Desktop FPS: %d", frames);
+			frames = 0;
+			lastFpsTime = lastFpsTime + std::chrono::seconds(1); // TODO: fix accuracy
+		}
 	}
 }
