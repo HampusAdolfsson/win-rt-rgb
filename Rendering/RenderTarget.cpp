@@ -8,7 +8,7 @@ RenderTarget::RenderTarget(const unsigned int& size)
 
 void RenderTarget::drawRange(const unsigned int& startIndex, const unsigned int& length, const RgbColor* toDraw)
 {
-	memcpy(colors.data(), toDraw, length * sizeof(*toDraw));
+	memcpy(colors.data() + startIndex, toDraw, length * sizeof(*toDraw));
 }
 
 void RenderTarget::beginFrame()
