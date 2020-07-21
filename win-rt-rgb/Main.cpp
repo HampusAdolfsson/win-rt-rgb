@@ -28,7 +28,6 @@ int main(int argc, char** argv)
 	app.startDesktopVisualizer();
 
 	int capturedOutput = 0;
-	const Rect defaultCaptureRegion = { 0, 0, 1920, 1080 };
 	bool locked = false;
 
 	ProfileManager::start([&](std::optional<std::pair<ApplicationProfile, unsigned int>> profileData) {
@@ -43,7 +42,7 @@ int main(int argc, char** argv)
 		{
 			if (!locked)
 			{
-				app.setDesktopRegion(capturedOutput, defaultCaptureRegion);
+				app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 			}
 		}
 	}, Profiles::dynamicProfiles);
@@ -71,7 +70,7 @@ int main(int argc, char** argv)
 	hotkeys.addHotkey(0x4b, [&]() { // k key
 		LOGINFO("Hotkey pressed, switching captured monitor");
 		capturedOutput = capturedOutput == 0 ? 1 : 0;
-		app.setDesktopRegion(capturedOutput, defaultCaptureRegion);
+		app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 		return false;
 	});
 	hotkeys.addHotkey(0x4c, [&]() { // l key
