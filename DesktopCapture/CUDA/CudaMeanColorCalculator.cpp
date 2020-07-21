@@ -86,7 +86,7 @@ void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, RgbColor* out)
 	cudaArray* cuArray;
 	status = cudaGraphicsSubResourceGetMappedArray(&cuArray, cudaResource, 0, 0);
 	status = cudaMemcpy2DFromArray(textureBuffer, textureBufferPitch, cuArray,
-									activeRegion.left, activeRegion.top,
+									sizeof(uint32_t)*activeRegion.left, activeRegion.top,
 									sizeof(uint32_t)*activeRegion.width, activeRegion.height,
 										cudaMemcpyDeviceToDevice);
 	status = cudaMemset(intermediaryBuffer, 0, 3*sizeof(int)*nSamplesPerFrame);
