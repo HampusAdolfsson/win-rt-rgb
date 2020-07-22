@@ -3,9 +3,10 @@
 #include "WaveToIntensityConverter.h"
 #include <algorithm>
 
-App::App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput)
+App::App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput, WledHttpClient httpClient)
 	: renderTarget(renderTarget),
 	renderOutput(std::move(renderOutput)),
+	wledHttpClient(httpClient),
 	audioMonitor(std::make_unique<WaveToIntensityConverter>(std::bind(&App::audioCallback, this, std::placeholders::_1))),
 	audioActive(false),
 	desktopCapturer(0, renderTarget.getColors().size(), std::bind(&App::desktopCallback, this, std::placeholders::_1)),
@@ -41,11 +42,11 @@ void App::stopDesktopVisualizer()
 
 void App::setServerOn()
 {
-
+	wledHttpClient.setPowerStatus(WledPowerStatus::On);
 }
 void App::toggleServerOn()
 {
-
+	wledHttpClient.setPowerStatus(WledPowerStatus::Toggle);
 }
 
 void App::setDesktopRegion(const unsigned int& outputIdx, const Rect& region)

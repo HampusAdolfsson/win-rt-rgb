@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "App.h"
 #include "Logger.h"
+#include "WledHttpClient.h"
 #include "Profiles/ProfileManager.h"
 #include "Profiles/ApplicationProfile.h"
 #include "HotkeyManager.h"
@@ -21,9 +22,8 @@ int main(int argc, char** argv)
 	auto output = std::unique_ptr<RenderOutput>(new WledRenderOutput(NUMBER_OF_LEDS, WLED_ADDRESS, WLED_UDP_PORT));
 	RenderTarget target(NUMBER_OF_LEDS);
 
-	App app(target, std::move(output));
+	App app(target, std::move(output), WledHttpClient(WLED_ADDRESS, 80));
 	app.setServerOn();
-	//app.playLightEffect(LightEffect(startEffect));
 	app.startAudioVisualizer();
 	app.startDesktopVisualizer();
 
@@ -84,8 +84,6 @@ int main(int argc, char** argv)
 	});
 
 	hotkeys.runHandlerLoop();
-
-	// app.playLightEffect(exitEffect);
 
 	if (audioVisualizerRunning) app.stopAudioVisualizer();
 	if (desktopVisualizerRunning) app.stopDesktopVisualizer();

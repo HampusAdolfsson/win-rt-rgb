@@ -4,12 +4,14 @@
 #include "Profiles/ApplicationProfile.h"
 #include "RenderTarget.h"
 #include "RenderOutput.h"
+#include "WledHttpClient.h"
 #include <chrono>
 
 class App
 {
 	RenderTarget renderTarget;
 	std::unique_ptr<RenderOutput> renderOutput;
+	WledHttpClient wledHttpClient;
 
 	AudioMonitor audioMonitor;
 	bool audioActive;
@@ -24,7 +26,7 @@ class App
 	void desktopCallback(RgbColor* colors);
 
 public:
-	App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput);
+	App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput, WledHttpClient httpClient);
 
 	void startAudioVisualizer();
 	void stopAudioVisualizer();
