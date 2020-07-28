@@ -3,7 +3,7 @@
 #include <d3d11.h>
 
 /**
-*	Uses the Desktop Duplication API to capture the screen.
+*	Uses the Desktop Duplication API to capture a monitor as a D3D11 texture.
 */
 class DesktopDuplicator
 {

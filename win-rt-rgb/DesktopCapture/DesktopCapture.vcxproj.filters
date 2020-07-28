@@ -53,6 +53,9 @@
     <ClInclude Include="CUDA\CudaKernels.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SamplingSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CUDA\CudaKernels.cu" />

@@ -1,11 +1,20 @@
 #pragma once
 #include "../Rect.h"
 #include "Color.h"
+#include "../SamplingSpecification.h"
 #include <cuda_runtime_api.h>
 #include <d3d11.h>
+#include <vector>
+
+typedef struct
+{
+	void* intermediaryBuffer;
+	void* outputBuffer;
+	void* outputBufferBlurred;
+} CudaBuffers;
 
 /**
- * Gets the average color from a number of sections in a texture
+ * Gets the average color from a number of regions in a texture.
  */
 class CudaMeanColorCalculator
 {
@@ -14,30 +23,32 @@ public:
 	~CudaMeanColorCalculator();
 
 	/**
-	 *	Initialize with output specification and the texture where the caller will store frame data
-	 *	before passing it to this class
-	 *	@param nSamplesPerFrame The number of sections for each frame, i.e. how many colors to generate each time
+	 *	Initialize with a sampling specification and the texture where the caller will store frame data
+	 *	before passing it to this class.
+	 *	@param samplingParameters Specifications for how to sample the texture
 	 *	@param frameBuffer The texture where frame data will be stored
 	 *	@param width The width of the texture
 	 *	@param height The height of the texture
 	 */
-	void initialize(const unsigned int& nSamplesPerFrame, ID3D11Texture2D* frameBuffer, const int& width, const int& height);
+	void initialize(const std::vector<SamplingSpecification>& samplingParameters,
+					ID3D11Texture2D* frameBuffer,
+					const int& width, const int& height);
+
 
 	/**
-	 * Gets the specified number of colors from the frameBuffer specificed in the initialize call.
+	 * Samples the frameBuffer specificed in the initialize call according to the sampling specifications.
 	 * @param activeRegion The part of the texture to actually use/evaluate
-	 * @param out An array in which to place the resulting colors
+	 * @param out A list of arrays in which to place the resulting colors.
 	 */
-	void getMeanColors(Rect activeRegion, RgbColor* out);
+	void getMeanColors(Rect activeRegion, const std::vector<RgbColor*>& out);
 
 private:
-	unsigned int nSamplesPerFrame;
+	std::vector<SamplingSpecification> specifications;
 	int width, height;
 
-	cudaGraphicsResource* cudaResource = nullptr;
-	void* textureBuffer = nullptr;
+	cudaGraphicsResource* cudaResource;
+	void* textureBuffer;
 	size_t textureBufferPitch;
-	void* intermediaryBuffer;
-	void* outputBuffer;
-	void* outputBufferBlurred;
+
+	std::vector<CudaBuffers> bufferSets;
 };

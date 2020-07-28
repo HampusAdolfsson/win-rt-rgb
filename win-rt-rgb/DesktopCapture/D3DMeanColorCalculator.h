@@ -15,7 +15,8 @@ class D3DMeanColorCalculator
 	ID3D11DeviceContext* deviceContext = nullptr;
 	ID3D11Texture2D *frameBuffer = nullptr;
 	UINT width, height;
-	std::vector<RgbColor> outputBuffer;
+	std::vector<std::vector<RgbColor>> outputBuffers;
+	std::vector<RgbColor*> results;
 
 	CudaMeanColorCalculator cudaCalculator;
 
@@ -25,9 +26,11 @@ public:
 	 *	@param device The device to expect textures from
 	 *	@param textureWidth The width of textures to be sampled
 	 *	@param textureHeight The height of textures to be sampled
-	 *	@param nSamplesPerFrame The number of colors to generate for each call to sample.
+	 *	@param samplingParameters Specifications for how to sample the texture. Each call to sample will return one result
+	 		per specification.
 	 */
-	void initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight, const UINT& nSamplesPerFrame);
+	void initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight,
+					const std::vector<SamplingSpecification>& samplingParameters);
 
 	/**
 	 * Set the frame to be used for the next calculation
@@ -36,9 +39,10 @@ public:
 
 	/**
 	 *	Calculate the mean color of nSamplesPerFrame sections within (a region of) the current frame.
-	 *	Returns an array of the results. The contents of the array may be overwritten and are valid until this method is called again.
+	 *	Returns one array of colors per specification given in the constructor.
+	 *	The contents of the color arrays may be overwritten and are valid until this method is called again.
 	 */
-	RgbColor *sample(const Rect& activeRegion);
+	std::vector<RgbColor*> sample(const Rect& activeRegion);
 
 	D3DMeanColorCalculator();
 	~D3DMeanColorCalculator();

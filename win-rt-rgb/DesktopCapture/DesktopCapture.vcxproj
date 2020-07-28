@@ -171,6 +171,7 @@
     <ClInclude Include="DesktopColorSampler.h" />
     <ClInclude Include="DesktopDuplicator.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="SamplingSpecification.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CUDA\CudaKernels.cu" />

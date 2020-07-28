@@ -172,12 +172,11 @@ void averageAndAdjustColorsKernel(unsigned int* channels, int pixelsPerChannel, 
 	rgb.green = float(channels[3*x+1]) / pixelsPerChannel / 0xFF;
 	rgb.blue = float(channels[3*x+2]) / pixelsPerChannel / 0xFF;
 	auto hsv = rgbToHsv(rgb);
-	hsv.saturation = min(hsv.saturation + 0.2f, 1.0f);
-	// rgb.red = hsv.hue;
-	// rgb.green = hsv.value;
-	// rgb.blue = hsv.saturation;
+	if (hsv.saturation > 0.001f)
+	{
+		hsv.saturation = min(hsv.saturation + 0.2f, 1.0f);
+	}
 	colorOutputs[x] = hsvToRgb(hsv);
-	colorOutputs[x].blue *= 0.8f;
 }
 
 namespace CudaKernels

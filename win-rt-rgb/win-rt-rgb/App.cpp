@@ -3,13 +3,14 @@
 #include "WaveToIntensityConverter.h"
 #include <algorithm>
 
-App::App(RenderTarget renderTarget, std::unique_ptr<RenderOutput> renderOutput, WledHttpClient httpClient)
-	: renderTarget(renderTarget),
-	renderOutput(std::move(renderOutput)),
-	wledHttpClient(httpClient),
+App::App(std::vector<RenderTarget> renderTargets,
+		std::vector<std::unique_ptr<RenderOutput>> renderOutputs,
+		std::vector<SamplingSpecification> specifications)
+	: renderTargets(renderTargets),
+	renderOutputs(std::move(renderOutputs)),
 	audioMonitor(std::make_unique<WaveToIntensityConverter>(std::bind(&App::audioCallback, this, std::placeholders::_1))),
 	audioActive(false),
-	desktopCapturer(0, renderTarget.getColors().size(), std::bind(&App::desktopCallback, this, std::placeholders::_1)),
+	desktopCapturer(0, specifications, std::bind(&App::desktopCallback, this, std::placeholders::_1, std::placeholders::_2)),
 	desktopActive(false),
 	lastFpsTime(std::chrono::system_clock::now()),
 	frames(0)
@@ -40,15 +41,6 @@ void App::stopDesktopVisualizer()
 	desktopCapturer.stop();
 }
 
-void App::setServerOn()
-{
-	wledHttpClient.setPowerStatus(WledPowerStatus::On);
-}
-void App::toggleServerOn()
-{
-	wledHttpClient.setPowerStatus(WledPowerStatus::Toggle);
-}
-
 void App::setDesktopRegion(const unsigned int& outputIdx, const Rect& region)
 {
 	desktopCapturer.setOutput(outputIdx, region);
@@ -67,18 +59,20 @@ void App::audioCallback(const float& intensity)
 		//realtimeClient.sendColor(base * intensity);
 	}
 }
-void App::desktopCallback(RgbColor* colors)
+void App::desktopCallback(const unsigned int& renderTargetIdx, RgbColor* colors)
 {
+	RenderTarget& target = renderTargets[renderTargetIdx];
+	RenderOutput* output = renderOutputs[renderTargetIdx].get();
 	if (!desktopActive) return;
-	renderTarget.beginFrame();
-	renderTarget.drawRange(0, renderTarget.getSize(), colors);
+	target.beginFrame();
+	target.drawRange(0, target.getSize(), colors);
 	if (audioActive)
 	{
 		desktopColor = colors[0];
 	}
 	else
 	{
-		renderOutput->draw(renderTarget);
+		output->draw(target);
 		frames++;
 		auto timeSinceLastFps = std::chrono::system_clock::now() - lastFpsTime;
 		if (timeSinceLastFps > std::chrono::seconds(1)) {

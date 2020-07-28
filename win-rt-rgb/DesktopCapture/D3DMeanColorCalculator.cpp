@@ -3,13 +3,12 @@
 #include <assert.h>
 #include <cuda_d3d11_interop.h>
 
-void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight, const UINT& nSamplesPerFrame)
+void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight,
+				const std::vector<SamplingSpecification>& samplingParameters)
 {
 	width = textureWidth;
 	height = textureHeight;
 	device->GetImmediateContext(&deviceContext);
-
-	outputBuffer = std::vector<RgbColor>(nSamplesPerFrame);
 
 	// allocate our buffer
 	D3D11_TEXTURE2D_DESC texDesc;
@@ -28,7 +27,15 @@ void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textur
 		return;
 	}
 
-	cudaCalculator.initialize(nSamplesPerFrame, frameBuffer, width, height);
+	cudaCalculator.initialize(samplingParameters, frameBuffer, width, height);
+
+	results = std::vector<RgbColor*>(samplingParameters.size());
+	for (size_t i = 0; i < samplingParameters.size(); i++)
+	{
+		outputBuffers.push_back(std::vector<RgbColor>(samplingParameters[i].numberOfRegions));
+		// Create the vector we'll return on every sample call
+		results[i] = outputBuffers[i].data();
+	}
 }
 
 D3DMeanColorCalculator::D3DMeanColorCalculator() {}
@@ -38,10 +45,13 @@ void D3DMeanColorCalculator::setFrameData(ID3D11Texture2D *frame)
 	deviceContext->CopyResource(frameBuffer, frame);
 }
 
-RgbColor* D3DMeanColorCalculator::sample(const Rect& activeRegion)
+std::vector<RgbColor*> D3DMeanColorCalculator::sample(const Rect& activeRegion)
 {
-	cudaCalculator.getMeanColors(activeRegion, outputBuffer.data());
-	return outputBuffer.data();
+	for (size_t i = 0; i < results.size(); i++)
+	{
+		cudaCalculator.getMeanColors(activeRegion, results);
+	}
+	return results;
 }
 
 D3DMeanColorCalculator::~D3DMeanColorCalculator()

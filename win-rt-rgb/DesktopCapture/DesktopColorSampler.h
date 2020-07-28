@@ -8,7 +8,18 @@
 #include <vector>
 
 /**
-*	Samples the screen and returns a color representing its content.
+ *	Callback for when sampled colors have been generated. The first parameter is the index of
+ *	the specification used to generate the colors (as passed into the constructor of DesktopColorSampler).
+ *	The second parameter is an array with the colors itself (the size of the array matches the number
+ *	of groups in the specification).
+ */
+typedef std::function<void(const unsigned int&, RgbColor*)> DesktopSamplingCallback;
+
+/**
+*	Continuously samples the screen and returns an array of colors representing its content.
+*	For details on how the colors are sampled, see SamplingSpecification.
+*	The regions will be chosen as evenly sized
+*	sections divided over the horizontal space.
 */
 class DesktopColorSampler
 {
@@ -18,18 +29,21 @@ class DesktopColorSampler
 
 	std::thread samplerThread;
 	bool isRunning;
-	std::function<void(RgbColor*)> callback;
+	DesktopSamplingCallback callback;
 
 	void sampleLoop();
 
 public:
 	/**
-	*	Create a new sampler.
+	*	Creates a new sampler.
 	*	@param outputIdx The index of the output (monitor) to sample
-	*	@param nSamples	The number of color values to produce each frame
-	*	@param callback	Called when samples are ready for a captured frame. The parameter points to an array of nSamples color values. The values of the array may be overwritten by the callee.
+	*	@param specification Specifications for *how* to sample colors from each frame.
+			For each frame, an array of colors will be generated for each sampling specification.
+	*	@param callback Called when samples for a specification are ready for a captured frame.
 	*/
-	DesktopColorSampler(const UINT& outputIdx, const UINT& nSamples, std::function<void(RgbColor*)> callback);
+	DesktopColorSampler(const UINT& outputIdx,
+						const std::vector<SamplingSpecification>& specifications,
+						DesktopSamplingCallback callback);
 
 	void setCaptureRegion(Rect captureRegion);
 

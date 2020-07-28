@@ -1,12 +1,13 @@
 #pragma once
 
 #include "DesktopColorSampler.h"
+#include "SamplingSpecification.h"
 #include "Color.h"
 #include <vector>
 #include <functional>
 
 /**
-*	Manages/multiplexes DesktopColorSamplers for different outputs, and restarts them when errors occur
+*	Manages/multiplexes DesktopColorSamplers for different outputs (i.e. monitors), and restarts them when errors occur
 *	(e.g. when entering fullscreen applications)
 */
 class DesktopCaptureController
@@ -21,10 +22,13 @@ public:
 	/**
 	*	Creates a new capture controller
 	*	@param initialOutputIdx Index of the output (i.e. monitor) to start capturing
-	*	@param nSamples	The number of color values to produce each frame
-	*	@param callback	Called when samples are ready for a captured frame. The parameter points to an array of nSamples color values. The values of the array may be overwritten by the callee.
+	*	@param samplingParameters For each frame, an array of colors will be generated for each sampling specification.
+	*	@param callback	Called when samples are ready for a captured frame. The parameter points to an array of nSamples color values.
+			The values of the array may be overwritten by the callee.
 	*/
-	DesktopCaptureController(const UINT& initialOutputIdx, const UINT& nSamples, std::function<void(RgbColor*)> callback);
+	DesktopCaptureController(const UINT& initialOutputIdx,
+								const std::vector<SamplingSpecification>& samplingParameters,
+								DesktopSamplingCallback callback);
 	~DesktopCaptureController();
 
 	/**

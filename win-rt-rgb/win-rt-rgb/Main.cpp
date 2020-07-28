@@ -19,11 +19,17 @@ int main(int argc, char** argv)
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	auto output = std::unique_ptr<RenderOutput>(new WledRenderOutput(NUMBER_OF_LEDS, WLED_ADDRESS, WLED_UDP_PORT));
-	RenderTarget target(NUMBER_OF_LEDS);
+	std::vector<std::unique_ptr<RenderOutput>> outputs;
+	std::vector<RenderTarget> targets;
+	std::vector<SamplingSpecification> specifications;
+	for (const auto& output : Config::outputs)
+	{
+		outputs.emplace_back(new WledRenderOutput(NUMBER_OF_LEDS, output.first, WLED_UDP_PORT));
+		targets.push_back(RenderTarget(output.second.numberOfRegions));
+		specifications.push_back(output.second);
+	}
 
-	App app(target, std::move(output), WledHttpClient(WLED_ADDRESS, 80));
-	app.setServerOn();
+	App app(targets, std::move(outputs), specifications);
 	app.startAudioVisualizer();
 	app.startDesktopVisualizer();
 
@@ -52,7 +58,6 @@ int main(int argc, char** argv)
 	bool desktopVisualizerRunning = true;
 
 	HotkeyManager hotkeys;
-	hotkeys.addHotkey(0x43, [&]() { app.toggleServerOn(); return false; }); // c key
 	hotkeys.addHotkey(0x56, [&]() { // v key
 		LOGINFO("Hotkey pressed, toggling audio visualizer");
 		if (audioVisualizerRunning) app.stopAudioVisualizer();

@@ -3,31 +3,78 @@
 #include "Logger.h"
 #include <cuda_d3d11_interop.h>
 #include <cassert>
-
-#define BLUR_RADIUS 3
+#include <stdexcept>
 
 CudaMeanColorCalculator::CudaMeanColorCalculator()
-	: nSamplesPerFrame(0), width(0), height(0), intermediaryBuffer(nullptr), textureBuffer(nullptr), cudaResource(nullptr), outputBuffer(nullptr), outputBufferBlurred(nullptr)
+	: width(0), height(0), textureBuffer(nullptr), cudaResource(nullptr)
 {
+}
+
+void CudaMeanColorCalculator::initialize(const std::vector<SamplingSpecification>& samplingParameters,
+												ID3D11Texture2D* frameBuffer,
+												const int& width, const int& height)
+{
+	this->width = width;
+	this->height = height;
+	this->specifications = samplingParameters;
+
+	cudaError_t status = cudaMallocPitch(&textureBuffer, &textureBufferPitch, width*sizeof(uint32_t), height);
+	if (status != cudaSuccess)
+	{
+		LOGSEVERE("cudaMalloc failed");
+	}
+	assert(textureBufferPitch == width * sizeof(uint32_t)); // parts of the code assumes no padding
+
+	status = cudaGraphicsD3D11RegisterResource(&cudaResource, frameBuffer, cudaGraphicsRegisterFlagsNone);
+	if (status != cudaSuccess)
+	{
+		LOGSEVERE("Failed to register D3D resource with cuda");
+	}
+
+	bufferSets = std::vector<CudaBuffers>(samplingParameters.size());
+	for (size_t i = 0; i < samplingParameters.size(); i++)
+	{
+		unsigned int nRegions = samplingParameters[i].numberOfRegions;
+
+		cudaError_t status = cudaMalloc(&bufferSets[i].intermediaryBuffer, nRegions * 3 * sizeof(int));
+		if (status != cudaSuccess)
+		{
+			LOGSEVERE("cudaMalloc failed");
+		}
+		status = cudaMalloc(&bufferSets[i].outputBuffer, sizeof(RgbColor) * nRegions);
+		if (status != cudaSuccess)
+		{
+			LOGSEVERE("cudaMalloc failed");
+		}
+		status = cudaMalloc(&bufferSets[i].outputBufferBlurred, sizeof(RgbColor) * nRegions);
+		if (status != cudaSuccess)
+		{
+			LOGSEVERE("cudaMalloc failed");
+		}
+
+	}
 }
 
 CudaMeanColorCalculator::~CudaMeanColorCalculator()
 {
-	if (intermediaryBuffer)
+	for (auto buffers : bufferSets)
 	{
-		cudaFree(intermediaryBuffer);
+		if (buffers.intermediaryBuffer)
+		{
+			cudaFree(buffers.intermediaryBuffer);
+		}
+		if (buffers.outputBuffer)
+		{
+			cudaFree(buffers.outputBuffer);
+		}
+		if (buffers.outputBufferBlurred)
+		{
+			cudaFree(buffers.outputBufferBlurred);
+		}
 	}
 	if (textureBuffer)
 	{
 		cudaFree(textureBuffer);
-	}
-	if (outputBuffer)
-	{
-		cudaFree(outputBuffer);
-	}
-	if (outputBufferBlurred)
-	{
-		cudaFree(outputBufferBlurred);
 	}
 	if (cudaResource)
 	{
@@ -35,49 +82,12 @@ CudaMeanColorCalculator::~CudaMeanColorCalculator()
 	}
 }
 
-void CudaMeanColorCalculator::initialize(const unsigned int& nSamplesPerFrame,
-											ID3D11Texture2D* frameBuffer,
-											const int& width,
-											const int& height)
-{
-	this->nSamplesPerFrame = nSamplesPerFrame;
-	this->width = width;
-	this->height = height;
-
-	cudaError_t status = cudaMalloc(&intermediaryBuffer, nSamplesPerFrame * 3 * sizeof(int));
-	if (status != cudaSuccess)
-	{
-		LOGSEVERE("cudaMalloc failed");
-	}
-	status = cudaMallocPitch(&textureBuffer, &textureBufferPitch, width*sizeof(uint32_t), height);
-	if (status != cudaSuccess)
-	{
-		LOGSEVERE("cudaMalloc failed");
-	}
-	status = cudaMalloc(&outputBuffer, sizeof(RgbColor) * nSamplesPerFrame);
-	if (status != cudaSuccess)
-	{
-		LOGSEVERE("cudaMalloc failed");
-	}
-	status = cudaMalloc(&outputBufferBlurred, sizeof(RgbColor) * nSamplesPerFrame);
-	if (status != cudaSuccess)
-	{
-		LOGSEVERE("cudaMalloc failed");
-	}
-
-	assert(textureBufferPitch == width * sizeof(uint32_t)); // parts of the code assumes no padding
-	status = cudaGraphicsD3D11RegisterResource(&cudaResource, frameBuffer, cudaGraphicsRegisterFlagsNone);
-	if (status != cudaSuccess)
-	{
-		LOGSEVERE("Failed to register D3D resource with cuda");
-	}
-}
-
-void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, RgbColor* out)
+void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, const std::vector<RgbColor*>& out)
 {
 	activeRegion.width = min(activeRegion.width, width - activeRegion.left);
 	activeRegion.height = min(activeRegion.height, height - activeRegion.top);
 
+	// ready resources
 	cudaError_t status = cudaGraphicsMapResources(1, &cudaResource, nullptr);
 	if (status != cudaSuccess)
 	{
@@ -89,26 +99,32 @@ void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, RgbColor* out)
 									sizeof(uint32_t)*activeRegion.left, activeRegion.top,
 									sizeof(uint32_t)*activeRegion.width, activeRegion.height,
 										cudaMemcpyDeviceToDevice);
-	status = cudaMemset(intermediaryBuffer, 0, 3*sizeof(int)*nSamplesPerFrame);
-
-	CudaKernels::calculateMeanColor((uint8_t*) textureBuffer, activeRegion.width, activeRegion.height,
-									textureBufferPitch, (unsigned int*) intermediaryBuffer, activeRegion.width / nSamplesPerFrame);
-
-	CudaKernels::averageAndAdjustColors((unsigned int*)intermediaryBuffer,
-										activeRegion.height * (activeRegion.width / nSamplesPerFrame),
-										(RgbColor*)outputBuffer, nSamplesPerFrame);
-
-	if (BLUR_RADIUS > 0) {
-		CudaKernels::blurColors((RgbColor*)outputBuffer, (RgbColor*)outputBufferBlurred, nSamplesPerFrame, BLUR_RADIUS);
-	}
-
-	status = cudaDeviceSynchronize();
-	if (status != cudaSuccess)
+	for (size_t i = 0; i < specifications.size(); i++)
 	{
-		LOGSEVERE("cuda mean color failed to launch wth error %d\n", status);
-		return;
+		status = cudaMemset(bufferSets[i].intermediaryBuffer, 0, 3*sizeof(int)*specifications[i].numberOfRegions);
+
+		// kernel calls
+		CudaKernels::calculateMeanColor((uint8_t*) textureBuffer, activeRegion.width, activeRegion.height,
+										textureBufferPitch, (unsigned int*) bufferSets[i].intermediaryBuffer,
+										activeRegion.width / specifications[i].numberOfRegions);
+
+		CudaKernels::averageAndAdjustColors((unsigned int*)bufferSets[i].intermediaryBuffer,
+											activeRegion.height * (activeRegion.width / specifications[i].numberOfRegions),
+											(RgbColor*)bufferSets[i].outputBuffer, specifications[i].numberOfRegions);
+		if (specifications[i].blurRadius > 0) {
+			CudaKernels::blurColors((RgbColor*)bufferSets[i].outputBuffer, (RgbColor*)bufferSets[i].outputBufferBlurred,
+									specifications[i].numberOfRegions, specifications[i].blurRadius);
+		}
+		status = cudaDeviceSynchronize();
+		if (status != cudaSuccess)
+		{
+			LOGSEVERE("cuda mean color failed to launch with error %d\n", status);
+		}
+
+		// fetch results and release resources
+		status = cudaMemcpy(out[i], specifications[i].blurRadius > 0 ? bufferSets[i].outputBufferBlurred : bufferSets[i].outputBuffer,
+							sizeof(RgbColor) * specifications[i].numberOfRegions, cudaMemcpyDeviceToHost);
 	}
-	status = cudaMemcpy(out, BLUR_RADIUS > 0 ? outputBufferBlurred : outputBuffer, sizeof(RgbColor) * nSamplesPerFrame, cudaMemcpyDeviceToHost);
 
 	status = cudaGraphicsUnmapResources(1, &cudaResource, nullptr);
 	if (status != cudaSuccess)
