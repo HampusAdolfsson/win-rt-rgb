@@ -1,0 +1,26 @@
+:host {
+    width: 600px;
+}
+
+.form-item {
+    display: block;
+    width: 600px;
+    margin: .8em 0;
+}
+
+#apply  {
+    margin-top: 1em;
+}
+
+mat-slider {
+    flex: auto;
+}
+
+mat-label {
+    display: inline;
+}
+
+.slider-container {
+    display: flex;
+    align-items:center;
+}
