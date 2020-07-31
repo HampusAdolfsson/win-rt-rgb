@@ -149,10 +149,10 @@ RgbColor hsvToRgb(HsvColor hsv)
 __global__
 void calculateMeanColorKernel(uint8_t* screen, int width, int height, size_t pitch, unsigned int* output, int outputWidth)
 {
-	int x = width - blockIdx.x * blockDim.x + threadIdx.x;
+	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
 	if (x >= width || y >= height) return;
-	unsigned int* destination = output + 3 * ((width-1-x) / outputWidth);
+	unsigned int* destination = output + 3 * (x / outputWidth);
 
 	uint32_t* pixel = (uint32_t*)(screen + y * pitch + x * sizeof(uint32_t));
 	uint32_t val = *pixel;
@@ -163,10 +163,10 @@ void calculateMeanColorKernel(uint8_t* screen, int width, int height, size_t pit
 }
 
 __global__
-void averageAndAdjustColorsKernel(unsigned int* channels, int pixelsPerChannel, RgbColor* colorOutputs, int nOutputs)
+void averageAndAdjustColorsKernel(unsigned int* channels, int pixelsPerChannel, RgbColor* colorOutputs, int nOutputs, float saturation, bool flip)
 {
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
-	if (x > nOutputs) return;
+	if (x >= nOutputs) return;
 	RgbColor rgb;
 	rgb.red = float(channels[3*x]) / pixelsPerChannel / 0xFF;
 	rgb.green = float(channels[3*x+1]) / pixelsPerChannel / 0xFF;
@@ -174,8 +174,9 @@ void averageAndAdjustColorsKernel(unsigned int* channels, int pixelsPerChannel, 
 	auto hsv = rgbToHsv(rgb);
 	if (hsv.saturation > 0.001f)
 	{
-		hsv.saturation = min(hsv.saturation + 0.2f, 1.0f);
+		hsv.saturation = min(hsv.saturation + saturation, 1.0f);
 	}
+	if (flip) x = nOutputs - 1 - x;
 	colorOutputs[x] = hsvToRgb(hsv);
 }
 
@@ -188,11 +189,11 @@ namespace CudaKernels
 		calculateMeanColorKernel<<<Dg, Db>>>(pixels, width, height, pitch, outputChannels, outputWidth);
 	}
 
-	void averageAndAdjustColors(unsigned int* channels, int pixelsPerChannel, RgbColor* colorOutputs, int outputSize)
+	void averageAndAdjustColors(unsigned int* channels, int pixelsPerChannel, RgbColor* colorOutputs, int outputSize, float saturationAdjustment, bool flip)
 	{
 		size_t blocksize = 32;
 		size_t gridsize = (outputSize + blocksize - 1) / blocksize;
-		averageAndAdjustColorsKernel<<<gridsize, blocksize>>>(channels, pixelsPerChannel, colorOutputs, outputSize);
+		averageAndAdjustColorsKernel<<<gridsize, blocksize>>>(channels, pixelsPerChannel, colorOutputs, outputSize, saturationAdjustment, flip);
 	}
 
 	void blurColors(RgbColor *id, RgbColor *od, int outputSize, int r)

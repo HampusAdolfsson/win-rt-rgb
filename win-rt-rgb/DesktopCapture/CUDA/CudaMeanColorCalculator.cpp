@@ -110,7 +110,8 @@ void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, const std::vector
 
 		CudaKernels::averageAndAdjustColors((unsigned int*)bufferSets[i].intermediaryBuffer,
 											activeRegion.height * (activeRegion.width / specifications[i].numberOfRegions),
-											(RgbColor*)bufferSets[i].outputBuffer, specifications[i].numberOfRegions);
+											(RgbColor*)bufferSets[i].outputBuffer, specifications[i].numberOfRegions,
+											specifications[i].saturationAdjustment, specifications[i].flipHorizontally);
 		if (specifications[i].blurRadius > 0) {
 			CudaKernels::blurColors((RgbColor*)bufferSets[i].outputBuffer, (RgbColor*)bufferSets[i].outputBufferBlurred,
 									specifications[i].numberOfRegions, specifications[i].blurRadius);
