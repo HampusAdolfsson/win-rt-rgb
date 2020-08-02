@@ -8,7 +8,7 @@
     margin: .8em 0;
 }
 
-#apply  {
+#save  {
     margin-top: 1em;
 }
 
@@ -26,5 +26,11 @@ mat-label {
 }
 
 mat-expansion-panel button {
-    margin: 0  .5em;
+    margin: 0 .5em;
+}
+
+#locked {
+    font-size: 16px;
+    height: 16px;
+    color: #faa
 }

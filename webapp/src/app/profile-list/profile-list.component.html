@@ -1,0 +1,5 @@
+<mat-accordion>
+  <app-profile *ngFor="let profile of profiles; index as i" [profile]="profile" [isLocked]="false" (deleted)="deleteProfile(i)" (saved)="saveProfile(i)">
+  </app-profile>
+</mat-accordion>
+<button mat-stroked-button id="add" (click)="addProfile()">Add Profile</button>

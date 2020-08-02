@@ -15,15 +15,20 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { OutputSettingsComponent } from './output-settings/output-settings.component';
 import { OutputSettingsListComponent } from './output-settings-list/output-settings-list.component';
+import { ProfileListComponent } from './profile-list/profile-list.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     OutputSettingsComponent,
-    OutputSettingsListComponent
+    OutputSettingsListComponent,
+    ProfileListComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,
@@ -39,6 +44,7 @@ import { OutputSettingsListComponent } from './output-settings-list/output-setti
     MatSliderModule,
     MatIconModule,
     MatSnackBarModule,
+    MatTooltipModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

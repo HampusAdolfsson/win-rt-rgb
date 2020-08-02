@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IOutputSpecification } from '../models/outputspecification';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -8,9 +8,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./output-settings.component.css']
 })
 export class OutputSettingsComponent implements OnInit {
-  specification: IOutputSpecification;
+  @Input() specification: IOutputSpecification;
+  @Output() applied = new EventEmitter<IOutputSpecification>();
+  @Output() deleted = new EventEmitter<IOutputSpecification>();
 
-  constructor(private snackBar: MatSnackBar) {
+  constructor() {
     if (!false) {
       this.specification = {
         ipAddress: '',
@@ -28,11 +30,11 @@ export class OutputSettingsComponent implements OnInit {
   }
 
   apply(): void {
-    console.log(this.specification.flipHorizontally);
-    this.snackBar.open('Applied settings', undefined, {
-      duration: 2000,
-      panelClass: 'my-snack-bar',
-    });
+    this.applied.emit(this.specification);
+  }
+
+  delete(): void {
+    this.deleted.emit(this.specification);
   }
 
 }
