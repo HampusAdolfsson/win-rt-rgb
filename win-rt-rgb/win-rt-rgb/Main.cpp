@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 	std::vector<SamplingSpecification> specifications;
 	for (const auto& output : Config::outputs)
 	{
-		outputs.emplace_back(new WledRenderOutput(NUMBER_OF_LEDS, output.first, WLED_UDP_PORT));
+		outputs.emplace_back(new WledRenderOutput(output.second.numberOfRegions, output.first, WLED_UDP_PORT));
 		targets.push_back(RenderTarget(output.second.numberOfRegions));
 		specifications.push_back(output.second);
 	}
@@ -87,6 +87,11 @@ int main(int argc, char** argv)
 		LOGINFO("Hotkey pressed, exiting application");
 		return true;
 	});
+
+	WebsocketServer server(Profiles::dynamicProfiles, [](std::vector<ApplicationProfile> newProfiles) {
+		ProfileManager::setProfiles(newProfiles);
+	});
+	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);
 
 	hotkeys.runHandlerLoop();
 

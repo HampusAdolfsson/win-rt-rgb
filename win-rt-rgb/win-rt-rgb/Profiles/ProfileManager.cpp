@@ -21,6 +21,13 @@ void ProfileManager::stop()
 	UnhookWinEvent(eventHook);
 }
 
+void ProfileManager::setProfiles(const std::vector<ApplicationProfile>& profiles)
+{
+    // TODO: technically, we should use a lock here,
+    // since this method may be called by a thread separate from the one that has the event hook
+    appProfiles = profiles;
+}
+
 void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
 {
     if (event == EVENT_SYSTEM_FOREGROUND && hwnd)

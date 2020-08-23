@@ -15,4 +15,9 @@ namespace ProfileManager
 	void start(std::function<void(std::optional<std::pair<ApplicationProfile, unsigned int>>)> profileChangedCallback, const std::vector<ApplicationProfile>& profiles);
 
 	void stop();
+
+	/**
+	*	Sets the profiles to use
+	*/
+	void setProfiles(const std::vector<ApplicationProfile>& profiles);
 }

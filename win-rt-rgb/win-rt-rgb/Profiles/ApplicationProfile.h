@@ -5,7 +5,9 @@
 
 struct ApplicationProfile
 {
+	ApplicationProfile(std::string regexSpecifier, Rect region);
 	std::regex windowTitle;
+	std::string regexSpecifier;
 	Rect captureRegion;
 };
 
