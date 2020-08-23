@@ -129,10 +129,6 @@ AudioMonitor::~AudioMonitor()
 	{
 		handlerThread.join();
 	}
-	else
-	{
-		handlerThread.detach();
-	}
 }
 
 void AudioMonitor::handleWaveMessages()
