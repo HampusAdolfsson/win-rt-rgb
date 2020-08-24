@@ -18,7 +18,7 @@ class WebsocketServer
 {
 public:
 	WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
-					std::function<void(std::optional<unsigned int>)> lockCallback);
+					std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback);
 	~WebsocketServer();
 
 	void start(const unsigned int& port);
@@ -26,7 +26,8 @@ public:
 private:
 	server endpoint;
 	std::function<void(std::vector<ApplicationProfile>)> profilesCallback;
-	std::function<void(std::optional<unsigned int>)> lockCallback;
+	std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback;
 
 	void handleProfileMessage(const nlohmann::json& contents);
+	void handleLockMessage(const nlohmann::json& contents);
 };

@@ -80,11 +80,11 @@ int main(int argc, char** argv)
 	WebsocketServer server([](std::vector<ApplicationProfile> newProfiles)
 	{
 		ProfileManager::setProfiles(newProfiles);
-	}, [](std::optional<unsigned int> lockedIndex)
+	}, [](std::optional<std::pair<unsigned int, unsigned int>> profileAndMonitorIdx)
 	{
-		if (lockedIndex.has_value())
+		if (profileAndMonitorIdx.has_value())
 		{
-			ProfileManager::lockProfile(*lockedIndex);
+			ProfileManager::lockProfile(profileAndMonitorIdx->first, profileAndMonitorIdx->second);
 		}
 		else
 		{

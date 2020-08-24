@@ -30,12 +30,12 @@ void ProfileManager::setProfiles(const std::vector<ApplicationProfile>& profiles
     appProfiles = profiles;
 }
 
-void ProfileManager::lockProfile(const unsigned int& index)
+void ProfileManager::lockProfile(const unsigned int& profileIndex, const unsigned int& monitorIndex)
 {
-    if (index >= appProfiles.size()) return;
-    LOGINFO("Locking profile %s on output %d.", appProfiles[index].regexSpecifier.c_str(), 0);
+    if (profileIndex >= appProfiles.size()) return;
+    LOGINFO("Locking profile %s on output %d.", appProfiles[profileIndex].regexSpecifier.c_str(), monitorIndex);
     isLocked = true;
-    callback(std::make_pair(appProfiles[index], 0));
+    callback(std::make_pair(appProfiles[profileIndex], monitorIndex));
 }
 
 void ProfileManager::unlock()

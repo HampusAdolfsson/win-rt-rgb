@@ -4,7 +4,7 @@
 
 
 WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
-								std::function<void(std::optional<unsigned int>)> lockCallback)
+								std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback)
  : profilesCallback(profilesCallback),
  lockCallback(lockCallback)
 { }
@@ -33,9 +33,7 @@ void WebsocketServer::start(const unsigned int& port)
 			handleProfileMessage(contents);
 		} else if (subject == "lock") {
 			LOGINFO("Got lock message");
-			int index = contents.get<int>();
-			LOGINFO("%d", index);
-			lockCallback(index >= 0 ? std::optional(index) : std::nullopt);
+			handleLockMessage(contents);
 		} else {
 			LOGSEVERE("Received message with unknown subject: %s", subject);
 		}
@@ -59,4 +57,18 @@ void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 		receivedProfiles.push_back(ApplicationProfile(regex, {x, y, width, height}));
 	}
 	profilesCallback(receivedProfiles);
+}
+
+void WebsocketServer::handleLockMessage(const nlohmann::json& contents)
+{
+	if (contents.find("profile") != contents.end())
+	{
+		unsigned int profile = (unsigned int) contents["profile"].get<int>();
+		unsigned int monitor = (unsigned int) contents["monitor"].get<int>();
+		lockCallback(std::make_pair(profile, monitor));
+	}
+	else
+	{
+		lockCallback(std::nullopt);
+	}
 }
