@@ -10,10 +10,3 @@ struct ApplicationProfile
 	std::string regexSpecifier;
 	Rect captureRegion;
 };
-
-namespace Profiles
-{
-	extern std::vector<ApplicationProfile> dynamicProfiles;
-
-	extern ApplicationProfile defaultProfiles[2];
-}

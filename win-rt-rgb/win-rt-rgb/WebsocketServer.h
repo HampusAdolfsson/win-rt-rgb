@@ -16,17 +16,14 @@ typedef websocketpp::server<websocketpp::config::asio> server;
 class WebsocketServer
 {
 public:
-	WebsocketServer(std::vector<struct ApplicationProfile> initialProfiles,
-					std::function<void(std::vector<ApplicationProfile>)> profilesCallback);
+	WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback);
 	~WebsocketServer();
 
 	void start(const unsigned int& port);
 
 private:
 	server endpoint;
-	std::vector<struct ApplicationProfile> profiles;
 	std::function<void(std::vector<ApplicationProfile>)> profilesCallback;
 
-	std::string makeProfileMessage();
 	void handleProfileMessage(const nlohmann::json& contents);
 };

@@ -8,6 +8,7 @@
 #include "HotkeyManager.h"
 #include "RenderTarget.h"
 #include "WledRenderOutput.h"
+#include "WebsocketServer.h"
 
 int main(int argc, char** argv)
 {
@@ -51,7 +52,7 @@ int main(int argc, char** argv)
 				app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 			}
 		}
-	}, Profiles::dynamicProfiles);
+	}, { });
 
 
 	bool audioVisualizerRunning = true;
@@ -88,7 +89,8 @@ int main(int argc, char** argv)
 		return true;
 	});
 
-	WebsocketServer server(Profiles::dynamicProfiles, [](std::vector<ApplicationProfile> newProfiles) {
+	WebsocketServer server([](std::vector<ApplicationProfile> newProfiles)
+	{
 		ProfileManager::setProfiles(newProfiles);
 	});
 	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);

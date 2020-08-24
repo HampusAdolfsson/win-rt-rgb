@@ -3,10 +3,8 @@
 #include <cstdio>
 
 
-WebsocketServer::WebsocketServer(std::vector<ApplicationProfile> initialProfiles,
-								std::function<void(std::vector<ApplicationProfile>)> profilesCallback)
- : profiles(initialProfiles),
- profilesCallback(profilesCallback)
+WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback)
+ : profilesCallback(profilesCallback)
 { }
 
 WebsocketServer::~WebsocketServer()
@@ -20,8 +18,6 @@ void WebsocketServer::start(const unsigned int& port)
 	endpoint.set_open_handler([&](websocketpp::connection_hdl conn) {
 		LOGINFO("Connection opened\n");
 		auto handle = endpoint.get_con_from_hdl(conn);
-		std::string message = makeProfileMessage();
-		handle->send(message);
 	});
 	endpoint.set_close_handler([](websocketpp::connection_hdl conn){
 		LOGINFO("Connection closed\n");
@@ -42,27 +38,6 @@ void WebsocketServer::start(const unsigned int& port)
 	endpoint.listen(port);
 	endpoint.start_accept();
 	endpoint.run();
-}
-
-std::string WebsocketServer::makeProfileMessage()
-{
-	std::vector<nlohmann::json> profilesJson;
-	for (const auto& profile : profiles)
-	{
-		nlohmann::json json;
-		json["regex"] = profile.regexSpecifier;
-		nlohmann::json rect;
-		rect["x"] = profile.captureRegion.left;
-		rect["y"] = profile.captureRegion.top;
-		rect["width"] = profile.captureRegion.width;
-		rect["height"] = profile.captureRegion.height;
-		json["area"] = rect;
-		profilesJson.push_back(json);
-	}
-	nlohmann::json message;
-	message["subject"] = "profiles";
-	message["contents"] = profilesJson;
-	return message.dump();
 }
 
 void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
