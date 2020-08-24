@@ -5,6 +5,7 @@
 
 std::function<void(std::optional<std::pair<ApplicationProfile, unsigned int>>)> callback;
 std::vector<ApplicationProfile> appProfiles;
+bool isLocked;
 HWINEVENTHOOK eventHook;
 
 void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime);
@@ -13,6 +14,7 @@ void ProfileManager::start(std::function<void(std::optional<std::pair<Applicatio
 {
     callback = profileChangedCallback;
     appProfiles = profiles;
+    isLocked = false;
 	eventHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, &eventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 }
 
@@ -28,10 +30,25 @@ void ProfileManager::setProfiles(const std::vector<ApplicationProfile>& profiles
     appProfiles = profiles;
 }
 
+void ProfileManager::lockProfile(const unsigned int& index)
+{
+    if (index >= appProfiles.size()) return;
+    LOGINFO("Locking profile %s on output %d.", appProfiles[index].regexSpecifier.c_str(), 0);
+    isLocked = true;
+    callback(std::make_pair(appProfiles[index], 0));
+}
+
+void ProfileManager::unlock()
+{
+    isLocked = false;
+    callback(std::nullopt);
+}
+
 void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
 {
     if (event == EVENT_SYSTEM_FOREGROUND && hwnd)
     {
+        if (isLocked) return;
         char title[255];
         GetWindowTextA(hwnd, title, 255);
         WINDOWINFO winInfo;
@@ -44,7 +61,7 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
         {
             if (std::regex_search(title, appProfiles[i].windowTitle))
             {
-                LOGINFO("Activating profile %d on output %d.", i, outputIdx);
+                LOGINFO("Activating profile %s on output %d.", appProfiles[i].regexSpecifier.c_str(), outputIdx);
                 callback(std::make_pair(appProfiles[i], outputIdx));
                 return;
             }

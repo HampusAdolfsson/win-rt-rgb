@@ -2,6 +2,7 @@
 #include "Profiles/ApplicationProfile.h"
 #include <string>
 #include <vector>
+#include <optional>
 #define ASIO_STANDALONE
 #define _WEBSOCKETPP_CPP11_TYPE_TRAITS_
 #include "websocketpp/config/asio_no_tls.hpp"
@@ -16,7 +17,8 @@ typedef websocketpp::server<websocketpp::config::asio> server;
 class WebsocketServer
 {
 public:
-	WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback);
+	WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
+					std::function<void(std::optional<unsigned int>)> lockCallback);
 	~WebsocketServer();
 
 	void start(const unsigned int& port);
@@ -24,6 +26,7 @@ public:
 private:
 	server endpoint;
 	std::function<void(std::vector<ApplicationProfile>)> profilesCallback;
+	std::function<void(std::optional<unsigned int>)> lockCallback;
 
 	void handleProfileMessage(const nlohmann::json& contents);
 };

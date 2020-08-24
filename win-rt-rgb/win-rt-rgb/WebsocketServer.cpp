@@ -3,8 +3,10 @@
 #include <cstdio>
 
 
-WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback)
- : profilesCallback(profilesCallback)
+WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
+								std::function<void(std::optional<unsigned int>)> lockCallback)
+ : profilesCallback(profilesCallback),
+ lockCallback(lockCallback)
 { }
 
 WebsocketServer::~WebsocketServer()
@@ -23,13 +25,17 @@ void WebsocketServer::start(const unsigned int& port)
 		LOGINFO("Connection closed\n");
 	});
 	endpoint.set_message_handler([&](websocketpp::connection_hdl conn, std::shared_ptr<websocketpp::config::asio::message_type> message){
-		LOGINFO("Received: %s\n", message->get_payload().c_str());
 		nlohmann::json json = nlohmann::json::parse(message->get_payload());
 		std::string subject = json["subject"].get<std::string>();
 		nlohmann::json contents = json["contents"];
 		if (subject == "profiles") {
-				LOGINFO("Got profiles message");
-				handleProfileMessage(contents);
+			LOGINFO("Got profiles message");
+			handleProfileMessage(contents);
+		} else if (subject == "lock") {
+			LOGINFO("Got lock message");
+			int index = contents.get<int>();
+			LOGINFO("%d", index);
+			lockCallback(index >= 0 ? std::optional(index) : std::nullopt);
 		} else {
 			LOGSEVERE("Received message with unknown subject: %s", subject);
 		}

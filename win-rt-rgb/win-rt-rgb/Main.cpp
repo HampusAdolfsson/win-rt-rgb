@@ -35,22 +35,15 @@ int main(int argc, char** argv)
 	app.startDesktopVisualizer();
 
 	int capturedOutput = 0;
-	bool locked = false;
 
 	ProfileManager::start([&](std::optional<std::pair<ApplicationProfile, unsigned int>> profileData) {
 		if (profileData.has_value())
 		{
-			if (!locked)
-			{
-				app.setDesktopRegion(profileData->second, profileData->first.captureRegion);
-			}
+			app.setDesktopRegion(profileData->second, profileData->first.captureRegion);
 		}
 		else
 		{
-			if (!locked)
-			{
-				app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
-			}
+			app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 		}
 	}, { });
 
@@ -79,11 +72,6 @@ int main(int argc, char** argv)
 		app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 		return false;
 	});
-	hotkeys.addHotkey(0x4c, [&]() { // l key
-		LOGINFO("Hotkey pressed, toggling capture profile lock");
-		locked = !locked;
-		return false;
-	});
 	hotkeys.addHotkey(0x4e, [&]() { // n key
 		LOGINFO("Hotkey pressed, exiting application");
 		return true;
@@ -92,6 +80,17 @@ int main(int argc, char** argv)
 	WebsocketServer server([](std::vector<ApplicationProfile> newProfiles)
 	{
 		ProfileManager::setProfiles(newProfiles);
+	}, [](std::optional<unsigned int> lockedIndex)
+	{
+		if (lockedIndex.has_value())
+		{
+			ProfileManager::lockProfile(*lockedIndex);
+		}
+		else
+		{
+			ProfileManager::unlock();
+		}
+
 	});
 	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);
 
