@@ -7,7 +7,6 @@ WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfi
 								std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback)
  : profilesCallback(profilesCallback),
  lockCallback(lockCallback)
-//  client(nullptr)
 { }
 
 WebsocketServer::~WebsocketServer()
@@ -18,12 +17,15 @@ WebsocketServer::~WebsocketServer()
 
 void WebsocketServer::start(const unsigned int& port)
 {
+	endpoint.set_error_channels(websocketpp::log::elevel::all);
+	endpoint.set_access_channels(websocketpp::log::alevel::none);
+
 	endpoint.set_open_handler([&](websocketpp::connection_hdl handle) {
-		LOGINFO("Connection opened\n");
+		LOGINFO("Connection opened");
 		client = handle;
 	});
 	endpoint.set_close_handler([&](websocketpp::connection_hdl handle){
-		LOGINFO("Connection closed\n");
+		LOGINFO("Connection closed");
 		client = std::nullopt;
 	});
 	endpoint.set_message_handler([&](websocketpp::connection_hdl conn, std::shared_ptr<websocketpp::config::asio::message_type> message){
