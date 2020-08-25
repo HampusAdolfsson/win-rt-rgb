@@ -7,6 +7,7 @@ WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfi
 								std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback)
  : profilesCallback(profilesCallback),
  lockCallback(lockCallback)
+//  client(nullptr)
 { }
 
 WebsocketServer::~WebsocketServer()
@@ -17,12 +18,13 @@ WebsocketServer::~WebsocketServer()
 
 void WebsocketServer::start(const unsigned int& port)
 {
-	endpoint.set_open_handler([&](websocketpp::connection_hdl conn) {
+	endpoint.set_open_handler([&](websocketpp::connection_hdl handle) {
 		LOGINFO("Connection opened\n");
-		auto handle = endpoint.get_con_from_hdl(conn);
+		client = handle;
 	});
-	endpoint.set_close_handler([](websocketpp::connection_hdl conn){
+	endpoint.set_close_handler([&](websocketpp::connection_hdl handle){
 		LOGINFO("Connection closed\n");
+		client = std::nullopt;
 	});
 	endpoint.set_message_handler([&](websocketpp::connection_hdl conn, std::shared_ptr<websocketpp::config::asio::message_type> message){
 		nlohmann::json json = nlohmann::json::parse(message->get_payload());
@@ -43,6 +45,22 @@ void WebsocketServer::start(const unsigned int& port)
 	endpoint.start_accept();
 	endpoint.run();
 }
+
+void WebsocketServer::notifyActiveProfileChanged(const std::optional<unsigned int>& activeProfileIndex)
+{
+	if (client.has_value())
+	{
+		nlohmann::json message;
+		message["subject"] = "activeProfile";
+		if (activeProfileIndex.has_value())
+		{
+			message["contents"] = *activeProfileIndex;
+		}
+		auto connection = endpoint.get_con_from_hdl(*client);
+		connection->send(message.dump());
+	}
+}
+
 
 void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 {

@@ -34,22 +34,53 @@ int main(int argc, char** argv)
 	app.startAudioVisualizer();
 	app.startDesktopVisualizer();
 
+
 	int capturedOutput = 0;
 
-	ProfileManager::start([&](std::optional<std::pair<ApplicationProfile, unsigned int>> profileData) {
+	ProfileManager::start({});
+	ProfileManager::addCallback([&](std::optional<ProfileManager::ActiveProfileData> profileData) {
 		if (profileData.has_value())
 		{
-			app.setDesktopRegion(profileData->second, profileData->first.captureRegion);
+			app.setDesktopRegion(profileData->monitorIndex, profileData->profile.captureRegion);
 		}
 		else
 		{
 			app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 		}
-	}, { });
+	});
 
 
 	bool audioVisualizerRunning = true;
 	bool desktopVisualizerRunning = true;
+
+
+	WebsocketServer server([](std::vector<ApplicationProfile> newProfiles)
+	{ /* Profiles callback */
+		ProfileManager::setProfiles(newProfiles);
+	}, [](std::optional<std::pair<unsigned int, unsigned int>> profileAndMonitorIdx)
+	{ /* LockProfile callback */
+		if (profileAndMonitorIdx.has_value())
+		{
+			ProfileManager::lockProfile(profileAndMonitorIdx->first, profileAndMonitorIdx->second);
+		}
+		else
+		{
+			ProfileManager::unlock();
+		}
+
+	});
+	ProfileManager::addCallback([&](std::optional<ProfileManager::ActiveProfileData> profileData) {
+		if (profileData.has_value())
+		{
+			server.notifyActiveProfileChanged(profileData->profileIndex);
+		}
+		else
+		{
+			server.notifyActiveProfileChanged(std::nullopt);
+		}
+	});
+	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);
+
 
 	HotkeyManager hotkeys;
 	hotkeys.addHotkey(0x56, [&]() { // v key
@@ -76,28 +107,11 @@ int main(int argc, char** argv)
 		LOGINFO("Hotkey pressed, exiting application");
 		return true;
 	});
-
-	WebsocketServer server([](std::vector<ApplicationProfile> newProfiles)
-	{
-		ProfileManager::setProfiles(newProfiles);
-	}, [](std::optional<std::pair<unsigned int, unsigned int>> profileAndMonitorIdx)
-	{
-		if (profileAndMonitorIdx.has_value())
-		{
-			ProfileManager::lockProfile(profileAndMonitorIdx->first, profileAndMonitorIdx->second);
-		}
-		else
-		{
-			ProfileManager::unlock();
-		}
-
-	});
-	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);
-
 	hotkeys.runHandlerLoop();
 
 	if (audioVisualizerRunning) app.stopAudioVisualizer();
 	if (desktopVisualizerRunning) app.stopDesktopVisualizer();
 	LOGINFO("Exiting application ----------------------------------------------");
+	ExitProcess(0);
 	return 0;
 }

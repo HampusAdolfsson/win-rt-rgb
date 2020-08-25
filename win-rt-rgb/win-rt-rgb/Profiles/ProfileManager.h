@@ -7,15 +7,26 @@
 
 namespace ProfileManager
 {
+	typedef struct {
+		ApplicationProfile profile;
+		unsigned int profileIndex;
+		unsigned int monitorIndex;
+	} ActiveProfileData;
+
 	/**
-	*	Starts listening to foreground window changes and notifies when focus is given to a new window.
-	*	@param profileChangedCallback Called when a new window is focused, with a profile matching the window and the monitor the focused window is on.
-	*		If no profile matched the active window, std::nullopt is sent instead.
-	*	@param profiles The profiles to watch
+	*	Starts listening to foreground window changes and notifies with a matching profile when focus is given to a new window.
+	*	@param profiles The profiles to use
 	*/
-	void start(std::function<void(std::optional<std::pair<ApplicationProfile, unsigned int>>)> profileChangedCallback, const std::vector<ApplicationProfile>& profiles);
+	void start(const std::vector<ApplicationProfile>& profiles);
 
 	void stop();
+
+	/**
+	*	Registers a function to be called when the active profile changes.
+	*	@param profileChangedCallback Called when a new window is focused, with a profile matching the window and the monitor the focused window is on.
+	*		If no profile matched the active window, std::nullopt is sent instead.
+	*/
+	void addCallback(std::function<void(std::optional<ActiveProfileData>)> profileChangedCallback);
 
 	/**
 	*	Sets the profiles to use
