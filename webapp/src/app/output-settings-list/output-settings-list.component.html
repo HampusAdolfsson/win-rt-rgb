@@ -1,5 +1,0 @@
-<mat-accordion>
-  <app-output-settings *ngFor="let spec of specifications; index as i" [specification]="spec" (applied)=applySpec(i) (deleted)="deleteSpec(i)">
-  </app-output-settings>
-</mat-accordion>
-<button mat-stroked-button id="add" (click)="addSpecification()">Add Device</button>
