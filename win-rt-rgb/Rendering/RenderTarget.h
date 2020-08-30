@@ -15,6 +15,10 @@ public:
 
 	void beginFrame();
 
+	void setIntensity(const float& intensity);
+
+	void cloneFrom(const RenderTarget& other);
+
 	inline const std::vector<RgbColor>& getColors() const
 	{
 		return colors;

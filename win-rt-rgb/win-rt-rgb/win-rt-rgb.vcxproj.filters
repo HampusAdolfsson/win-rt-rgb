@@ -36,6 +36,9 @@
     <ClCompile Include="WebsocketServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AudioDesktopRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -1643,6 +1646,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="asio\asio\yield.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioDesktopRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

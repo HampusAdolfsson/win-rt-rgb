@@ -6,9 +6,9 @@ RgbColor operator*(const RgbColor& c, const float& factor)
 {
 	assert(factor >= 0 && factor <= 1);
 	return {
-		static_cast<ColorChannel>(c.red * factor),
+		static_cast<ColorChannel>(c.blue * factor),
 		static_cast<ColorChannel>(c.green * factor),
-		static_cast<ColorChannel>(c.blue * factor)
+		static_cast<ColorChannel>(c.red * factor)
 	};
 }
 

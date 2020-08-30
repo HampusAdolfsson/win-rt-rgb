@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="AudioDesktopRenderer.cpp" />
     <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="Profiles\ProfileManager.cpp" />
     <ClCompile Include="Profiles\ApplicationProfile.cpp" />
@@ -628,6 +629,7 @@
     <ClInclude Include="asio\asio\write.hpp" />
     <ClInclude Include="asio\asio\write_at.hpp" />
     <ClInclude Include="asio\asio\yield.hpp" />
+    <ClInclude Include="AudioDesktopRenderer.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="json.h" />

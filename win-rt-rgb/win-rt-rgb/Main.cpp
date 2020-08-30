@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include "Config.h"
-#include "App.h"
+#include "AudioDesktopRenderer.h"
 #include "Logger.h"
 #include "WledHttpClient.h"
 #include "Profiles/ProfileManager.h"
@@ -20,19 +20,13 @@ int main(int argc, char** argv)
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	std::vector<std::unique_ptr<RenderOutput>> outputs;
-	std::vector<RenderTarget> targets;
-	std::vector<SamplingSpecification> specifications;
+	AudioDesktopRenderer renderer;
 	for (const auto& output : Config::outputs)
 	{
-		outputs.emplace_back(new WledRenderOutput(output.second.numberOfRegions, output.first, WLED_UDP_PORT));
-		targets.push_back(RenderTarget(output.second.numberOfRegions));
-		specifications.push_back(output.second);
+		renderer.addRenderOutput(std::unique_ptr<RenderOutput>(new WledRenderOutput(output.second.numberOfRegions == 50 ? 89 : output.second.numberOfRegions, output.first, WLED_UDP_PORT)),
+			output.second, false);
 	}
-
-	App app(targets, std::move(outputs), specifications);
-	app.startAudioVisualizer();
-	app.startDesktopVisualizer();
+	renderer.start();
 
 
 	int capturedOutput = 0;
@@ -41,11 +35,11 @@ int main(int argc, char** argv)
 	ProfileManager::addCallback([&](std::optional<ProfileManager::ActiveProfileData> profileData) {
 		if (profileData.has_value())
 		{
-			app.setDesktopRegion(profileData->monitorIndex, profileData->profile.captureRegion);
+			renderer.setDesktopRegion(profileData->monitorIndex, profileData->profile.captureRegion);
 		}
 		else
 		{
-			app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
+			renderer.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 		}
 	});
 
@@ -83,24 +77,10 @@ int main(int argc, char** argv)
 
 
 	HotkeyManager hotkeys;
-	hotkeys.addHotkey(0x56, [&]() { // v key
-		LOGINFO("Hotkey pressed, toggling audio visualizer");
-		if (audioVisualizerRunning) app.stopAudioVisualizer();
-		else						app.startAudioVisualizer();
-		audioVisualizerRunning = !audioVisualizerRunning;
-		return false;
-	});
-	hotkeys.addHotkey(0x42, [&]() { // b key
-		LOGINFO("Hotkey pressed, toggling desktop visualizer");
-		if (desktopVisualizerRunning) app.stopDesktopVisualizer();
-		else						  app.startDesktopVisualizer();
-		desktopVisualizerRunning = !desktopVisualizerRunning;
-		return false;
-	});
 	hotkeys.addHotkey(0x4b, [&]() { // k key
 		LOGINFO("Hotkey pressed, switching captured monitor");
 		capturedOutput = capturedOutput == 0 ? 1 : 0;
-		app.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
+		renderer.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
 		return false;
 	});
 	hotkeys.addHotkey(0x4e, [&]() { // n key
@@ -109,8 +89,7 @@ int main(int argc, char** argv)
 	});
 	hotkeys.runHandlerLoop();
 
-	if (audioVisualizerRunning) app.stopAudioVisualizer();
-	if (desktopVisualizerRunning) app.stopDesktopVisualizer();
+	renderer.stop();
 	LOGINFO("Exiting application ----------------------------------------------");
 	ExitProcess(0);
 	return 0;

@@ -1,3 +1,5 @@
+#include <cassert>
+#include <cstdlib>
 #include "RenderTarget.h"
 
 RenderTarget::RenderTarget(const unsigned int& size)
@@ -13,5 +15,19 @@ void RenderTarget::drawRange(const unsigned int& startIndex, const unsigned int&
 
 void RenderTarget::beginFrame()
 {
-	memset(colors.data(), false, size);
+	memset(colors.data(), 0, size);
+}
+
+void RenderTarget::setIntensity(const float& intensity)
+{
+	for (size_t i = 0; i < size; i++) // TODO: consider parallelism
+	{
+		colors[i] = colors[i] * intensity;
+	}
+}
+
+void RenderTarget::cloneFrom(const RenderTarget& other)
+{
+	assert(size == other.size);
+	memcpy(colors.data(), other.colors.data(), sizeof(RgbColor) * size);
 }
