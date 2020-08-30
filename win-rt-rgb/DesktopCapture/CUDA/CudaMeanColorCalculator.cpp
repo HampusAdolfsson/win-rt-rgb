@@ -116,12 +116,13 @@ void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, const std::vector
 			CudaKernels::blurColors((RgbColor*)bufferSets[i].outputBuffer, (RgbColor*)bufferSets[i].outputBufferBlurred,
 									specifications[i].numberOfRegions, specifications[i].blurRadius);
 		}
-		status = cudaDeviceSynchronize();
-		if (status != cudaSuccess)
-		{
-			LOGSEVERE("cuda mean color failed to launch with error %d\n", status);
-		}
-
+	}
+	status = cudaDeviceSynchronize();
+	if (status != cudaSuccess)
+	{
+		LOGSEVERE("cuda mean color failed to launch with error %d\n", status);
+	}
+	for (size_t i = 0; i < specifications.size(); i++)
 		// fetch results and release resources
 		status = cudaMemcpy(out[i], specifications[i].blurRadius > 0 ? bufferSets[i].outputBufferBlurred : bufferSets[i].outputBuffer,
 							sizeof(RgbColor) * specifications[i].numberOfRegions, cudaMemcpyDeviceToHost);
