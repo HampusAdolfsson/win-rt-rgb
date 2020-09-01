@@ -27,9 +27,9 @@ WledRenderOutput::~WledRenderOutput()
 void WledRenderOutput::draw(const RenderTarget& target)
 {
 	outputBuffer[0] = 2; // DRGB protocol
-	outputBuffer[1] = 1;
+	outputBuffer[1] = 4;
 	const auto& colors = target.getColors();
-	for (int i = 0; i < colors.size(); i++)
+	for (int i = 0; i < target.getSize(); i++)
 	{
 		const auto& color = colors[i];
 		outputBuffer[2 + 3*i] = static_cast<uint8_t>(color.blue * 0xff);

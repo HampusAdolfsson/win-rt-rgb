@@ -1,6 +1,7 @@
 #pragma once
 #include "DesktopCaptureController.h"
 #include "SamplingSpecification.h"
+#include "AudioMonitor.h"
 #include "RenderOutput.h"
 #include <memory>
 #include <optional>
@@ -27,6 +28,7 @@ private:
 
 	std::vector<RenderDevice> devices;
 	std::unique_ptr<DesktopCaptureController> desktopCaptureController = nullptr;
+	std::unique_ptr<AudioMonitor> audioMonitor = nullptr;
 
 	// measuring fps
 	unsigned int frames = 0;

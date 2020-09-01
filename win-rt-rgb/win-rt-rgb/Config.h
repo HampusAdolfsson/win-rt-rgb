@@ -7,10 +7,15 @@
 
 
 namespace Config {
+	struct DeviceConfig {
+		const char* ipAddress;
+		SamplingSpecification samplingSpec;
+		bool useAudio;
+	};
 	// Enumerates the WLED devices to output to
-	std::vector<std::pair<const char*, SamplingSpecification>> outputs = {
-		std::pair<const char*, SamplingSpecification>("192.168.1.8", { 47, 0.15f, 1, true }),
-		// std::pair<const char*, SamplingSpecification>("192.168.1.13", { 10, 0.2f, 0, false }),
+	std::vector<DeviceConfig> outputs {
+		DeviceConfig{ "192.168.1.8", { 50, 0.15f, 1, true }, false },
+		DeviceConfig{ "192.168.1.13", { 10, 0.2f, 2, false }, true },
 	};
 
 	constexpr Rect defaultCaptureRegion = {0, 810, 1920, 270};

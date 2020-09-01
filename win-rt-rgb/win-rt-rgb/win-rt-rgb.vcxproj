@@ -140,7 +140,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
     <ClCompile Include="AudioDesktopRenderer.cpp" />
     <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="Profiles\ProfileManager.cpp" />
@@ -150,7 +149,6 @@
     <ClCompile Include="WledHttpClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h" />
     <ClInclude Include="asio\asio.hpp" />
     <ClInclude Include="asio\asio\associated_allocator.hpp" />
     <ClInclude Include="asio\asio\associated_executor.hpp" />

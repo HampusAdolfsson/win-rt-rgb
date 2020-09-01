@@ -1,6 +1,6 @@
 #pragma once
 #include "Color.h"
-#include <vector>
+#include <memory>
 
 /**
 *	Stores color data, and allows clients to write color values.
@@ -19,7 +19,7 @@ public:
 
 	void cloneFrom(const RenderTarget& other);
 
-	inline const std::vector<RgbColor>& getColors() const
+	inline const std::unique_ptr<RgbColor[]>& getColors() const
 	{
 		return colors;
 	}
@@ -29,6 +29,6 @@ public:
 
 private:
 	unsigned int size;
-	std::vector<RgbColor> colors;
+	std::unique_ptr<RgbColor[]> colors;
 };
 

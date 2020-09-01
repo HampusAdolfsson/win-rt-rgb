@@ -1,4 +1,5 @@
 #include "AudioDesktopRenderer.h"
+#include "WaveToIntensityConverter.h"
 #include "Logger.h"
 #include <stdexcept>
 
@@ -26,11 +27,23 @@ void AudioDesktopRenderer::start()
 		{
 			specs.push_back(device.desktopCaptureParams);
 		}
-		desktopCaptureController = std::unique_ptr<DesktopCaptureController>(new DesktopCaptureController(0, specs,
-			std::bind(&AudioDesktopRenderer::desktopCallback, this, std::placeholders::_1, std::placeholders::_2)));
+		desktopCaptureController = std::make_unique<DesktopCaptureController>(0, specs,
+			std::bind(&AudioDesktopRenderer::desktopCallback, this, std::placeholders::_1, std::placeholders::_2));
 	}
+	if (!audioMonitor.get())
+	{
+		audioMonitor = std::make_unique<AudioMonitor>(std::make_unique<WaveToIntensityConverter>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1)));
+		audioMonitor->initialize();
+	}
+	for (size_t i = 0; i < devices[1].desktopCaptureParams.numberOfRegions; i++)
+	{
+		RgbColor white = { 1.0f, 1.0f, 1.0f };
+		devices[1].desktopRenderTarget.drawRange(i, 1, &white);
+	}
+
 	lastFpsTime = std::chrono::system_clock::now();
 	desktopCaptureController->start();
+	audioMonitor->start();
 }
 
 void AudioDesktopRenderer::stop()
@@ -38,6 +51,7 @@ void AudioDesktopRenderer::stop()
 	if (!started) { throw std::runtime_error("Not running"); }
 	started = false;
 	desktopCaptureController->stop();
+	audioMonitor->stop();
 }
 
 void AudioDesktopRenderer::setDesktopRegion(const unsigned int& outputIdx, const Rect& region)
@@ -51,9 +65,9 @@ void AudioDesktopRenderer::setDesktopRegion(const unsigned int& outputIdx, const
 void AudioDesktopRenderer::audioCallback(const float& intensity)
 {
 	if (!started) { return; }
-		for (RenderDevice& device: devices)
+	for (RenderDevice& device : devices)
 		{
-			if (!device.audioRenderTarget.has_value()) { return; }
+		if (!device.audioRenderTarget.has_value()) { continue; }
 			device.audioRenderTarget->cloneFrom(device.desktopRenderTarget);
 			device.audioRenderTarget->setIntensity(intensity);
 			device.renderOutput->draw(*device.audioRenderTarget);
