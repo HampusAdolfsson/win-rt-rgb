@@ -41,5 +41,8 @@
     <ClInclude Include="WaveToIntensityConverter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SseUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <mmeapi.h>
 #include <mmreg.h>
+#ifdef USE_SSE
+#include <immintrin.h>
+#include "SseUtils.h"
+#endif
 
 // Size of softening filter. Higher value means more smooth output, but lower responsiveness (more delay).
 #define MEAN_ORDER 8
@@ -29,12 +33,33 @@ void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrame
 	// There may also be better way of handling multi-channel audio.
 	unsigned int nSamples = nFrames * nChannels;
 	float sampleSum = 0;
+#ifdef USE_SSE
+	__m256 vecSum = _mm256_set1_ps(0);
+	#define FLOATS_PER_VECTOR (sizeof(__m256) / sizeof(float))
+
+	size_t i = 0;
+	while ((nSamples - i) / FLOATS_PER_VECTOR > 0)
+	{
+		__m256 samplesVector = _mm256_loadu_ps(samples + i);
+		vecSum = _mm256_add_ps(vecSum, _mm256_abs_ps(samplesVector));
+		i += FLOATS_PER_VECTOR;
+	}
+	sampleSum += _mm256_sum_all_ps(vecSum);
+	while (i < nSamples)
+	{
+		float sample = samples[i];
+		sample = sample < 0 ? -sample : sample;
+		sampleSum += sample * sample;
+		i++;
+	}
+#else
 	for (size_t i = 0; i < nSamples; i++)
 	{
 		float sample = samples[i];
 		sample = sample < 0 ? -sample : sample;
 		sampleSum += sample * sample;
 	}
+#endif
 	float mean = sampleSum / nSamples;
 	//This is the root mean square of the buffer
 	mean = sqrt(mean);
@@ -60,6 +85,6 @@ void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrame
 
 	//float roof = std::max(0.1f, roofFilter.getOutput());
 	//return std::min(1.0f, outputFilter.getOutput() / roof);
-	LOGINFO("%f, %f", max(0, sum / maxSum), maxSum);
-	callback(std::clamp(sum / maxSum, 0.0f, 1.0f));
+	// LOGINFO("%f, %f", max(0, sum / maxSum), maxSum);
+	callback(0.0f + std::clamp(sum / maxSum * 1.0f, 0.0f, 1.0f));
 }
