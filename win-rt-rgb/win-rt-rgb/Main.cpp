@@ -2,7 +2,6 @@
 #include "Config.h"
 #include "AudioDesktopRenderer.h"
 #include "Logger.h"
-#include "WledHttpClient.h"
 #include "Profiles/ProfileManager.h"
 #include "Profiles/ApplicationProfile.h"
 #include "HotkeyManager.h"
