@@ -66,7 +66,7 @@ void AudioDesktopRenderer::audioCallback(const float& intensity)
 {
 	if (!started) { return; }
 	for (RenderDevice& device : devices)
-		{
+	{
 		if (!device.audioRenderTarget.has_value()) { continue; }
 			device.audioRenderTarget->cloneFrom(device.desktopRenderTarget);
 			device.audioRenderTarget->setIntensity(intensity);
