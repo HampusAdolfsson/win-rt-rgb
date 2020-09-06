@@ -4,7 +4,6 @@
 #include "Logger.h"
 #include "Profiles/ProfileManager.h"
 #include "Profiles/ApplicationProfile.h"
-#include "HotkeyManager.h"
 #include "RenderTarget.h"
 #include "WledRenderOutput.h"
 #include "WebsocketServer.h"
@@ -72,21 +71,7 @@ int main(int argc, char** argv)
 			server.notifyActiveProfileChanged(std::nullopt);
 		}
 	});
-	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);
-
-
-	HotkeyManager hotkeys;
-	hotkeys.addHotkey(0x4b, [&]() { // k key
-		LOGINFO("Hotkey pressed, switching captured monitor");
-		capturedOutput = capturedOutput == 0 ? 1 : 0;
-		renderer.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
-		return false;
-	});
-	hotkeys.addHotkey(0x4e, [&]() { // n key
-		LOGINFO("Hotkey pressed, exiting application");
-		return true;
-	});
-	hotkeys.runHandlerLoop();
+	server.start(Config::websocketPort);
 
 	renderer.stop();
 	LOGINFO("Exiting application ----------------------------------------------");

@@ -24,12 +24,6 @@
     <ClCompile Include="Profiles\ProfileManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HotkeyManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WledHttpClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WebsocketServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -44,13 +38,7 @@
     <ClInclude Include="Profiles\ProfileManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HotkeyManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WledHttpClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="json.h">

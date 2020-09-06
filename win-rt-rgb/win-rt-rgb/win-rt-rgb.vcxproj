@@ -208,12 +208,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioDesktopRenderer.cpp" />
-    <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="Profiles\ProfileManager.cpp" />
     <ClCompile Include="Profiles\ApplicationProfile.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="WebsocketServer.cpp" />
-    <ClCompile Include="WledHttpClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asio\asio.hpp" />
@@ -696,7 +694,6 @@
     <ClInclude Include="asio\asio\yield.hpp" />
     <ClInclude Include="AudioDesktopRenderer.h" />
     <ClInclude Include="Config.h" />
-    <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="Profiles\ProfileManager.h" />
     <ClInclude Include="Profiles\ApplicationProfile.h" />
@@ -794,7 +791,6 @@
     <ClInclude Include="websocketpp\utf8_validator.hpp" />
     <ClInclude Include="websocketpp\utilities.hpp" />
     <ClInclude Include="websocketpp\version.hpp" />
-    <ClInclude Include="WledHttpClient.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="websocketpp\LICENSE" />
