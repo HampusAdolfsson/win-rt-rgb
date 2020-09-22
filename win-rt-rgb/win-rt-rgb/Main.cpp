@@ -71,7 +71,15 @@ int main(int argc, char** argv)
 			server.notifyActiveProfileChanged(std::nullopt);
 		}
 	});
-	server.start(Config::websocketPort);
+	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);
+
+	MSG msg;
+	while (GetMessage(&msg, 0, WM_HOTKEY, 0) == 1)
+	{
+		switch (msg.message)
+		{
+		}
+	}
 
 	renderer.stop();
 	LOGINFO("Exiting application ----------------------------------------------");
