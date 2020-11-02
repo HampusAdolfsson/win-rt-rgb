@@ -12,6 +12,10 @@ public:
 
 	void draw(const RenderTarget& target);
 
+	WledRenderOutput(WledRenderOutput const&) = delete;
+	WledRenderOutput(WledRenderOutput&&) = delete;
+	WledRenderOutput& operator=(WledRenderOutput const&) = delete;
+
 private:
 	SOCKET				sockHandle;
 	struct sockaddr_in	sockAddr;
