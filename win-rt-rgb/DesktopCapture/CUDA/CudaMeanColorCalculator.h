@@ -11,6 +11,7 @@ typedef struct
 	void* intermediaryBuffer;
 	void* outputBuffer;
 	void* outputBufferBlurred;
+	cudaStream_t stream;
 } CudaBuffers;
 
 /**

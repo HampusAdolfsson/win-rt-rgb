@@ -168,38 +168,48 @@ void averageAndAdjustColorsKernel(unsigned int* channels, int pixelsPerChannel, 
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	if (x >= nOutputs) return;
 	RgbColor rgb;
+	// rgb.red = float(channels[3*x]) * 0.6f / pixelsPerChannel / 0xFF;
+	// rgb.green = float(channels[3*x+1]) * 1.0f / pixelsPerChannel / 0xFF;
+	// rgb.blue = float(channels[3*x+2]) * 1.2f / pixelsPerChannel / 0xFF;
 	rgb.red = float(channels[3*x]) / pixelsPerChannel / 0xFF;
 	rgb.green = float(channels[3*x+1]) / pixelsPerChannel / 0xFF;
 	rgb.blue = float(channels[3*x+2]) / pixelsPerChannel / 0xFF;
-	auto hsv = rgbToHsv(rgb);
-	if (hsv.saturation > 0.001f)
+	if (saturation > 0.0f)
 	{
-		hsv.saturation = min(hsv.saturation + saturation, 1.0f);
+		auto hsv = rgbToHsv(rgb);
+		if (hsv.saturation > 0.001f)
+		{
+			hsv.saturation = min(hsv.saturation + saturation, 1.0f);
+		}
+		if (flip) x = nOutputs - 1 - x;
+		colorOutputs[x] = hsvToRgb(hsv);
 	}
-	if (flip) x = nOutputs - 1 - x;
-	colorOutputs[x] = hsvToRgb(hsv);
+	else
+	{
+		colorOutputs[x] = rgb;
+	}
 }
 
 namespace CudaKernels
 {
-	void calculateMeanColor(uint8_t* pixels, int width, int height, size_t pitch, unsigned int* outputChannels, int outputWidth)
+	void calculateMeanColor(uint8_t* pixels, int width, int height, size_t pitch, unsigned int* outputChannels, int outputWidth, cudaStream_t stream)
 	{
 		dim3 Db = dim3(16, 16);   // block dimensions are fixed to be 256 threads
 		dim3 Dg = dim3((width + Db.x - 1) / Db.x, (height + Db.y - 1) / Db.y);
-		calculateMeanColorKernel<<<Dg, Db>>>(pixels, width, height, pitch, outputChannels, outputWidth);
+		calculateMeanColorKernel<<<Dg, Db, 0, stream>>>(pixels, width, height, pitch, outputChannels, outputWidth);
 	}
 
-	void averageAndAdjustColors(unsigned int* channels, int pixelsPerChannel, RgbColor* colorOutputs, int outputSize, float saturationAdjustment, bool flip)
+	void averageAndAdjustColors(unsigned int* channels, int pixelsPerChannel, RgbColor* colorOutputs, int outputSize, float saturationAdjustment, bool flip, cudaStream_t stream)
 	{
 		size_t blocksize = 32;
 		size_t gridsize = (outputSize + blocksize - 1) / blocksize;
-		averageAndAdjustColorsKernel<<<gridsize, blocksize>>>(channels, pixelsPerChannel, colorOutputs, outputSize, saturationAdjustment, flip);
+		averageAndAdjustColorsKernel<<<gridsize, blocksize, 0, stream>>>(channels, pixelsPerChannel, colorOutputs, outputSize, saturationAdjustment, flip);
 	}
 
-	void blurColors(RgbColor *id, RgbColor *od, int outputSize, int r)
+	void blurColors(RgbColor *id, RgbColor *od, int outputSize, int r, cudaStream_t stream)
 	{
 		size_t blocksize = 32;
 		size_t gridsize = (outputSize + blocksize - 1) / blocksize;
-		blurColorsKernel<<<blocksize, gridsize>>>(id, od, outputSize, r);
+		blurColorsKernel<<<blocksize, gridsize, 0, stream>>>(id, od, outputSize, r);
 	}
 }

@@ -51,6 +51,11 @@ void CudaMeanColorCalculator::initialize(const std::vector<SamplingSpecification
 		{
 			LOGSEVERE("cudaMalloc failed");
 		}
+		status = cudaStreamCreate(&bufferSets[i].stream);
+		if (status != cudaSuccess)
+		{
+			LOGSEVERE("cudaStreamCreate failed");
+		}
 
 	}
 }
@@ -71,6 +76,7 @@ CudaMeanColorCalculator::~CudaMeanColorCalculator()
 		{
 			cudaFree(buffers.outputBufferBlurred);
 		}
+		cudaStreamDestroy(buffers.stream);
 	}
 	if (textureBuffer)
 	{
@@ -106,15 +112,15 @@ void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, const std::vector
 		// kernel calls
 		CudaKernels::calculateMeanColor((uint8_t*) textureBuffer, activeRegion.width, activeRegion.height,
 										textureBufferPitch, (unsigned int*) bufferSets[i].intermediaryBuffer,
-										activeRegion.width / specifications[i].numberOfRegions);
+										activeRegion.width / specifications[i].numberOfRegions, bufferSets[i].stream);
 
 		CudaKernels::averageAndAdjustColors((unsigned int*)bufferSets[i].intermediaryBuffer,
 											activeRegion.height * (activeRegion.width / specifications[i].numberOfRegions),
 											(RgbColor*)bufferSets[i].outputBuffer, specifications[i].numberOfRegions,
-											specifications[i].saturationAdjustment, specifications[i].flipHorizontally);
+											specifications[i].saturationAdjustment, specifications[i].flipHorizontally, bufferSets[i].stream);
 		if (specifications[i].blurRadius > 0) {
 			CudaKernels::blurColors((RgbColor*)bufferSets[i].outputBuffer, (RgbColor*)bufferSets[i].outputBufferBlurred,
-									specifications[i].numberOfRegions, specifications[i].blurRadius);
+									specifications[i].numberOfRegions, specifications[i].blurRadius, bufferSets[i].stream);
 		}
 	}
 	status = cudaDeviceSynchronize();
@@ -122,7 +128,7 @@ void CudaMeanColorCalculator::getMeanColors(Rect activeRegion, const std::vector
 	{
 		LOGSEVERE("cuda mean color failed to launch with error %d\n", status);
 	}
-	for (size_t i = 0; i < specifications.size(); i++)
+	for (size_t i = 0; i < specifications.size(); i++) {
 		// fetch results and release resources
 		status = cudaMemcpy(out[i], specifications[i].blurRadius > 0 ? bufferSets[i].outputBufferBlurred : bufferSets[i].outputBuffer,
 							sizeof(RgbColor) * specifications[i].numberOfRegions, cudaMemcpyDeviceToHost);
