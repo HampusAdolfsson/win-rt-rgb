@@ -54,7 +54,7 @@ ID3D11Texture2D* DesktopDuplicator::captureFrame()
 			}
 			else if (hr == DXGI_ERROR_WAIT_TIMEOUT)
 			{
-				//LOGWARNING("Frame duplication timed out");
+				break;
 			}
 			else
 			{
@@ -72,14 +72,16 @@ ID3D11Texture2D* DesktopDuplicator::captureFrame()
 		currentFrame = nullptr;
 	}
 
-	// QI for IDXGIResource
-	hr = desktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&currentFrame));
-	desktopResource->Release();
-	desktopResource = nullptr;
-	if (FAILED(hr))
+	if (desktopResource)
 	{
-		LOGSEVERE("Failed to query for frame");
-		return nullptr;
+		hr = desktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&currentFrame));
+		desktopResource->Release();
+		desktopResource = nullptr;
+		if (FAILED(hr))
+		{
+			LOGSEVERE("Failed to query for frame");
+			return nullptr;
+		}
 	}
 
 	return currentFrame;

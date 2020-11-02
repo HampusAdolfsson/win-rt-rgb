@@ -1,6 +1,7 @@
 #include "DesktopColorSampler.h"
 #include "Logger.h"
 #include <d3d11.h>
+#include <optional>
 
 DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx,
 											const std::vector<SamplingSpecification>& specifications,
@@ -52,6 +53,7 @@ void DesktopColorSampler::stop()
 // run by worker thread
 void DesktopColorSampler::sampleLoop()
 {
+	std::vector<RgbColor*> lastResult;
 	while (isRunning)
 	{
 		ID3D11Texture2D* frame = desktopDuplicator.captureFrame();
@@ -59,11 +61,11 @@ void DesktopColorSampler::sampleLoop()
 		{
 			frameSampler.setFrameData(frame);
 			desktopDuplicator.releaseFrame();
-			auto results = frameSampler.sample(captureRegion);
-			for (size_t i = 0; i < results.size(); i++)
-			{
-				callback(i, results[i]);
-			}
+			lastResult = frameSampler.sample(captureRegion);
+		}
+		for (size_t i = 0; i < lastResult.size(); i++)
+		{
+			callback(i, lastResult[i]);
 		}
 	}
 }
