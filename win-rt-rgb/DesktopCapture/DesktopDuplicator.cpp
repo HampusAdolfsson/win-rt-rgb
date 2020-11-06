@@ -54,7 +54,8 @@ ID3D11Texture2D* DesktopDuplicator::captureFrame()
 			}
 			else if (hr == DXGI_ERROR_WAIT_TIMEOUT)
 			{
-				break;
+				outputDuplication->ReleaseFrame();
+				return nullptr;
 			}
 			else
 			{
@@ -92,7 +93,7 @@ void DesktopDuplicator::releaseFrame()
 	HRESULT hr = outputDuplication->ReleaseFrame();
 	if (FAILED(hr))
 	{
-		LOGSEVERE("Failed to release frame");
+		LOGSEVERE("Failed to release frame: %x", hr);
 		return;
 	}
 
