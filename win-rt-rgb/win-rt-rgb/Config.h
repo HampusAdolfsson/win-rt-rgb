@@ -21,4 +21,6 @@ namespace Config {
 	constexpr Rect defaultCaptureRegion = {0, 810, 1920, 270};
 
 	constexpr unsigned int websocketPort = 9901;
+
+	constexpr unsigned int audioFps = 30;
 };

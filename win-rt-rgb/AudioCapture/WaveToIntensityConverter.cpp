@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include <cassert>
 #include <algorithm>
+#include <Windows.h>
 #include <mmeapi.h>
 #include <mmreg.h>
 #ifdef USE_SSE
@@ -10,13 +11,14 @@
 #endif
 
 // Size of softening filter. Higher value means more smooth output, but lower responsiveness (more delay).
-#define MEAN_ORDER 8
+#define MEAN_ORDER 4
 // Determines how fast the max value decays (as the time in seconds it takes for it to decay from max to 0).
 // Higher values mean more stable normalization, but it will be slower to adjust to decreased volumes.
 #define MAX_VAL_DECAY_TIME 330
 
-WaveToIntensityConverter::WaveToIntensityConverter(std::function<void(const float&)> callback)
-	: sum(0),
+WaveToIntensityConverter::WaveToIntensityConverter(unsigned int fps, std::function<void(const float&)> callback)
+	: WaveHandler(fps),
+	sum(0),
 	maxSum(0),
 	meanPrevVals(MEAN_ORDER, 0),
 	callback(callback)
@@ -26,7 +28,7 @@ WaveToIntensityConverter::~WaveToIntensityConverter()
 {
 }
 
-void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrames) {
+void WaveToIntensityConverter::handleWaveData(float* buffer, unsigned int nFrames) {
 	// This code could be improved a lot.
 	// Ideally it should have the same output regardless of sampling frequency,
 	// and should not be dependent on buffers always having the same size.
@@ -40,14 +42,14 @@ void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrame
 	size_t i = 0;
 	while ((nSamples - i) / FLOATS_PER_VECTOR > 0)
 	{
-		__m256 samplesVector = _mm256_loadu_ps(samples + i);
+		__m256 samplesVector = _mm256_loadu_ps(buffer + i);
 		vecSum = _mm256_add_ps(vecSum, _mm256_abs_ps(samplesVector));
 		i += FLOATS_PER_VECTOR;
 	}
 	sampleSum += _mm256_sum_all_ps(vecSum);
 	while (i < nSamples)
 	{
-		float sample = samples[i];
+		float sample = buffer[i];
 		sample = sample < 0 ? -sample : sample;
 		sampleSum += sample * sample;
 		i++;
@@ -55,7 +57,7 @@ void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrame
 #else
 	for (size_t i = 0; i < nSamples; i++)
 	{
-		float sample = samples[i];
+		float sample = buffer[i];
 		sample = sample < 0 ? -sample : sample;
 		sampleSum += sample * sample;
 	}
@@ -63,7 +65,6 @@ void WaveToIntensityConverter::receiveBuffer(float* samples, unsigned int nFrame
 	float mean = sampleSum / nSamples;
 	//This is the root mean square of the buffer
 	mean = sqrt(mean);
-
 	{
 		float newVal = mean / MEAN_ORDER;
 		sum += newVal;

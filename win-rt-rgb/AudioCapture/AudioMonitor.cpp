@@ -155,7 +155,7 @@ void AudioMonitor::handleWaveMessages()
 				break;
 			}
 
-			handler->receiveBuffer(reinterpret_cast<float*>(packetData), nFrames);
+			handler->receiveSamples(reinterpret_cast<float*>(packetData), nFrames);
 
 			hr = captureClient->ReleaseBuffer(nFrames);
 			EXIT_ON_ERROR(hr);

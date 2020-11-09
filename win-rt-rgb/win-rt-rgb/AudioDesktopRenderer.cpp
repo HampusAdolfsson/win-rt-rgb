@@ -32,7 +32,7 @@ void AudioDesktopRenderer::start()
 	}
 	if (!audioMonitor.get())
 	{
-		audioMonitor = std::make_unique<AudioMonitor>(std::make_unique<WaveToIntensityConverter>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1)));
+		audioMonitor = std::make_unique<AudioMonitor>(std::make_unique<WaveToIntensityConverter>(30, std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1)));
 		audioMonitor->initialize();
 	}
 	for (size_t i = 0; i < devices[1].desktopCaptureParams.numberOfRegions; i++)
