@@ -47,10 +47,7 @@ void D3DMeanColorCalculator::setFrameData(ID3D11Texture2D *frame)
 
 std::vector<RgbColor*> D3DMeanColorCalculator::sample(const Rect& activeRegion)
 {
-	for (size_t i = 0; i < results.size(); i++)
-	{
-		cudaCalculator.getMeanColors(activeRegion, results);
-	}
+	cudaCalculator.getMeanColors(activeRegion, results);
 	return results;
 }
 
