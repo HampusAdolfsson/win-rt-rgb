@@ -1,7 +1,7 @@
 #pragma once
-#include "cuda/CudaMeanColorCalculator.h"
 #include "Color.h"
 #include "Rect.h"
+#include "SamplingSpecification.h"
 #include <d3d11.h>
 #include <vector>
 
@@ -14,11 +14,18 @@ class D3DMeanColorCalculator
 {
 	ID3D11DeviceContext* deviceContext = nullptr;
 	ID3D11Texture2D *frameBuffer = nullptr;
+	ID3D11ShaderResourceView *frameBufferView = nullptr;
+	ID3D11Texture2D *mappingBuffer = nullptr;
 	UINT width, height;
+	uint32_t* cpuBuffer;
+
 	std::vector<std::vector<RgbColor>> outputBuffers;
 	std::vector<RgbColor*> results;
+	std::vector<SamplingSpecification> specifications;
 
-	CudaMeanColorCalculator cudaCalculator;
+	// Places the given region from frameBuffer in cpuBuffer
+	void copyToCpuBuffer(Rect region, unsigned int srcMipLevel);
+	void adjustSaturation();
 
 public:
 	/**
@@ -42,7 +49,7 @@ public:
 	 *	Returns one array of colors per specification given in the constructor.
 	 *	The contents of the color arrays may be overwritten and are valid until this method is called again.
 	 */
-	std::vector<RgbColor*> sample(const Rect& activeRegion);
+	std::vector<RgbColor*> sample(Rect activeRegion);
 
 	D3DMeanColorCalculator();
 	~D3DMeanColorCalculator();

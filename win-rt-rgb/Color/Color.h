@@ -24,3 +24,6 @@ bool operator!=(const RgbColor& c1, const RgbColor &c2);
 *	@param progress must be 0-1. 0 means the result == c1, 1 means result == c2.
 */
 RgbColor blendColors(RgbColor c1, RgbColor c2, const float& progress);
+
+RgbColor hsvToRgb(HsvColor hsv);
+HsvColor rgbToHsv(RgbColor rgb);

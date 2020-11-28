@@ -32,7 +32,7 @@ void blurColorsKernel(RgbColor *id, RgbColor *od, int w, int r)
 }
 
 __device__
-HsvColor rgbToHsv(RgbColor rgb)
+HsvColor rgbToHsvCuda(RgbColor rgb)
 {
 	// Code taken from here: https://stackoverflow.com/a/6930407
 	HsvColor    out;
@@ -88,7 +88,7 @@ HsvColor rgbToHsv(RgbColor rgb)
 }
 
 __device__
-RgbColor hsvToRgb(HsvColor hsv)
+RgbColor hsvToRgbCuda(HsvColor hsv)
 {
 	double		hh, p, q, t, ff;
 	long		i;
@@ -176,13 +176,13 @@ void averageAndAdjustColorsKernel(unsigned int* channels, int pixelsPerChannel, 
 	rgb.blue = float(channels[3*x+2]) / pixelsPerChannel / 0xFF;
 	if (saturation > 0.0f)
 	{
-		auto hsv = rgbToHsv(rgb);
+		auto hsv = rgbToHsvCuda(rgb);
 		if (hsv.saturation > 0.001f)
 		{
 			hsv.saturation = min(hsv.saturation + saturation, 1.0f);
 		}
 		if (flip) x = nOutputs - 1 - x;
-		colorOutputs[x] = hsvToRgb(hsv);
+		colorOutputs[x] = hsvToRgbCuda(hsv);
 	}
 	else
 	{
