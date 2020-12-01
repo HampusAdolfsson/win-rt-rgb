@@ -5,7 +5,7 @@
 #include <regex>
 #include <Windows.h>
 #include <audioclient.h>
-#include "WaveHandler.h"
+#include "AudioSink.h"
 
 #define NUM_BUFFERS 5
 
@@ -21,7 +21,7 @@ class AudioMonitor
 
 	std::thread				handlerThread;
 	bool					isRunning;
-	std::unique_ptr<WaveHandler> handler;
+	AudioSink				sink;
 
 	void handleWaveMessages();
 	bool openDevice();
@@ -30,7 +30,7 @@ public:
 	*	Starts an audio monitor for the default output device, capturing its output.
     *	@param handler to pass all captured audio onto
 	*/
-	AudioMonitor(std::unique_ptr<WaveHandler> handler);
+	AudioMonitor(AudioSink sink);
 	~AudioMonitor();
 
 	/**

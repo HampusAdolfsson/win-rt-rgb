@@ -18,10 +18,13 @@
     <ClCompile Include="AudioMonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WaveHandler.cpp">
+    <ClCompile Include="AudioSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WaveToIntensityConverter.cpp">
+    <ClCompile Include="AudioHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EnergyAudioHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,13 +38,16 @@
     <ClInclude Include="dsp\ExpFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WaveHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WaveToIntensityConverter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SseUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioSink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnergyAudioHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

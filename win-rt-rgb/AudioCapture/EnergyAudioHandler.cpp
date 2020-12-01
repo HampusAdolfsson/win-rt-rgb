@@ -1,4 +1,4 @@
-#include "WaveToIntensityConverter.h"
+#include "EnergyAudioHandler.h"
 #include "Logger.h"
 #include <cassert>
 #include <algorithm>
@@ -16,23 +16,21 @@
 // Higher values mean more stable normalization, but it will be slower to adjust to decreased volumes.
 #define MAX_VAL_DECAY_TIME 330
 
-WaveToIntensityConverter::WaveToIntensityConverter(unsigned int fps, std::function<void(const float&)> callback)
-	: WaveHandler(fps),
+EnergyAudioHandler::EnergyAudioHandler(std::function<void(float)> callback)
+	: AudioHandler(),
 	sum(0),
 	maxSum(0),
 	meanPrevVals(MEAN_ORDER, 0),
 	callback(callback)
 {
 }
-WaveToIntensityConverter::~WaveToIntensityConverter()
+EnergyAudioHandler::~EnergyAudioHandler()
 {
 }
 
-void WaveToIntensityConverter::handleWaveData(float* buffer, unsigned int nFrames) {
-	// This code could be improved a lot.
-	// Ideally it should have the same output regardless of sampling frequency,
-	// and should not be dependent on buffers always having the same size.
-	// There may also be better way of handling multi-channel audio.
+void EnergyAudioHandler::handleWaveData(float* buffer, unsigned int nFrames) {
+	assert(nChannels && sampleRate);
+
 	unsigned int nSamples = nFrames * nChannels;
 	float sampleSum = 0;
 #ifdef USE_SSE
@@ -88,4 +86,5 @@ void WaveToIntensityConverter::handleWaveData(float* buffer, unsigned int nFrame
 	//return std::min(1.0f, outputFilter.getOutput() / roof);
 	// LOGINFO("%f, %f", max(0, sum / maxSum), maxSum);
 	callback(0.0f + std::clamp(sum / maxSum * 1.0f, 0.0f, 1.0f));
+
 }

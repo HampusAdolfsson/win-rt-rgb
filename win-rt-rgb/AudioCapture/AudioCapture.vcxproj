@@ -220,17 +220,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AudioHandler.cpp" />
     <ClCompile Include="AudioMonitor.cpp" />
-    <ClCompile Include="WaveHandler.cpp" />
-    <ClCompile Include="WaveToIntensityConverter.cpp" />
+    <ClCompile Include="AudioSink.cpp" />
+    <ClCompile Include="EnergyAudioHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioHandler.h" />
     <ClInclude Include="AudioMonitor.h" />
     <ClInclude Include="dsp\ExpFilter.h" />
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="SseUtils.h" />
-    <ClInclude Include="WaveHandler.h" />
-    <ClInclude Include="WaveToIntensityConverter.h" />
+    <ClInclude Include="AudioSink.h" />
+    <ClInclude Include="EnergyAudioHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

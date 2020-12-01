@@ -34,7 +34,7 @@ private:
 	unsigned int frames = 0;
 	std::chrono::time_point<std::chrono::system_clock> lastFpsTime;
 
-	void audioCallback(const float& intensity);
+	void audioCallback(float intensity);
 	void desktopCallback(const unsigned int& deviceIdx, RgbColor* colors);
 };
 

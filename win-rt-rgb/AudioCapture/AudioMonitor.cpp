@@ -1,9 +1,10 @@
+#include "AudioMonitor.h"
 #include <cassert>
 #include <iostream>
 #include <bitset>
 #include <mmdeviceapi.h>
 #include "Logger.h"
-#include "AudioMonitor.h"
+#include "AudioSink.h"
 
 // #pragma comment(lib, "winmm.lib")
 
@@ -22,11 +23,11 @@ static const IID IID_IAudioClient = __uuidof(IAudioClient);
 						}\
 						} while(0)
 
-AudioMonitor::AudioMonitor(std::unique_ptr<WaveHandler> handler)
+AudioMonitor::AudioMonitor(AudioSink sink)
 	: audioClient(nullptr),
 	captureClient(nullptr),
 	hnsRequestedDuration(REFTIMES_PER_SEC / 30),
-	handler(std::move(handler)),
+	sink(std::move(sink)),
 	isRunning(false) {}
 
 bool AudioMonitor::initialize()
@@ -61,7 +62,7 @@ bool AudioMonitor::initialize()
 	hr = audioClient->GetService(IID_IAudioCaptureClient, (void**) &captureClient);
 	EXIT_ON_ERROR(hr);
 
-	handler->setFormat(pwfx->nSamplesPerSec, pwfx->nChannels);
+	sink.setFormat(pwfx->nSamplesPerSec, pwfx->nChannels);
 
 	hnsActualDuration = (double)REFTIMES_PER_SEC * bufferSize / pwfx->nSamplesPerSec;
 
@@ -155,7 +156,7 @@ void AudioMonitor::handleWaveMessages()
 				break;
 			}
 
-			handler->receiveSamples(reinterpret_cast<float*>(packetData), nFrames);
+			sink.receiveSamples(reinterpret_cast<float*>(packetData), nFrames);
 
 			hr = captureClient->ReleaseBuffer(nFrames);
 			EXIT_ON_ERROR(hr);

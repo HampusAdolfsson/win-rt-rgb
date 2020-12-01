@@ -1,5 +1,5 @@
 #include "AudioDesktopRenderer.h"
-#include "WaveToIntensityConverter.h"
+#include "EnergyAudioHandler.h"
 #include "Logger.h"
 #include <stdexcept>
 
@@ -32,7 +32,7 @@ void AudioDesktopRenderer::start()
 	}
 	if (!audioMonitor.get())
 	{
-		audioMonitor = std::make_unique<AudioMonitor>(std::make_unique<WaveToIntensityConverter>(30, std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1)));
+		audioMonitor = std::make_unique<AudioMonitor>(AudioSink(std::make_unique<EnergyAudioHandler>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1)), 30));
 		audioMonitor->initialize();
 	}
 	for (size_t i = 0; i < devices[1].desktopCaptureParams.numberOfRegions; i++)
@@ -62,7 +62,7 @@ void AudioDesktopRenderer::setDesktopRegion(const unsigned int& outputIdx, const
 	}
 }
 
-void AudioDesktopRenderer::audioCallback(const float& intensity)
+void AudioDesktopRenderer::audioCallback(float intensity)
 {
 	if (!started) { return; }
 	for (RenderDevice& device : devices)
