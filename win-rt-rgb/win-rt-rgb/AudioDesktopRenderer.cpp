@@ -32,13 +32,8 @@ void AudioDesktopRenderer::start()
 	}
 	if (!audioMonitor.get())
 	{
-		audioMonitor = std::make_unique<AudioMonitor>(AudioSink(std::make_unique<EnergyAudioHandler>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1)), 30));
+		audioMonitor = std::make_unique<AudioMonitor>(AudioSink(30, std::make_unique<EnergyAudioHandlerFactory>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1))));
 		audioMonitor->initialize();
-	}
-	for (size_t i = 0; i < devices[1].desktopCaptureParams.numberOfRegions; i++)
-	{
-		RgbColor white = { 1.0f, 1.0f, 1.0f };
-		devices[1].desktopRenderTarget.drawRange(i, 1, &white);
 	}
 
 	lastFpsTime = std::chrono::system_clock::now();
@@ -68,17 +63,17 @@ void AudioDesktopRenderer::audioCallback(float intensity)
 	for (RenderDevice& device : devices)
 	{
 		if (!device.audioRenderTarget.has_value()) { continue; }
-			device.audioRenderTarget->cloneFrom(device.desktopRenderTarget);
-			device.audioRenderTarget->setIntensity(intensity);
-			device.renderOutput->draw(*device.audioRenderTarget);
-		}
+		device.audioRenderTarget->cloneFrom(device.desktopRenderTarget);
+		device.audioRenderTarget->setIntensity(intensity);
+		device.renderOutput->draw(*device.audioRenderTarget);
+	}
 }
 void AudioDesktopRenderer::desktopCallback(const unsigned int& deviceIdx, RgbColor* colors)
 {
 	if (!started) { return; }
 	RenderDevice& device = devices[deviceIdx];
 	device.desktopRenderTarget.beginFrame();
-	device.desktopRenderTarget.drawRange(0, device.desktopRenderTarget.getSize(), colors);
+	device.desktopRenderTarget.drawRange(deviceIdx == 0 ? 12 : 0, device.desktopCaptureParams.numberOfRegions, colors);
 	if (!device.audioRenderTarget.has_value())
 	{
 		// This device shouldn't use audio, so just render desktop colors

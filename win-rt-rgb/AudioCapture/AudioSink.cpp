@@ -1,15 +1,16 @@
 #include "AudioSink.h"
 #include <cassert>
 
-AudioSink::AudioSink(std::unique_ptr<AudioHandler> audioHandler, unsigned int buffersPerSecond)
+AudioSink::AudioSink(unsigned int buffersPerSecond, std::unique_ptr<AudioHandlerFactory> audioHandlerFactory)
 : buffersPerSecond(buffersPerSecond),
 sampleRate(0),
 nChannels(0),
 activeBuffer(0),
 bufferPosition(0),
-audioHandler(std::move(audioHandler))
+audioHandlerFactory(std::move(audioHandlerFactory)),
+audioHandler(nullptr)
 {
-	assert(this->audioHandler);
+	assert(this->audioHandlerFactory);
 }
 
 void AudioSink::receiveSamples(float* samples, unsigned int nFrames)
@@ -21,7 +22,7 @@ void AudioSink::receiveSamples(float* samples, unsigned int nFrames)
 		assert(this->audioHandler);
 		size_t remaining = buffers[0].size() - bufferPosition;
 		memcpy(&buffers[activeBuffer][bufferPosition], samples, remaining * sizeof(*samples));
-		audioHandler->handleWaveData(buffers[activeBuffer].data(), buffers[activeBuffer].size() / nChannels);
+		audioHandler->handleWaveData(buffers[activeBuffer].data());
 
 		samples += remaining;
 		nSamples -= remaining;
@@ -35,9 +36,9 @@ void AudioSink::receiveSamples(float* samples, unsigned int nFrames)
 
 void AudioSink::setFormat(unsigned int samplesPerSec, unsigned int nChannels)
 {
-	audioHandler->setFormat(nChannels, samplesPerSec);
 	this->sampleRate = samplesPerSec;
 	this->nChannels = nChannels;
 	buffers[0] = std::vector<float>(sampleRate * nChannels / buffersPerSecond);
 	buffers[1] = std::vector<float>(sampleRate * nChannels / buffersPerSecond);
+	audioHandler = audioHandlerFactory->createAudioHandler(sampleRate * nChannels / buffersPerSecond, nChannels);
 }

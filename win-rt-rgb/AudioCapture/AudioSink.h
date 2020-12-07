@@ -11,11 +11,10 @@ class AudioSink
 public:
 	/**
 	*	Creates a new audio sink
-	*	@param audioHandler handler to call when an audio buffer is ready
 	*	@param buffersPerSecond denotes how often the handler should be called. This, together with the sample rate,
 	*		determines the number of samples to receive before the handler is called.
 	*/
-	AudioSink(std::unique_ptr<AudioHandler> audioHandler, unsigned int buffersPerSecond);
+	AudioSink(unsigned int buffersPerSecond, std::unique_ptr<AudioHandlerFactory> audioHandlerFactory);
 
 	/**
 	*	Adds samples to the buffer.
@@ -34,5 +33,6 @@ private:
 	unsigned int activeBuffer;
 	unsigned int bufferPosition;
 	std::vector<float> buffers[2];
+	std::unique_ptr<AudioHandlerFactory> audioHandlerFactory;
 	std::unique_ptr<AudioHandler> audioHandler;
 };

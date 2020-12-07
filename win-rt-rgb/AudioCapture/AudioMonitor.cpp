@@ -149,7 +149,11 @@ void AudioMonitor::handleWaveMessages()
 			UINT nFrames;
 			DWORD flags;
 			hr = captureClient->GetBuffer(&packetData, &nFrames, &flags, nullptr, nullptr);
-			EXIT_ON_ERROR(hr);
+			if (FAILED(hr))
+			{
+				LOGSEVERE("Audiomonitor got error: 0x%08lx, line %d", hr, __LINE__);
+				goto Exit;
+			}
 
 			if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
 			{

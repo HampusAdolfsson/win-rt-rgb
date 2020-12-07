@@ -21,9 +21,6 @@
     <ClCompile Include="AudioSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AudioHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EnergyAudioHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -32,13 +29,13 @@
     <ClInclude Include="AudioMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RingBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="dsp\ExpFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SseUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fftw3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioSink.h">
