@@ -44,16 +44,13 @@
     <ClInclude Include="DesktopCaptureController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CUDA\CudaMeanColorCalculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CUDA\CudaKernels.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SamplingSpecification.h">
+    <ClInclude Include="Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

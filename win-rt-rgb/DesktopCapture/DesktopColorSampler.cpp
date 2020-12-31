@@ -3,7 +3,7 @@
 #include <d3d11.h>
 #include <optional>
 
-DesktopColorSampler::DesktopColorSampler(const UINT& outputIdx,
+DesktopColorSampler::DesktopColorSampler(UINT outputIdx,
 											const std::vector<SamplingSpecification>& specifications,
 											DesktopSamplingCallback callback)
 	: desktopDuplicator(),
@@ -40,12 +40,14 @@ void DesktopColorSampler::setCaptureRegion(Rect captureRegion)
 
 void DesktopColorSampler::start()
 {
+	if (isRunning) return;
 	isRunning = true;
 	samplerThread = std::thread(&DesktopColorSampler::sampleLoop, this);
 }
 
 void DesktopColorSampler::stop()
 {
+	if (!isRunning) return;
 	isRunning = false;
 	samplerThread.join();
 }

@@ -25,7 +25,7 @@ DesktopCaptureController::~DesktopCaptureController()
 	}
 }
 
-void DesktopCaptureController::setOutput(const UINT& outputIdx, Rect captureRegion)
+void DesktopCaptureController::setCaptureRegion(UINT outputIdx, Rect captureRegion)
 {
 	if (outputIdx != activeOutput)
 	{

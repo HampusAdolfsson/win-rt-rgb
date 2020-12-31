@@ -1,6 +1,6 @@
 #pragma once
 #include "DesktopCaptureController.h"
-#include "SamplingSpecification.h"
+#include "Types.h"
 #include "AudioMonitor.h"
 #include "RenderOutput.h"
 #include <memory>
@@ -35,7 +35,7 @@ private:
 	std::chrono::time_point<std::chrono::system_clock> lastFpsTime;
 
 	void audioCallback(float intensity);
-	void desktopCallback(const unsigned int& deviceIdx, RgbColor* colors);
+	void desktopCallback(unsigned int deviceIdx, RgbColor* colors);
 };
 
 struct RenderDevice {

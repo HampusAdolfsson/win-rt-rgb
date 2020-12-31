@@ -53,7 +53,7 @@ void AudioDesktopRenderer::setDesktopRegion(const unsigned int& outputIdx, const
 {
 	if (desktopCaptureController.get())
 	{
-		desktopCaptureController->setOutput(outputIdx, region);
+		desktopCaptureController->setCaptureRegion(outputIdx, region);
 	}
 }
 
@@ -68,7 +68,7 @@ void AudioDesktopRenderer::audioCallback(float intensity)
 		device.renderOutput->draw(*device.audioRenderTarget);
 	}
 }
-void AudioDesktopRenderer::desktopCallback(const unsigned int& deviceIdx, RgbColor* colors)
+void AudioDesktopRenderer::desktopCallback(unsigned int deviceIdx, RgbColor* colors)
 {
 	if (!started) { return; }
 	RenderDevice& device = devices[deviceIdx];

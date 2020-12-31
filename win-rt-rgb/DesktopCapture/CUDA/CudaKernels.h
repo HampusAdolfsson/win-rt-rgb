@@ -1,8 +1,7 @@
 #include "Color.h"
-#include "../SamplingSpecification.h"
+#include "../Types.h"
 #include <d3d11.h>
 #include <cuda_d3d11_interop.h>
-#include "../Rect.h"
 
 // Cuda functions for analyzing the colors of D3D textures
 

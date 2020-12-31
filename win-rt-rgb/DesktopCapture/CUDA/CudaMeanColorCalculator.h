@@ -1,7 +1,6 @@
 #pragma once
-#include "../Rect.h"
+#include "../Types.h"
 #include "Color.h"
-#include "../SamplingSpecification.h"
 #include <cuda_runtime_api.h>
 #include <d3d11.h>
 #include <vector>

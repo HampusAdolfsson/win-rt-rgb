@@ -2,18 +2,11 @@
 #include "DesktopDuplicator.h"
 #include "D3DMeanColorCalculator.h"
 #include "Color.h"
-#include "Rect.h"
+#include "Types.h"
 #include <thread>
 #include <functional>
 #include <vector>
 
-/**
- *	Callback for when sampled colors have been generated. The first parameter is the index of
- *	the specification used to generate the colors (as passed into the constructor of DesktopColorSampler).
- *	The second parameter is an array with the colors itself (the size of the array matches the number
- *	of groups in the specification).
- */
-typedef std::function<void(const unsigned int&, RgbColor*)> DesktopSamplingCallback;
 
 /**
 *	Continuously samples the screen and returns an array of colors representing its content.
@@ -41,7 +34,7 @@ public:
 			For each frame, an array of colors will be generated for each sampling specification.
 	*	@param callback Called when samples for a specification are ready for a captured frame.
 	*/
-	DesktopColorSampler(const UINT& outputIdx,
+	DesktopColorSampler(UINT outputIdx,
 						const std::vector<SamplingSpecification>& specifications,
 						DesktopSamplingCallback callback);
 

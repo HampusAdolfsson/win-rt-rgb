@@ -246,8 +246,7 @@
     <ClInclude Include="DesktopCaptureController.h" />
     <ClInclude Include="DesktopColorSampler.h" />
     <ClInclude Include="DesktopDuplicator.h" />
-    <ClInclude Include="Rect.h" />
-    <ClInclude Include="SamplingSpecification.h" />
+    <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CUDA\CudaKernels.cu" />

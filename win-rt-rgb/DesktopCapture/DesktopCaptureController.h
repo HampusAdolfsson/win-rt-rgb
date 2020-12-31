@@ -1,14 +1,17 @@
 #pragma once
 
 #include "DesktopColorSampler.h"
-#include "SamplingSpecification.h"
+#include "Types.h"
 #include "Color.h"
 #include <vector>
 #include <functional>
 
 /**
-*	Manages/multiplexes DesktopColorSamplers for different outputs (i.e. monitors), and restarts them when errors occur
-*	(e.g. when entering fullscreen applications)
+*	Continuosly captures and samples colors from one monitor at a time, calling back as
+*	colors are generated. The sampling takes several parameters in the form of a SamplingSpecification object,
+*	changing e.g. how to divide a frame into color regions. Every frame captured on a monitor will be
+*	sampled according to the specification(s) given. Several SamplingSpecifications can be supplied,
+*	meaning each frame will be sampled multiple times with different parameters.
 */
 class DesktopCaptureController
 {
@@ -21,7 +24,7 @@ class DesktopCaptureController
 public:
 	/**
 	*	Creates a new capture controller
-	*	@param initialOutputIdx Index of the output (i.e. monitor) to start capturing
+	*	@param initialOutputIdx Index of the monitor to start capturing
 	*	@param samplingParameters For each frame, an array of colors will be generated for each sampling specification.
 	*	@param callback	Called when samples are ready for a captured frame. The parameter points to an array of nSamples color values.
 			The values of the array may be overwritten by the callee.
@@ -32,9 +35,9 @@ public:
 	~DesktopCaptureController();
 
 	/**
-	*	Sets the output (i.e. monitor) and region to capture from
+	*	Sets the monitor and region to capture from
 	*/
-	void setOutput(const UINT& outputIdx, Rect captureRegion);
+	void setCaptureRegion(UINT outputIdx, Rect captureRegion);
 
 	void start();
 	void stop();

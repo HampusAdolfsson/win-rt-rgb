@@ -1,7 +1,6 @@
 #pragma once
 #include "Color.h"
-#include "Rect.h"
-#include "SamplingSpecification.h"
+#include "Types.h"
 #include <d3d11.h>
 #include <vector>
 

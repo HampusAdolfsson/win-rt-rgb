@@ -1,6 +1,5 @@
 #pragma once
-#include "Rect.h"
-#include "SamplingSpecification.h"
+#include "Types.h"
 #include <vector>
 
 #define WLED_UDP_PORT 21324

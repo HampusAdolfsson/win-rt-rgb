@@ -39,7 +39,7 @@ void WebsocketServer::start(const unsigned int& port)
 			LOGINFO("Got lock message");
 			handleLockMessage(contents);
 		} else {
-			LOGSEVERE("Received message with unknown subject: %s", subject);
+			LOGSEVERE("Received message with unknown subject: %s", subject.c_str());
 		}
 	});
 	endpoint.init_asio();

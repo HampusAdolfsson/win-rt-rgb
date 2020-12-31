@@ -2,9 +2,12 @@
 #include "Logger.h"
 #include <Windows.h>
 #include <functional>
+#include <map>
 
 std::vector<std::function<void(std::optional<ProfileManager::ActiveProfileData>)>> callbacks;
 std::vector<ApplicationProfile> appProfiles;
+// Stores the last active profile for each monitor
+std::map<unsigned int, ProfileManager::ActiveProfileData> activeProfiles;
 bool isLocked;
 HWINEVENTHOOK eventHook;
 
@@ -59,32 +62,40 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 {
 	if (event == EVENT_SYSTEM_FOREGROUND && hwnd)
 	{
-		if (isLocked)
-			return;
+		if (isLocked) return;
 		char title[255];
 		GetWindowTextA(hwnd, title, 255);
+		if (strnlen(title, 255) == 0) return; // Ignores focusing e.g. the task bar
 		WINDOWINFO winInfo;
 		winInfo.cbSize = sizeof(winInfo);
 		GetWindowInfo(hwnd, &winInfo);
 		unsigned int outputIdx = (winInfo.rcWindow.left + winInfo.cxWindowBorders) / 1920; // assumes 1080p monitors placed side by side
-		if (outputIdx > 1)
-			outputIdx = 0;
+		if (outputIdx > 1) outputIdx = 0;
 
 		for (unsigned int i = 0; i < appProfiles.size(); i++)
 		{
 			if (std::regex_search(title, appProfiles[i].windowTitle))
 			{
 				LOGINFO("Activating profile %s on output %d.", appProfiles[i].regexSpecifier.c_str(), outputIdx);
+				auto prof = ProfileManager::ActiveProfileData{ appProfiles[i], i, outputIdx };
+				activeProfiles.insert(std::make_pair(outputIdx, prof));
 				for (auto &callback : callbacks)
 				{
-					callback(std::optional<ProfileManager::ActiveProfileData>({ appProfiles[i], i, outputIdx }));
+					callback(std::optional(prof));
 				}
 				return;
 			}
 		}
+		activeProfiles.erase(outputIdx);
+		std::optional<ProfileManager::ActiveProfileData> nextProfile = std::nullopt;
+		if (activeProfiles.size() > 0)
+		{
+			auto prof = activeProfiles.begin()->second;
+			nextProfile = std::optional(prof);
+		}
 		for (auto &callback : callbacks)
 		{
-			callback(std::nullopt);
+			callback(nextProfile);
 		}
 	}
 }

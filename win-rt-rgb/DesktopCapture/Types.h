@@ -1,4 +1,11 @@
 #pragma once
+#include "Color.h"
+#include <functional>
+
+typedef struct
+{
+	unsigned int left, top, width, height;
+} Rect;
 
 struct SamplingSpecification
 {
@@ -26,4 +33,12 @@ struct SamplingSpecification
 	*/
 	bool flipHorizontally;
 };
+
+/**
+ *	Callback for when colors have been sampled from a desktop frame. The first parameter is the index of
+ *	the SamplingSpecification used to generate the colors (as passed into the constructor of DesktopColorSampler).
+ *	The second parameter is an array with the colors itself (the size of the array matches the number
+ *	of groups in the specification).
+ */
+typedef std::function<void(unsigned int, RgbColor*)> DesktopSamplingCallback;
 
