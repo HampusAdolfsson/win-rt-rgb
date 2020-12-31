@@ -4,12 +4,11 @@
 #include <optional>
 
 DesktopColorSampler::DesktopColorSampler(UINT outputIdx,
-											const std::vector<SamplingSpecification>& specifications,
-											DesktopSamplingCallback callback)
+											const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& specifications)
 	: desktopDuplicator(),
 	frameSampler(),
 	isRunning(false),
-	callback(callback)
+	captureRegion({0, 0, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight()})
 {
 	ID3D11Device* device;
 
@@ -27,10 +26,15 @@ DesktopColorSampler::DesktopColorSampler(UINT outputIdx,
 	}
 
 	desktopDuplicator.initialize(device, outputIdx);
-	frameSampler.initialize(device, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight(), specifications);
-	// by default, capture entire screen
-	captureRegion = { 0, 0, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight() };
-
+	std::vector<SamplingSpecification> samplingSpecifications;
+	std::vector<DesktopSamplingCallback> callbacks;
+	for (const auto& spec : specifications)
+	{
+		samplingSpecifications.push_back(spec.first);
+		callbacks.push_back(spec.second);
+	}
+	frameSampler.initialize(device, desktopDuplicator.getFrameWidth(), desktopDuplicator.getFrameHeight(), samplingSpecifications);
+	this->callbacks = callbacks;
 }
 
 void DesktopColorSampler::setCaptureRegion(Rect captureRegion)
@@ -67,7 +71,7 @@ void DesktopColorSampler::sampleLoop()
 		}
 		for (size_t i = 0; i < lastResult.size(); i++)
 		{
-			callback(i, lastResult[i]);
+			callbacks[i](lastResult[i]);
 		}
 	}
 }

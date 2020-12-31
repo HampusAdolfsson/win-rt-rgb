@@ -1,6 +1,7 @@
 #pragma once
 #include "Color.h"
 #include <functional>
+#include <vector>
 
 typedef struct
 {
@@ -35,10 +36,9 @@ struct SamplingSpecification
 };
 
 /**
- *	Callback for when colors have been sampled from a desktop frame. The first parameter is the index of
- *	the SamplingSpecification used to generate the colors (as passed into the constructor of DesktopColorSampler).
- *	The second parameter is an array with the colors itself (the size of the array matches the number
- *	of groups in the specification).
+ *	Callback for when colors have been sampled from a desktop frame.
+ *	The parameter is an vector with the resulting colors (the size of the vector matches the number
+ *	of groups in the specification that was used to sample).
  */
-typedef std::function<void(unsigned int, RgbColor*)> DesktopSamplingCallback;
+typedef std::function<void(RgbColor*)> DesktopSamplingCallback;
 

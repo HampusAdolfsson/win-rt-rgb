@@ -25,13 +25,11 @@ public:
 	/**
 	*	Creates a new capture controller
 	*	@param initialOutputIdx Index of the monitor to start capturing
-	*	@param samplingParameters For each frame, an array of colors will be generated for each sampling specification.
-	*	@param callback	Called when samples are ready for a captured frame. The parameter points to an array of nSamples color values.
-			The values of the array may be overwritten by the callee.
+	*	@param samplingParameters For each frame, an array of colors will be generated for each sampling specification,
+	*		and the colors will provided to the associated callback function.
 	*/
-	DesktopCaptureController(const UINT& initialOutputIdx,
-								const std::vector<SamplingSpecification>& samplingParameters,
-								DesktopSamplingCallback callback);
+	DesktopCaptureController(UINT initialOutputIdx,
+								const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& samplingParameters);
 	~DesktopCaptureController();
 
 	/**

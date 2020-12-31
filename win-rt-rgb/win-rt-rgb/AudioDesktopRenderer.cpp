@@ -22,13 +22,13 @@ void AudioDesktopRenderer::start()
 
 	if (!desktopCaptureController.get())
 	{
-		std::vector<SamplingSpecification> specs;
-		for (const auto& device : devices)
+		std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>> specs;
+		for (int i = 0; i < devices.size(); i++)
 		{
-			specs.push_back(device.desktopCaptureParams);
+			DesktopSamplingCallback callback = std::bind(&AudioDesktopRenderer::desktopCallback, this, i, std::placeholders::_1);
+			specs.push_back({devices[i].desktopCaptureParams, callback});
 		}
-		desktopCaptureController = std::make_unique<DesktopCaptureController>(0, specs,
-			std::bind(&AudioDesktopRenderer::desktopCallback, this, std::placeholders::_1, std::placeholders::_2));
+		desktopCaptureController = std::make_unique<DesktopCaptureController>(0, specs);
 	}
 	if (!audioMonitor.get())
 	{

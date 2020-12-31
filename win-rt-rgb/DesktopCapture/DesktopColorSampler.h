@@ -22,7 +22,7 @@ class DesktopColorSampler
 
 	std::thread samplerThread;
 	bool isRunning;
-	DesktopSamplingCallback callback;
+	std::vector<DesktopSamplingCallback> callbacks;
 
 	void sampleLoop();
 
@@ -31,12 +31,10 @@ public:
 	*	Creates a new sampler.
 	*	@param outputIdx The index of the output (monitor) to sample
 	*	@param specification Specifications for *how* to sample colors from each frame.
-			For each frame, an array of colors will be generated for each sampling specification.
-	*	@param callback Called when samples for a specification are ready for a captured frame.
+	*		For each frame, an array of colors will be generated for each sampling specification.
 	*/
 	DesktopColorSampler(UINT outputIdx,
-						const std::vector<SamplingSpecification>& specifications,
-						DesktopSamplingCallback callback);
+						const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& specifications);
 
 	void setCaptureRegion(Rect captureRegion);
 

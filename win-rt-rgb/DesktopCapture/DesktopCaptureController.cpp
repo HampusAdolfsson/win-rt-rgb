@@ -1,9 +1,8 @@
 #include "DesktopCaptureController.h"
 #include "Logger.h"
 
-DesktopCaptureController::DesktopCaptureController(const UINT& initialOutputIdx,
-													const std::vector<SamplingSpecification>& samplingParameters,
-													DesktopSamplingCallback callback)
+DesktopCaptureController::DesktopCaptureController(UINT initialOutputIdx,
+													const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& samplingParameters)
 	: isActive(false)
 {
 	activeOutput = initialOutputIdx;
@@ -12,7 +11,7 @@ DesktopCaptureController::DesktopCaptureController(const UINT& initialOutputIdx,
 	samplers = std::vector<DesktopColorSampler*>(nOutputs, nullptr);
 	for (UINT i = 0; i < nOutputs; i++)
 	{
-		samplers[i] = new DesktopColorSampler(i, samplingParameters, callback);
+		samplers[i] = new DesktopColorSampler(i, samplingParameters);
 	}
 }
 

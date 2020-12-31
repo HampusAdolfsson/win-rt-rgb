@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "AudioMonitor.h"
 #include "RenderOutput.h"
+#include <vector>
 #include <memory>
 #include <optional>
 #include <chrono>
