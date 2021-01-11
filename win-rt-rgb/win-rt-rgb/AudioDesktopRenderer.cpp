@@ -3,14 +3,16 @@
 #include "Logger.h"
 #include <stdexcept>
 
-void AudioDesktopRenderer::addRenderOutput(std::unique_ptr<RenderOutput> renderOutput, SamplingSpecification desktopCaptureParams, bool useAudio)
+using namespace WinRtRgb;
+
+void AudioDesktopRenderer::addRenderOutput(std::unique_ptr<Rendering::RenderOutput> renderOutput, DesktopCapture::SamplingSpecification desktopCaptureParams, bool useAudio)
 {
 	if (started) { throw std::runtime_error("Already started"); }
 	RenderDevice device = {
 		std::move(renderOutput),
 		desktopCaptureParams,
-		RenderTarget(desktopCaptureParams.numberOfRegions),
-		useAudio ? std::optional(RenderTarget(desktopCaptureParams.numberOfRegions)) : std::nullopt
+		Rendering::RenderTarget(desktopCaptureParams.numberOfRegions),
+		useAudio ? std::optional(Rendering::RenderTarget(desktopCaptureParams.numberOfRegions)) : std::nullopt
 	};
 	devices.push_back(std::move(device));
 }
@@ -22,17 +24,17 @@ void AudioDesktopRenderer::start()
 
 	if (!desktopCaptureController.get())
 	{
-		std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>> specs;
+		std::vector<std::pair<DesktopCapture::SamplingSpecification, DesktopCapture::DesktopSamplingCallback>> specs;
 		for (int i = 0; i < devices.size(); i++)
 		{
-			DesktopSamplingCallback callback = std::bind(&AudioDesktopRenderer::desktopCallback, this, i, std::placeholders::_1);
+			DesktopCapture::DesktopSamplingCallback callback = std::bind(&AudioDesktopRenderer::desktopCallback, this, i, std::placeholders::_1);
 			specs.push_back({devices[i].desktopCaptureParams, callback});
 		}
-		desktopCaptureController = std::make_unique<DesktopCaptureController>(0, specs);
+		desktopCaptureController = std::make_unique<DesktopCapture::DesktopCaptureController>(0, specs);
 	}
 	if (!audioMonitor.get())
 	{
-		audioMonitor = std::make_unique<AudioMonitor>(AudioSink(30, std::make_unique<EnergyAudioHandlerFactory>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1))));
+		audioMonitor = std::make_unique<AudioCapture::AudioMonitor>(AudioCapture::AudioSink(30, std::make_unique<AudioCapture::EnergyAudioHandlerFactory>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1))));
 		audioMonitor->initialize();
 	}
 
@@ -49,7 +51,7 @@ void AudioDesktopRenderer::stop()
 	audioMonitor->stop();
 }
 
-void AudioDesktopRenderer::setDesktopRegion(const unsigned int& outputIdx, const Rect& region)
+void AudioDesktopRenderer::setDesktopRegion(const unsigned int& outputIdx, const DesktopCapture::Rect& region)
 {
 	if (desktopCaptureController.get())
 	{

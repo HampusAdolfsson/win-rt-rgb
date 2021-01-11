@@ -6,6 +6,8 @@
 #endif
 #include "RenderTarget.h"
 
+using namespace Rendering;
+
 RenderTarget::RenderTarget(const unsigned int& size)
 	: size(size),
 #ifdef USE_SSE

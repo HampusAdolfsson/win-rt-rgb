@@ -2,6 +2,8 @@
 #include <cassert>
 #include <WS2tcpip.h>
 
+using namespace Rendering;
+
 #pragma comment(lib, "Ws2_32.lib")
 
 WledRenderOutput::WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port)

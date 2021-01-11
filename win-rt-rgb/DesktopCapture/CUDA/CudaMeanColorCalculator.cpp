@@ -5,6 +5,8 @@
 #include <cassert>
 #include <stdexcept>
 
+using namespace DesktopCapture;
+
 CudaMeanColorCalculator::CudaMeanColorCalculator()
 	: width(0), height(0), textureBuffer(nullptr), cudaResource(nullptr)
 {

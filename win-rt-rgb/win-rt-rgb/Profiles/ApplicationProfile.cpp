@@ -1,6 +1,8 @@
 #include "ApplicationProfile.h"
 
-ApplicationProfile::ApplicationProfile(std::string regexSpecifier, Rect region)
+using namespace WinRtRgb;
+
+ApplicationProfile::ApplicationProfile(std::string regexSpecifier, DesktopCapture::Rect region)
  : windowTitle(std::regex(regexSpecifier)),
  regexSpecifier(regexSpecifier),
  captureRegion(region)

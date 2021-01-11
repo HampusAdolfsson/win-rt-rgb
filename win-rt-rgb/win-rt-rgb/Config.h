@@ -8,7 +8,7 @@
 namespace Config {
 	struct DeviceConfig {
 		const char* ipAddress;
-		SamplingSpecification samplingSpec;
+		DesktopCapture::SamplingSpecification samplingSpec;
 		bool useAudio;
 	};
 	// Enumerates the WLED devices to output to
@@ -17,7 +17,7 @@ namespace Config {
 		DeviceConfig{ "192.168.1.13", { 10, 0.5f, 2, false }, true },
 	};
 
-	constexpr Rect defaultCaptureRegion = {0, 810, 1920, 270};
+	constexpr DesktopCapture::Rect defaultCaptureRegion = {0, 810, 1920, 270};
 
 	constexpr unsigned int websocketPort = 9901;
 

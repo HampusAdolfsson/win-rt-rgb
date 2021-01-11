@@ -5,43 +5,46 @@
 #include <optional>
 #include <utility>
 
-namespace ProfileManager
+namespace WinRtRgb
 {
-	typedef struct {
-		ApplicationProfile profile;
-		unsigned int profileIndex;
-		unsigned int monitorIndex;
-	} ActiveProfileData;
+	namespace ProfileManager
+	{
+		typedef struct {
+			ApplicationProfile profile;
+			unsigned int profileIndex;
+			unsigned int monitorIndex;
+		} ActiveProfileData;
 
-	/**
-	*	Starts listening to foreground window changes and notifies with a matching profile when focus is given to a new window.
-	*	@param profiles The profiles to use
-	*/
-	void start(const std::vector<ApplicationProfile>& profiles);
+		/**
+		*	Starts listening to foreground window changes and notifies with a matching profile when focus is given to a new window.
+		*	@param profiles The profiles to use
+		*/
+		void start(const std::vector<ApplicationProfile>& profiles);
 
-	void stop();
+		void stop();
 
-	/**
-	*	Registers a function to be called when the active profile changes.
-	*	@param profileChangedCallback Called when a new window is focused, with a profile matching the window and the monitor the focused window is on.
-	*		If no profile matched the active window, std::nullopt is sent instead.
-	*/
-	void addCallback(std::function<void(std::optional<ActiveProfileData>)> profileChangedCallback);
+		/**
+		*	Registers a function to be called when the active profile changes.
+		*	@param profileChangedCallback Called when a new window is focused, with a profile matching the window and the monitor the focused window is on.
+		*		If no profile matched the active window, std::nullopt is sent instead.
+		*/
+		void addCallback(std::function<void(std::optional<ActiveProfileData>)> profileChangedCallback);
 
-	/**
-	*	Sets the profiles to use
-	*/
-	void setProfiles(const std::vector<ApplicationProfile>& profiles);
+		/**
+		*	Sets the profiles to use
+		*/
+		void setProfiles(const std::vector<ApplicationProfile>& profiles);
 
-	/**
-	*	Locks a profile, sending it as the current profile and ignoring any further window focus changes.
-	*	@param profileIndex The index of the profile to lock.
-	*	@param monitorIndex The index of the monitor to use this profile on.
-	*/
-	void lockProfile(const unsigned int& profileIndex, const unsigned int& monitorIndex);
+		/**
+		*	Locks a profile, sending it as the current profile and ignoring any further window focus changes.
+		*	@param profileIndex The index of the profile to lock.
+		*	@param monitorIndex The index of the monitor to use this profile on.
+		*/
+		void lockProfile(const unsigned int& profileIndex, const unsigned int& monitorIndex);
 
-	/**
-	*	Undos any previous call to lockProfile, to once again listen to window focus changes and send profile updates.
-	*/
-	void unlock();
+		/**
+		*	Undos any previous call to lockProfile, to once again listen to window focus changes and send profile updates.
+		*/
+		void unlock();
+	}
 }

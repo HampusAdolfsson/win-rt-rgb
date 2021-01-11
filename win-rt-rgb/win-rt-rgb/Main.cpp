@@ -8,6 +8,8 @@
 #include "WledRenderOutput.h"
 #include "WebsocketServer.h"
 
+using namespace WinRtRgb;
+
 int main(int argc, char** argv)
 {
 	Logger::Instance().setLogFile("log");
@@ -21,7 +23,7 @@ int main(int argc, char** argv)
 	AudioDesktopRenderer renderer;
 	for (const auto& output : Config::outputs)
 	{
-		renderer.addRenderOutput(std::make_unique<WledRenderOutput>(output.samplingSpec.numberOfRegions, output.ipAddress, WLED_UDP_PORT),
+		renderer.addRenderOutput(std::make_unique<Rendering::WledRenderOutput>(output.samplingSpec.numberOfRegions, output.ipAddress, WLED_UDP_PORT),
 			output.samplingSpec, output.useAudio);
 	}
 	renderer.start();

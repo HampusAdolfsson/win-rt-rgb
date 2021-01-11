@@ -3,6 +3,8 @@
 #include <d3d11.h>
 #include <optional>
 
+using namespace DesktopCapture;
+
 DesktopColorSampler::DesktopColorSampler(UINT outputIdx,
 											const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& specifications)
 	: desktopDuplicator(),

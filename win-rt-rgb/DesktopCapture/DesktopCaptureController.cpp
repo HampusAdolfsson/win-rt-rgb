@@ -1,6 +1,8 @@
 #include "DesktopCaptureController.h"
 #include "Logger.h"
 
+using namespace DesktopCapture;
+
 DesktopCaptureController::DesktopCaptureController(UINT initialOutputIdx,
 													const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& samplingParameters)
 	: isActive(false)

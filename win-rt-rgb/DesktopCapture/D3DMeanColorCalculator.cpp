@@ -4,6 +4,8 @@
 #include <memory>
 #include <immintrin.h>
 
+using namespace DesktopCapture;
+
 constexpr unsigned int MIP_LEVEL = 2;
 constexpr unsigned int SCALING_FACTOR = 1 << MIP_LEVEL;
 constexpr unsigned int RGBA_COLOR_SIZE = 4;

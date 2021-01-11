@@ -4,22 +4,24 @@
 #include <vector>
 #include <string>
 
-class WledRenderOutput : public RenderOutput
+namespace Rendering
 {
-public:
-	WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port);
-	~WledRenderOutput() override;
+	class WledRenderOutput : public RenderOutput
+	{
+	public:
+		WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port);
+		~WledRenderOutput() override;
 
-	void draw(const RenderTarget& target);
+		void draw(const RenderTarget& target);
 
-	WledRenderOutput(WledRenderOutput const&) = delete;
-	WledRenderOutput(WledRenderOutput&&) = delete;
-	WledRenderOutput& operator=(WledRenderOutput const&) = delete;
+		WledRenderOutput(WledRenderOutput const&) = delete;
+		WledRenderOutput(WledRenderOutput&&) = delete;
+		WledRenderOutput& operator=(WledRenderOutput const&) = delete;
 
-private:
-	SOCKET				sockHandle;
-	struct sockaddr_in	sockAddr;
+	private:
+		SOCKET				sockHandle;
+		struct sockaddr_in	sockAddr;
 
-	std::vector<uint8_t> outputBuffer;
-};
-
+		std::vector<uint8_t> outputBuffer;
+	};
+}

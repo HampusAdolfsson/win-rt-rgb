@@ -11,6 +11,8 @@
 #endif
 #include "fftw3.h"
 
+using namespace AudioCapture;
+
 float MEL_48000[];
 float MEL_44100[];
 

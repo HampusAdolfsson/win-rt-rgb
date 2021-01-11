@@ -8,40 +8,43 @@
 #include <optional>
 #include <chrono>
 
-struct RenderDevice;
-
-/**
-*   Renders colors captured from the desktop and (optionally) captured audio to a
-*   set of render outputs.
-*/
-class AudioDesktopRenderer
+namespace WinRtRgb
 {
-public:
-	void addRenderOutput(std::unique_ptr<RenderOutput> renderOutput, SamplingSpecification desktopCaptureParams, bool useAudio);
+	struct RenderDevice;
 
-	void start();
-	void stop();
+	/**
+	*   Renders colors captured from the desktop and (optionally) captured audio to a
+	*   set of render outputs.
+	*/
+	class AudioDesktopRenderer
+	{
+	public:
+		void addRenderOutput(std::unique_ptr<Rendering::RenderOutput> renderOutput, DesktopCapture::SamplingSpecification desktopCaptureParams, bool useAudio);
 
-	void setDesktopRegion(const unsigned int& outputIdx, const Rect& region);
+		void start();
+		void stop();
 
-private:
-	bool started = false;
+		void setDesktopRegion(const unsigned int& outputIdx, const DesktopCapture::Rect& region);
 
-	std::vector<RenderDevice> devices;
-	std::unique_ptr<DesktopCaptureController> desktopCaptureController = nullptr;
-	std::unique_ptr<AudioMonitor> audioMonitor = nullptr;
+	private:
+		bool started = false;
 
-	// measuring fps
-	unsigned int frames = 0;
-	std::chrono::time_point<std::chrono::system_clock> lastFpsTime;
+		std::vector<RenderDevice> devices;
+		std::unique_ptr<DesktopCapture::DesktopCaptureController> desktopCaptureController = nullptr;
+		std::unique_ptr<AudioCapture::AudioMonitor> audioMonitor = nullptr;
 
-	void audioCallback(float intensity);
-	void desktopCallback(unsigned int deviceIdx, RgbColor* colors);
-};
+		// measuring fps
+		unsigned int frames = 0;
+		std::chrono::time_point<std::chrono::system_clock> lastFpsTime;
 
-struct RenderDevice {
-	std::unique_ptr<RenderOutput> renderOutput;
-	SamplingSpecification desktopCaptureParams;
-	RenderTarget desktopRenderTarget;
-	std::optional<RenderTarget> audioRenderTarget;
-};
+		void audioCallback(float intensity);
+		void desktopCallback(unsigned int deviceIdx, RgbColor* colors);
+	};
+
+	struct RenderDevice {
+		std::unique_ptr<Rendering::RenderOutput> renderOutput;
+		DesktopCapture::SamplingSpecification desktopCaptureParams;
+		Rendering::RenderTarget desktopRenderTarget;
+		std::optional<Rendering::RenderTarget> audioRenderTarget;
+	};
+}

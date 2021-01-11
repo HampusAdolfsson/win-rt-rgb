@@ -3,7 +3,9 @@
 #include <dxgi1_2.h>
 #include <d3d11.h>
 
-#define FRAME_TIMEOUT 500
+using namespace DesktopCapture;
+
+#define FRAME_TIMEOUT 250
 
 constexpr HRESULT duplicationExpectedErrors[] = {
 	DXGI_ERROR_INVALID_CALL,

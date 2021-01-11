@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include <cstdio>
 
+using namespace WinRtRgb;
 
 WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
 								std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback)
@@ -74,7 +75,7 @@ void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 		unsigned int y = (unsigned int) areaJson["y"].get<int>();
 		unsigned int width = (unsigned int) areaJson["width"].get<int>();
 		unsigned int height = (unsigned int) areaJson["height"].get<int>();
-		receivedProfiles.push_back(ApplicationProfile(regex, {x, y, width, height}));
+		receivedProfiles.push_back(ApplicationProfile(regex, DesktopCapture::Rect{x, y, width, height}));
 	}
 	profilesCallback(receivedProfiles);
 }

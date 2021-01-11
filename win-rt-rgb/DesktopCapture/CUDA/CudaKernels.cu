@@ -6,6 +6,8 @@
 #include <curand.h>
 #include <assert.h>
 
+using namespace DesktopCapture;
+
 __global__
 void blurColorsKernel(RgbColor *id, RgbColor *od, int w, int r)
 {

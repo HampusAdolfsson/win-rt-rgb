@@ -1,6 +1,8 @@
 #include "AudioSink.h"
 #include <cassert>
 
+using namespace AudioCapture;
+
 AudioSink::AudioSink(unsigned int buffersPerSecond, std::unique_ptr<AudioHandlerFactory> audioHandlerFactory)
 : buffersPerSecond(buffersPerSecond),
 sampleRate(0),

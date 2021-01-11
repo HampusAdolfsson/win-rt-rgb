@@ -2,33 +2,35 @@
 #include "Color.h"
 #include <memory>
 
-/**
-*	Stores color data, and allows clients to write color values.
-*	The color data can be sent to/drawn onto a device using a RenderOutput.
-*/
-class RenderTarget
+namespace Rendering
 {
-public:
-	RenderTarget(const unsigned int& size);
-
-	void drawRange(const unsigned int& startIndex, const unsigned int& length, const RgbColor* toDraw);
-
-	void beginFrame();
-
-	void setIntensity(const float& intensity);
-
-	void cloneFrom(const RenderTarget& other);
-
-	inline const std::unique_ptr<RgbColor[]>& getColors() const
+	/**
+	*	Stores color data, and allows clients to write color values.
+	*	The color data can be sent to/drawn onto a device using a RenderOutput.
+	*/
+	class RenderTarget
 	{
-		return colors;
-	}
-	inline const int& getSize() const {
-		return size;
-	}
+	public:
+		RenderTarget(const unsigned int& size);
 
-private:
-	unsigned int size;
-	std::unique_ptr<RgbColor[]> colors;
-};
+		void drawRange(const unsigned int& startIndex, const unsigned int& length, const RgbColor* toDraw);
 
+		void beginFrame();
+
+		void setIntensity(const float& intensity);
+
+		void cloneFrom(const RenderTarget& other);
+
+		inline const std::unique_ptr<RgbColor[]>& getColors() const
+		{
+			return colors;
+		}
+		inline const int& getSize() const {
+			return size;
+		}
+
+	private:
+		unsigned int size;
+		std::unique_ptr<RgbColor[]> colors;
+	};
+}

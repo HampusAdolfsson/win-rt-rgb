@@ -4,6 +4,8 @@
 #include <functional>
 #include <map>
 
+using namespace WinRtRgb;
+
 std::vector<std::function<void(std::optional<ProfileManager::ActiveProfileData>)>> callbacks;
 std::vector<ApplicationProfile> appProfiles;
 // Stores the last active profile for each monitor

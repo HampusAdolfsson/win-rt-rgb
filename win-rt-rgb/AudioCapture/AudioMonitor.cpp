@@ -6,7 +6,7 @@
 #include "Logger.h"
 #include "AudioSink.h"
 
-// #pragma comment(lib, "winmm.lib")
+using namespace AudioCapture;
 
 #define REFTIMES_PER_SEC  10000000
 #define REFTIMES_PER_MILLISEC  10000

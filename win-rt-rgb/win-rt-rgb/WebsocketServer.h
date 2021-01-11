@@ -9,31 +9,34 @@
 #include "websocketpp/server.hpp"
 #include "json.h"
 
-typedef websocketpp::server<websocketpp::config::asio> server;
-
-/**
-*	Receives json requests over a websocket to manage settings (i.e. set outputs or profiles),
-*	and sends state changes to clients (i.e. when the active profile changes).
-*	This server is only meant to have a single client at once.
-*/
-class WebsocketServer
+namespace WinRtRgb
 {
-public:
-	WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
-					std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback);
-	~WebsocketServer();
+	typedef websocketpp::server<websocketpp::config::asio> server;
 
-	void start(const unsigned int& port);
+	/**
+	*	Receives json requests over a websocket to manage settings (i.e. set outputs or profiles),
+	*	and sends state changes to clients (i.e. when the active profile changes).
+	*	This server is only meant to have a single client at once.
+	*/
+	class WebsocketServer
+	{
+	public:
+		WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
+						std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback);
+		~WebsocketServer();
 
-	void notifyActiveProfileChanged(const std::optional<unsigned int>& activeProfileIndex);
+		void start(const unsigned int& port);
 
-private:
-	server endpoint;
-	std::optional<websocketpp::connection_hdl> client;
+		void notifyActiveProfileChanged(const std::optional<unsigned int>& activeProfileIndex);
 
-	std::function<void(std::vector<ApplicationProfile>)> profilesCallback;
-	std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback;
+	private:
+		server endpoint;
+		std::optional<websocketpp::connection_hdl> client;
 
-	void handleProfileMessage(const nlohmann::json& contents);
-	void handleLockMessage(const nlohmann::json& contents);
-};
+		std::function<void(std::vector<ApplicationProfile>)> profilesCallback;
+		std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback;
+
+		void handleProfileMessage(const nlohmann::json& contents);
+		void handleLockMessage(const nlohmann::json& contents);
+	};
+}
