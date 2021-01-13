@@ -1,6 +1,8 @@
 #pragma once
 #include <dxgi1_2.h>
 #include <d3d11.h>
+#include <thread>
+#include <functional>
 
 namespace DesktopCapture
 {
@@ -16,25 +18,37 @@ namespace DesktopCapture
 
 		ID3D11Texture2D* currentFrame;
 
+		std::function<void(ID3D11Texture2D*)> callback;
+		bool isRunning;
+		std::thread samplerThread;
+
 		static bool isExpectedError(const HRESULT& hr);
 		void reInitialize();
+
+		void sampleLoop();
+
+		ID3D11Texture2D* captureFrame();
 
 	public:
 
 		/**
 		*	Get the duplicator ready to capture frames.
-		*	@param device The device to capture from.
 		*	@param outputIdx The index of the output (monitor) to capture
 		*/
-		void initialize(ID3D11Device *device, const UINT& outputIdx);
+		DesktopDuplicator(ID3D11Device* device, UINT outputIdx,
+							std::function<void(ID3D11Texture2D*)> callback);
+		~DesktopDuplicator();
 
-		ID3D11Texture2D* captureFrame();
 		void releaseFrame();
 
 		const UINT getFrameWidth() const;
 		const UINT getFrameHeight() const;
 
-		DesktopDuplicator();
-		~DesktopDuplicator();
+		void start();
+		void stop();
+
+		DesktopDuplicator(DesktopDuplicator const&) = delete;
+		DesktopDuplicator operator=(DesktopDuplicator const&) = delete;
+		DesktopDuplicator(DesktopDuplicator &&);
 	};
 }

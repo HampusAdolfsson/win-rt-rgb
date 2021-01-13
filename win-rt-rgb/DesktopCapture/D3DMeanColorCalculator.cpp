@@ -10,12 +10,16 @@ constexpr unsigned int MIP_LEVEL = 2;
 constexpr unsigned int SCALING_FACTOR = 1 << MIP_LEVEL;
 constexpr unsigned int RGBA_COLOR_SIZE = 4;
 
-void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight,
-				const std::vector<SamplingSpecification>& samplingParameters)
+D3DMeanColorSpecificationHandle::D3DMeanColorSpecificationHandle(SamplingSpecification specification)
+	: specification(specification),
+	outputBuffer(specification.numberOfRegions)
+{
+}
+
+D3DMeanColorCalculator::D3DMeanColorCalculator(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight)
 {
 	width = textureWidth;
 	height = textureHeight;
-	specifications = samplingParameters;
 	device->GetImmediateContext(&deviceContext);
 
 	// allocate our buffers
@@ -70,24 +74,31 @@ void D3DMeanColorCalculator::initialize(ID3D11Device* device, const UINT& textur
 
 	size_t cpuBufSize = RGBA_COLOR_SIZE * width / SCALING_FACTOR * height / SCALING_FACTOR;
 	cpuBuffer =  (uint32_t*) _aligned_malloc(cpuBufSize + cpuBufSize % sizeof(__m256), sizeof(__m256));
-
-	results = std::vector<RgbColor*>(samplingParameters.size());
-	for (size_t i = 0; i < samplingParameters.size(); i++)
-	{
-		outputBuffers.push_back(std::vector<RgbColor>(samplingParameters[i].numberOfRegions));
-		// Create the vector we'll return on every sample call
-		results[i] = outputBuffers[i].data();
-	}
 }
 
-D3DMeanColorCalculator::D3DMeanColorCalculator() {}
+D3DMeanColorCalculator::D3DMeanColorCalculator(D3DMeanColorCalculator && other)
+{
+	deviceContext = other.deviceContext;
+	frameBuffer = other.frameBuffer;
+	frameBufferView = other.frameBufferView;
+	mappingBuffer = other.mappingBuffer;
+	width = other.width;
+	height = other.height;
+	cpuBuffer = other.cpuBuffer;
+
+	other.deviceContext = nullptr;
+	other.frameBuffer = nullptr;
+	other.frameBufferView = nullptr;
+	other.mappingBuffer = nullptr;
+	other.cpuBuffer = nullptr;
+}
 
 void D3DMeanColorCalculator::setFrameData(ID3D11Texture2D *frame)
 {
 	deviceContext->CopySubresourceRegion(frameBuffer, 0, 0, 0, 0, frame, 0, nullptr);
 }
 
-std::vector<RgbColor*> D3DMeanColorCalculator::sample(Rect activeRegion)
+void D3DMeanColorCalculator::sample(std::vector<D3DMeanColorSpecificationHandle*> handles, Rect activeRegion)
 {
 	activeRegion.left /= SCALING_FACTOR;
 	activeRegion.width /= SCALING_FACTOR;
@@ -96,9 +107,10 @@ std::vector<RgbColor*> D3DMeanColorCalculator::sample(Rect activeRegion)
 
 	copyToCpuBuffer(activeRegion, MIP_LEVEL);
 
-   	memset(outputBuffers[0].data(), 0, sizeof(RgbColor) * outputBuffers[0].size());
+	bufferLock.lock();
 
 	// TODO: make aligned
+	// Calculate vertical sums for active region
 	size_t nColors = activeRegion.width + (activeRegion.width % (sizeof(__m256)/sizeof(float)));
 	std::vector<uint32_t> verticalSums(nColors * 3);
 	for (int y = 0; y < activeRegion.height; y++)
@@ -121,11 +133,13 @@ std::vector<RgbColor*> D3DMeanColorCalculator::sample(Rect activeRegion)
 		}
 	}
 
-	for (int o = 0; o < specifications.size(); o++)
+	// TODO: If the number of regions for some handle is a multiple of another, we can avoid doing the full calculation for the smaller one
+	// Sum the vertical sums horizontally to form the right number of colors
+	for (int h = 0; h < handles.size(); h++)
 	{
-		double outputWidth = double(activeRegion.width) / specifications[o].numberOfRegions;
-		std::vector<uint32_t> regionSums(3 * specifications[o].numberOfRegions);
-		for (int i = 0; i < specifications[o].numberOfRegions; i++)
+		double outputWidth = double(activeRegion.width) / handles[h]->specification.numberOfRegions;
+		std::vector<uint32_t> regionSums(3 * handles[h]->specification.numberOfRegions);
+		for (int i = 0; i < handles[h]->specification.numberOfRegions; i++)
 		{
 			unsigned int regionStart = ceil(outputWidth * i);
 			unsigned int regionEnd = ceil(outputWidth * (i+1));
@@ -136,16 +150,30 @@ std::vector<RgbColor*> D3DMeanColorCalculator::sample(Rect activeRegion)
 				regionSums[3*i+1] += verticalSums[nColors + x];
 				regionSums[3*i+2] += verticalSums[2*nColors + x];
 			}
-			int index = specifications[o].flipHorizontally ? specifications[o].numberOfRegions - 1 - i : i;
-			results[o][index].red = regionSums[3*i] / (pixelsPerRegion * 255.0);
-			results[o][index].green = regionSums[3*i+1] / (pixelsPerRegion * 255.0);
-			results[o][index].blue = regionSums[3*i+2] / (pixelsPerRegion * 255.0);
+			int index = handles[h]->specification.flipHorizontally ? handles[h]->specification.numberOfRegions - 1 - i : i;
+			handles[h]->outputBuffer[index].red = regionSums[3*i] / (pixelsPerRegion * 255.0);
+			handles[h]->outputBuffer[index].green = regionSums[3*i+1] / (pixelsPerRegion * 255.0);
+			handles[h]->outputBuffer[index].blue = regionSums[3*i+2] / (pixelsPerRegion * 255.0);
 		}
 	}
 
-	adjustSaturation();
+	// Adjust saturation of outputs
+	for (int h = 0; h < handles.size(); h++)
+	{
+		if (handles[h]->specification.saturationAdjustment == .0f) continue;
+		#pragma omp parallel for
+		for (int i = 0; i < handles[h]->specification.numberOfRegions; i++)
+		{
+			HsvColor hsv = rgbToHsv(handles[h]->outputBuffer[i]);
+			if (hsv.saturation > 0.001f)
+			{
+				hsv.saturation = min(hsv.saturation + handles[h]->specification.saturationAdjustment, 1.0f);
+				handles[h]->outputBuffer[i] = hsvToRgb(hsv);
+			}
+		}
+	}
 
-	return results;
+	bufferLock.unlock();
 }
 
 void D3DMeanColorCalculator::copyToCpuBuffer(Rect region, unsigned int srcMipLevel)
@@ -172,24 +200,6 @@ void D3DMeanColorCalculator::copyToCpuBuffer(Rect region, unsigned int srcMipLev
 	uint32_t* src = (uint32_t*)mappedResource.pData;
 	memcpy(cpuBuffer, src, RGBA_COLOR_SIZE * region.width * region.height);
 	deviceContext->Unmap(mappingBuffer, 0);
-}
-
-void D3DMeanColorCalculator::adjustSaturation()
-{
-	for (int o = 0; o < specifications.size(); o++)
-	{
-		if (specifications[o].saturationAdjustment == .0f) continue;
-		#pragma omp parallel for
-		for (int i = 0; i < specifications[o].numberOfRegions; i++)
-		{
-			HsvColor hsv = rgbToHsv(outputBuffers[o][i]);
-			if (hsv.saturation > 0.001f)
-			{
-				hsv.saturation = min(hsv.saturation + specifications[0].saturationAdjustment, 1.0f);
-				outputBuffers[o][i] = hsvToRgb(hsv);
-			}
-		}
-	}
 }
 
 D3DMeanColorCalculator::~D3DMeanColorCalculator()

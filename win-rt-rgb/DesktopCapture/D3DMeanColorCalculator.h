@@ -3,13 +3,32 @@
 #include "Types.h"
 #include <d3d11.h>
 #include <vector>
+#include <mutex>
 
 namespace DesktopCapture
 {
+	class D3DMeanColorCalculator;
 	/**
-	*	Samples a d3d texture and returns its average color.
-	*	Multiple colors can be generated per frame, and will be picked from evenly sized
-	*	sections divided over the horizontal space.
+	 * Encapsulates a sampling specification that is to be used by a D3DMeanColorCalculator,
+	 * i.e. to be passed to the sample method.
+	 * An handle can be used multiple times, and can even be used by several
+	 * D3DMeanColorCalculators, in order to avoid allocating buffers too often.
+	 */
+	class D3DMeanColorSpecificationHandle
+	{
+		friend D3DMeanColorCalculator;
+		SamplingSpecification specification;
+		std::vector<RgbColor> outputBuffer;
+	public:
+		D3DMeanColorSpecificationHandle(SamplingSpecification specification);
+
+		/** Gets the results from the last sample call involving this handle **/
+		inline const std::vector<RgbColor>& getResults() const { return outputBuffer; };
+	};
+
+	/**
+	*	Samples a d3d texture and returns one or more sets of its average colors,
+	*	picked from evenly sized columns divided over the horizontal space.
 	*/
 	class D3DMeanColorCalculator
 	{
@@ -19,14 +38,10 @@ namespace DesktopCapture
 		ID3D11Texture2D *mappingBuffer = nullptr;
 		UINT width, height;
 		uint32_t* cpuBuffer;
-
-		std::vector<std::vector<RgbColor>> outputBuffers;
-		std::vector<RgbColor*> results;
-		std::vector<SamplingSpecification> specifications;
+		std::mutex bufferLock;
 
 		// Places the given region from frameBuffer in cpuBuffer
 		void copyToCpuBuffer(Rect region, unsigned int srcMipLevel);
-		void adjustSaturation();
 
 	public:
 		/**
@@ -34,29 +49,26 @@ namespace DesktopCapture
 		*	@param device The device to expect textures from
 		*	@param textureWidth The width of textures to be sampled
 		*	@param textureHeight The height of textures to be sampled
-		*	@param samplingParameters Specifications for how to sample the texture. Each call to sample will return one result
-				per specification.
 		*/
-		void initialize(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight,
-						const std::vector<SamplingSpecification>& samplingParameters);
+		D3DMeanColorCalculator(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight);
+		~D3DMeanColorCalculator();
 
 		/**
-		 * Set the frame to be used for the next calculation
+		 *	Set the frame to be used for the next calculation
 		 */
 		void setFrameData(ID3D11Texture2D *frame);
 
 		/**
-		 *	Calculate the mean color of nSamplesPerFrame sections within (a region of) the current frame.
-		*	Returns one array of colors per specification given in the constructor.
-		*	The contents of the color arrays may be overwritten and are valid until this method is called again.
+		*	Calculate the mean color of some columns within (a region of) the current frame.
+		*	Produces one array of colors for each specification handle passed, and places the results in
+		*	the respective handle.
+		*	The contents of the color arrays may be overwritten and are valid until the next time the handles
+		*	are used to sample a frame.
 		*/
-		std::vector<RgbColor*> sample(Rect activeRegion);
-
-		D3DMeanColorCalculator();
-		~D3DMeanColorCalculator();
+		void sample(std::vector<D3DMeanColorSpecificationHandle*> handles, Rect activeRegion);
 
 		D3DMeanColorCalculator(D3DMeanColorCalculator const&) = delete;
-		D3DMeanColorCalculator(D3DMeanColorCalculator &&) = delete;
 		D3DMeanColorCalculator operator=(D3DMeanColorCalculator const&) = delete;
+		D3DMeanColorCalculator(D3DMeanColorCalculator &&);
 	};
 }

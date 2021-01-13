@@ -38,7 +38,7 @@ namespace WinRtRgb
 		std::chrono::time_point<std::chrono::system_clock> lastFpsTime;
 
 		void audioCallback(float intensity);
-		void desktopCallback(unsigned int deviceIdx, RgbColor* colors);
+		void desktopCallback(unsigned int deviceIdx, const RgbColor* colors);
 	};
 
 	struct RenderDevice {

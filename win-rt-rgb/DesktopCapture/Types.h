@@ -42,5 +42,5 @@ namespace DesktopCapture
 	*	The parameter is an vector with the resulting colors (the size of the vector matches the number
 	*	of groups in the specification that was used to sample).
 	*/
-	typedef std::function<void(RgbColor*)> DesktopSamplingCallback;
+	typedef std::function<void(const RgbColor*)> DesktopSamplingCallback;
 }
