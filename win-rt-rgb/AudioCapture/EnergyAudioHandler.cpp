@@ -27,7 +27,7 @@ EnergyAudioHandler::EnergyAudioHandler(size_t bufferSize, unsigned int nChannels
 	commonMode(0.01, 0.99),
 	outputFilter(0.99, 0.2)
 {
-	if (bufferSize != 3200)
+	if (bufferSize == 3200)
 	{
 		melFilter = MEL_48000;
 	}
