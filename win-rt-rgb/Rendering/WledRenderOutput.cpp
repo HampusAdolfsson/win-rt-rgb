@@ -28,6 +28,7 @@ WledRenderOutput::~WledRenderOutput()
 
 void WledRenderOutput::draw(const RenderTarget& target)
 {
+	assert(3*target.getSize()+2 <= outputBuffer.size());
 	outputBuffer[0] = 2; // DRGB protocol
 	outputBuffer[1] = 2;
 	const auto& colors = target.getColors();

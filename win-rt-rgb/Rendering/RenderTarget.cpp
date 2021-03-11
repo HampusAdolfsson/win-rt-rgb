@@ -1,10 +1,11 @@
+#include "RenderTarget.h"
 #include <cassert>
 #include <cstdlib>
 #ifdef USE_SSE
 #include <immintrin.h>
 #include <new>
 #endif
-#include "RenderTarget.h"
+#include "Logger.h"
 
 using namespace Rendering;
 
@@ -22,7 +23,14 @@ RenderTarget::RenderTarget(const unsigned int& size)
 
 void RenderTarget::drawRange(const unsigned int& startIndex, const unsigned int& length, const RgbColor* toDraw)
 {
-	memcpy(colors.get() + startIndex, toDraw, length * sizeof(*toDraw));
+	if (startIndex + length > size)
+	{
+		LOGSEVERE("Drawing outside of RenderTarget buffer");
+	}
+	else
+	{
+		memcpy(colors.get() + startIndex, toDraw, length * sizeof(*toDraw));
+	}
 }
 
 void RenderTarget::beginFrame()
