@@ -20,11 +20,11 @@ int main(int argc, char** argv)
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	AudioDesktopRenderer renderer;
+	AudioDesktopRenderer renderer(Config::defaultCaptureRegion);
 	for (const auto& output : Config::outputs)
 	{
-		renderer.addRenderOutput(std::make_unique<Rendering::WledRenderOutput>(output.samplingSpec.numberOfRegions, output.ipAddress, WLED_UDP_PORT),
-			output.samplingSpec, output.useAudio);
+		renderer.addRenderOutput(std::make_unique<Rendering::WledRenderOutput>(output.samplingSpec.numberOfRegions == 50 ? 89 : output.samplingSpec.numberOfRegions, output.ipAddress, WLED_UDP_PORT),
+			output.samplingSpec, output.useAudio, output.preferredMonitor);
 	}
 	renderer.start();
 
@@ -32,15 +32,8 @@ int main(int argc, char** argv)
 	int capturedOutput = 0;
 
 	ProfileManager::start({});
-	ProfileManager::addCallback([&](std::optional<ProfileManager::ActiveProfileData> profileData) {
-		if (profileData.has_value())
-		{
-			renderer.setDesktopRegion(profileData->monitorIndex, profileData->profile.captureRegion);
-		}
-		else
-		{
-			renderer.setDesktopRegion(capturedOutput, Config::defaultCaptureRegion);
-		}
+	ProfileManager::addCallback([&](ProfileManager::ActiveProfileData profileData) {
+		renderer.setActiveProfile(profileData);
 	});
 
 
@@ -63,10 +56,10 @@ int main(int argc, char** argv)
 		}
 
 	});
-	ProfileManager::addCallback([&](std::optional<ProfileManager::ActiveProfileData> profileData) {
-		if (profileData.has_value())
+	ProfileManager::addCallback([&](ProfileManager::ActiveProfileData profileData) {
+		if (profileData.profile.has_value())
 		{
-			server.notifyActiveProfileChanged(profileData->profileIndex);
+			server.notifyActiveProfileChanged(profileData.profileIndex);
 		}
 		else
 		{
