@@ -14,12 +14,10 @@ constexpr HRESULT duplicationExpectedErrors[] = {
 	S_OK
 };
 
-DesktopDuplicator::DesktopDuplicator(ID3D11Device* device, UINT outputIdx, std::function<void(ID3D11Texture2D*)> callback)
+DesktopDuplicator::DesktopDuplicator(ID3D11Device* device, UINT outputIdx)
 	: device(nullptr),
 	outputDuplication(nullptr),
-	currentFrame(nullptr),
-	callback(callback),
-	isRunning(false)
+	currentFrame(nullptr)
 {
 	RtlZeroMemory(&outputDesc, sizeof(outputDesc));
 	this->device = device;
@@ -34,37 +32,10 @@ DesktopDuplicator::DesktopDuplicator(DesktopDuplicator &&other)
 	outputDuplication = other.outputDuplication;
 	outputIdx = other.outputIdx;
 	currentFrame = other.currentFrame;
-	callback = other.callback;
-	isRunning = other.isRunning;
-	samplerThread = std::move(other.samplerThread);
 
 	other.device = nullptr;
 	other.outputDuplication = nullptr;
 	other.currentFrame = nullptr;
-}
-
-void DesktopDuplicator::start()
-{
-	if (isRunning) return;
-	isRunning = true;
-	samplerThread = std::thread(&DesktopDuplicator::sampleLoop, this);
-}
-
-void DesktopDuplicator::stop()
-{
-	if (!isRunning) return;
-	isRunning = false;
-	samplerThread.join();
-}
-
-// run by worker thread
-void DesktopDuplicator::sampleLoop()
-{
-	while (isRunning)
-	{
-		ID3D11Texture2D* frame = captureFrame();
-		callback(frame);
-	}
 }
 
 // TODO: use mutex

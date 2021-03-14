@@ -18,25 +18,16 @@ namespace DesktopCapture
 
 		ID3D11Texture2D* currentFrame;
 
-		std::function<void(ID3D11Texture2D*)> callback;
-		bool isRunning;
-		std::thread samplerThread;
-
 		static bool isExpectedError(const HRESULT& hr);
-		void reInitialize();
-
-		void sampleLoop();
-
-		ID3D11Texture2D* captureFrame();
 
 	public:
+		void reInitialize();
 
 		/**
 		*	Get the duplicator ready to capture frames.
 		*	@param outputIdx The index of the output (monitor) to capture
 		*/
-		DesktopDuplicator(ID3D11Device* device, UINT outputIdx,
-							std::function<void(ID3D11Texture2D*)> callback);
+		DesktopDuplicator(ID3D11Device* device, UINT outputIdx);
 		~DesktopDuplicator();
 
 		void releaseFrame();
@@ -44,8 +35,7 @@ namespace DesktopCapture
 		const UINT getFrameWidth() const;
 		const UINT getFrameHeight() const;
 
-		void start();
-		void stop();
+		ID3D11Texture2D* captureFrame();
 
 		DesktopDuplicator(DesktopDuplicator const&) = delete;
 		DesktopDuplicator operator=(DesktopDuplicator const&) = delete;

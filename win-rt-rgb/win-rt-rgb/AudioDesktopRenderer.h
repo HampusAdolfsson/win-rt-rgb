@@ -3,10 +3,12 @@
 #include "Types.h"
 #include "AudioMonitor.h"
 #include "RenderOutput.h"
+#include "Profiles/ProfileManager.h"
 #include <vector>
 #include <memory>
 #include <optional>
 #include <chrono>
+#include <map>
 
 namespace WinRtRgb
 {
@@ -19,12 +21,30 @@ namespace WinRtRgb
 	class AudioDesktopRenderer
 	{
 	public:
-		void addRenderOutput(std::unique_ptr<Rendering::RenderOutput> renderOutput, DesktopCapture::SamplingSpecification desktopCaptureParams, bool useAudio);
+		/**
+		 *	Creates a new renderer
+		 *	@param defaultCaptureRegion The monitor region to capture when no profiles are active
+		 */
+		AudioDesktopRenderer(DesktopCapture::Rect defaultCaptureRegion);
+
+		/**
+		 *	Add a render output to render colors to.
+		 *	@param renderOutput Where to render colors to
+		 *	@param desktopCaptureParams Specification for how to sample the colors, e.g. how many to generate.
+		 		The number of colors must not exceed what the render output can handle.
+		 *	@param useAudio Whether to use computer audio to set the brightness of the rendered colors
+		 *	@param preferredMonitor	The monitor this device should prefer sampling from, when multiple monitors have active profiles.
+		 */
+		void addRenderOutput(std::unique_ptr<Rendering::RenderOutput> renderOutput, DesktopCapture::SamplingSpecification desktopCaptureParams, bool useAudio, unsigned int preferredMonitor);
 
 		void start();
 		void stop();
 
-		void setDesktopRegion(const unsigned int& outputIdx, const DesktopCapture::Rect& region);
+		/**
+		 *	Sets the active profile for a monitor.
+		 *	@param profileData Specifices which monitor this concerns and what profile (if any) was activated
+		 */
+		void setActiveProfile(ProfileManager::ActiveProfileData profileData);
 
 	private:
 		bool started = false;
@@ -32,6 +52,9 @@ namespace WinRtRgb
 		std::vector<RenderDevice> devices;
 		std::unique_ptr<DesktopCapture::DesktopCaptureController> desktopCaptureController = nullptr;
 		std::unique_ptr<AudioCapture::AudioMonitor> audioMonitor = nullptr;
+
+		std::map<unsigned int, ProfileManager::ActiveProfileData> activeProfiles;
+		DesktopCapture::Rect defaultCaptureRegion;
 
 		// measuring fps
 		unsigned int frames = 0;
@@ -46,5 +69,6 @@ namespace WinRtRgb
 		DesktopCapture::SamplingSpecification desktopCaptureParams;
 		Rendering::RenderTarget desktopRenderTarget;
 		std::optional<Rendering::RenderTarget> audioRenderTarget;
+		unsigned int preferredMonitor;
 	};
 }

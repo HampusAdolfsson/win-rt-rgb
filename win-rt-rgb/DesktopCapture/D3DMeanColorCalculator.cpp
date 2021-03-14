@@ -84,7 +84,7 @@ D3DMeanColorCalculator::D3DMeanColorCalculator(D3DMeanColorCalculator && other)
 	mappingBuffer = other.mappingBuffer;
 	width = other.width;
 	height = other.height;
-	cpuBuffer = other.cpuBuffer;
+	cpuBuffer = std::move(other.cpuBuffer);
 
 	other.deviceContext = nullptr;
 	other.frameBuffer = nullptr;
@@ -138,6 +138,7 @@ void D3DMeanColorCalculator::sample(std::vector<D3DMeanColorSpecificationHandle*
 	for (int h = 0; h < handles.size(); h++)
 	{
 		double outputWidth = double(activeRegion.width) / handles[h]->specification.numberOfRegions;
+		// TODO: put this in the handle
 		std::vector<uint32_t> regionSums(3 * handles[h]->specification.numberOfRegions);
 		for (int i = 0; i < handles[h]->specification.numberOfRegions; i++)
 		{

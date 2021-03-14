@@ -10,11 +10,12 @@ namespace Config {
 		const char* ipAddress;
 		DesktopCapture::SamplingSpecification samplingSpec;
 		bool useAudio;
+		unsigned int preferredMonitor;
 	};
 	// Enumerates the WLED devices to output to
 	std::vector<DeviceConfig> outputs {
-		DeviceConfig{ "192.168.1.8", { 50, 0.15f, 1, false }, false },
-		DeviceConfig{ "192.168.1.13", { 10, 0.5f, 2, false }, true },
+		DeviceConfig{ "192.168.1.8", { 50, 0.3f, 1, false }, false, 0 },
+		DeviceConfig{ "192.168.1.13", { 10, 0.5f, 2, false }, true, 1 },
 	};
 
 	constexpr DesktopCapture::Rect defaultCaptureRegion = {0, 810, 1920, 270};

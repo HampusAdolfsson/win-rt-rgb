@@ -6,7 +6,7 @@
 
 using namespace WinRtRgb;
 
-std::vector<std::function<void(std::optional<ProfileManager::ActiveProfileData>)>> callbacks;
+std::vector<std::function<void(ProfileManager::ActiveProfileData)>> callbacks;
 std::vector<ApplicationProfile> appProfiles;
 // Stores the last active profile for each monitor
 std::map<unsigned int, ProfileManager::ActiveProfileData> activeProfiles;
@@ -27,7 +27,7 @@ void ProfileManager::stop()
 	UnhookWinEvent(eventHook);
 }
 
-void ProfileManager::addCallback(std::function<void(std::optional<ActiveProfileData>)> profileChangedCallback)
+void ProfileManager::addCallback(std::function<void(ActiveProfileData)> profileChangedCallback)
 {
 	callbacks.push_back(profileChangedCallback);
 }
@@ -47,17 +47,20 @@ void ProfileManager::lockProfile(const unsigned int &profileIndex, const unsigne
 	isLocked = true;
 	for (auto &callback : callbacks)
 	{
-		callback(std::optional<ProfileManager::ActiveProfileData>({ appProfiles[profileIndex], profileIndex, monitorIndex }));
+		for (const auto& prof : activeProfiles)
+		{
+			if (prof.first != monitorIndex)
+			{
+				callback(ProfileManager::ActiveProfileData{ prof.first, std::nullopt, 0 });
+			}
+		}
+		callback(ProfileManager::ActiveProfileData{ monitorIndex, appProfiles[profileIndex], profileIndex });
 	}
 }
 
 void ProfileManager::unlock()
 {
 	isLocked = false;
-	for (auto &callback : callbacks)
-	{
-		callback(std::nullopt);
-	}
 }
 
 void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
@@ -79,25 +82,19 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 			if (std::regex_search(title, appProfiles[i].windowTitle))
 			{
 				LOGINFO("Activating profile %s on output %d.", appProfiles[i].regexSpecifier.c_str(), outputIdx);
-				auto prof = ProfileManager::ActiveProfileData{ appProfiles[i], i, outputIdx };
+				auto prof = ProfileManager::ActiveProfileData{ outputIdx, appProfiles[i], i };
 				activeProfiles.insert(std::make_pair(outputIdx, prof));
 				for (auto &callback : callbacks)
 				{
-					callback(std::optional(prof));
+					callback(prof);
 				}
 				return;
 			}
 		}
 		activeProfiles.erase(outputIdx);
-		std::optional<ProfileManager::ActiveProfileData> nextProfile = std::nullopt;
-		if (activeProfiles.size() > 0)
-		{
-			auto prof = activeProfiles.begin()->second;
-			nextProfile = std::optional(prof);
-		}
 		for (auto &callback : callbacks)
 		{
-			callback(nextProfile);
+			callback(ProfileManager::ActiveProfileData{outputIdx, std::nullopt, 0});
 		}
 	}
 }

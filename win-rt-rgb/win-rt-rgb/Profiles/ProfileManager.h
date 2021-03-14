@@ -10,9 +10,9 @@ namespace WinRtRgb
 	namespace ProfileManager
 	{
 		typedef struct {
-			ApplicationProfile profile;
-			unsigned int profileIndex;
 			unsigned int monitorIndex;
+			std::optional<ApplicationProfile> profile;
+			unsigned int profileIndex;
 		} ActiveProfileData;
 
 		/**
@@ -28,7 +28,7 @@ namespace WinRtRgb
 		*	@param profileChangedCallback Called when a new window is focused, with a profile matching the window and the monitor the focused window is on.
 		*		If no profile matched the active window, std::nullopt is sent instead.
 		*/
-		void addCallback(std::function<void(std::optional<ActiveProfileData>)> profileChangedCallback);
+		void addCallback(std::function<void(ActiveProfileData)> profileChangedCallback);
 
 		/**
 		*	Sets the profiles to use

@@ -5,6 +5,8 @@
 #include "DesktopDuplicator.h"
 #include "D3DMeanColorCalculator.h"
 #include <vector>
+#include <mutex>
+#include <thread>
 
 namespace DesktopCapture
 {
@@ -21,17 +23,24 @@ namespace DesktopCapture
 		std::vector<DesktopDuplicator> duplicators;
 		std::vector<D3DMeanColorCalculator> colorSamplers;
 		std::vector<Rect> captureRegions;
+		std::vector<std::thread> samplingWorkers;
+		std::vector<bool> workerRunning;
+		std::vector<std::mutex> handlesLocks;
 		std::vector<std::vector<D3DMeanColorSpecificationHandle*>> assignedHandles;
 		std::vector<std::vector<DesktopSamplingCallback>> assignedCallbacks;
 
-		bool isActive;
 		std::vector<std::pair<D3DMeanColorSpecificationHandle, DesktopSamplingCallback>> outputSpecifications;
-		// Keeps track of where each output specficiation is assigned (to which monitor and in what position)
+		// Keeps track of where each output specification is assigned (to which monitor and in what position)
 		std::vector<std::pair<size_t, size_t>> outputAssignments;
+
+		bool isActive;
 
 		const UINT getNumberOfMonitors() const;
 
-		void frameCallback(UINT monitorIdx, ID3D11Texture2D* texture);
+		void startWorker(UINT monitorIdx);
+		void stopWorker(UINT monitorIdx);
+
+		void samplingLoop(UINT monitorIdx);
 
 	public:
 		/**
