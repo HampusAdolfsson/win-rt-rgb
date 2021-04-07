@@ -23,8 +23,11 @@ int main(int argc, char** argv)
 	AudioDesktopRenderer renderer(Config::defaultCaptureRegion);
 	for (const auto& output : Config::outputs)
 	{
-		renderer.addRenderOutput(std::make_unique<Rendering::WledRenderOutput>(output.samplingSpec.numberOfRegions, output.ipAddress, WLED_UDP_PORT),
-			output.samplingSpec, output.useAudio, output.preferredMonitor);
+		renderer.addRenderOutput(std::make_unique<Rendering::WledRenderOutput>(output.samplingSpec.numberOfRegions,
+																				output.ipAddress, WLED_UDP_PORT,
+																				output.colorTemperature,
+																				output.gamma),
+									output.samplingSpec, output.useAudio, output.preferredMonitor);
 	}
 	renderer.start();
 

@@ -27,3 +27,5 @@ RgbColor blendColors(RgbColor c1, RgbColor c2, const float& progress);
 
 RgbColor hsvToRgb(HsvColor hsv);
 HsvColor rgbToHsv(RgbColor rgb);
+
+RgbColor getWhitePoint(unsigned int colorTemp);

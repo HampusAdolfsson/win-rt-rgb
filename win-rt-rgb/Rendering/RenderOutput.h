@@ -9,8 +9,20 @@ namespace Rendering
 	class RenderOutput
 	{
 	public:
-		virtual void draw(const RenderTarget& target) = 0;
+		RenderOutput(unsigned int colorTemperature, float gamma);
+
+		/**
+		*	Outputs the colors in the RenderTarget to the device.
+		*	The color temperature and gamma are applied to the render target before drawing.
+		*/
+		void draw(RenderTarget& target);
+
+		virtual void drawImpl(const RenderTarget& target) = 0;
 
 		virtual ~RenderOutput() = 0;
+
+	private:
+		RgbColor whitePoint;
+		float gamma;
 	};
 }

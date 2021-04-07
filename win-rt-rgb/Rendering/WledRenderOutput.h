@@ -9,10 +9,10 @@ namespace Rendering
 	class WledRenderOutput : public RenderOutput
 	{
 	public:
-		WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port);
+		WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port, unsigned int colorTemp, float gamma);
 		~WledRenderOutput() override;
 
-		void draw(const RenderTarget& target);
+		void drawImpl(const RenderTarget& target) override;
 
 		WledRenderOutput(WledRenderOutput const&) = delete;
 		WledRenderOutput(WledRenderOutput&&) = delete;

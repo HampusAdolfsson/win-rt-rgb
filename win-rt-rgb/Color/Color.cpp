@@ -1,6 +1,7 @@
 #include "Color.h"
 #include <cassert>
 #include <algorithm>
+#include <cmath>
 
 RgbColor operator*(const RgbColor& c, const float& factor)
 {
@@ -144,4 +145,55 @@ RgbColor hsvToRgb(HsvColor hsv)
 		break;
 	}
 	return out;
+}
+
+RgbColor getWhitePoint(unsigned int colorTemp)
+{
+	assert(colorTemp > 1000 && colorTemp < 40000);
+	// Algorithm used is from here: https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
+	RgbColor whitePoint;
+	colorTemp /= 100;
+
+	// red
+	if (colorTemp <= 66)
+	{
+		whitePoint.red = 255.0f;
+	}
+	else
+	{
+		whitePoint.red = colorTemp - 60.0f;
+		whitePoint.red = 329.698727446 * std::pow(whitePoint.red, -0.1332047592);
+		whitePoint.red = std::min(whitePoint.red, 255.0f);
+	}
+
+	// green
+	if (colorTemp <= 66)
+	{
+		whitePoint.green = colorTemp;
+		whitePoint.green = 99.4708025861 * std::log(whitePoint.green) - 161.1195681661;
+	}
+	else
+	{
+		whitePoint.green = colorTemp - 60.0f;
+		whitePoint.green = 288.1221695283 * std::pow(whitePoint.green, -0.0755148492);
+	}
+	whitePoint.green = std::min(whitePoint.green, 255.0f);
+
+	// blue
+	if (colorTemp >= 66)
+	{
+		whitePoint.blue = 255.0f;
+	}
+	else if (colorTemp <= 19)
+	{
+		whitePoint.blue = 0.0f;
+	}
+	else
+	{
+		whitePoint.blue = colorTemp - 10.0f;
+		whitePoint.blue = 138.5177312231 * std::log(whitePoint.blue) - 305.0447927307;
+		whitePoint.blue = std::min(whitePoint.blue, 255.0f);
+	}
+
+	return RgbColor{ whitePoint.red/255, whitePoint.green/255, whitePoint.blue/255 };
 }

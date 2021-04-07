@@ -6,8 +6,10 @@ using namespace Rendering;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-WledRenderOutput::WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port)
-: outputBuffer(2 + 3 * size, 0)
+WledRenderOutput::WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port,
+									unsigned int colorTemp, float gamma)
+: RenderOutput(colorTemp, gamma),
+  outputBuffer(2 + 3 * size, 0)
 {
 	sockHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sockHandle == SOCKET_ERROR)
@@ -26,7 +28,7 @@ WledRenderOutput::~WledRenderOutput()
 	closesocket(sockHandle);
 }
 
-void WledRenderOutput::draw(const RenderTarget& target)
+void WledRenderOutput::drawImpl(const RenderTarget& target)
 {
 	assert(3*target.getSize()+2 <= outputBuffer.size());
 	outputBuffer[0] = 2; // DRGB protocol
