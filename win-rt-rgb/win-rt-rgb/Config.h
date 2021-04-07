@@ -17,7 +17,7 @@ namespace Config {
 	// Enumerates the WLED devices to output to
 	std::vector<DeviceConfig> outputs {
 		DeviceConfig{ "192.168.1.8", { 50, 0.0f, 0.1f, 1, false }, 5000, 2.0f, false, 0 },
-		DeviceConfig{ "192.168.1.13", { 10, 0.5f, 0.6f, 2, false }, 5000, 2.0f, false, 1 },
+		DeviceConfig{ "192.168.1.13", { 10, 0.5f, 0.6f, 2, false }, 5000, 2.0f, true, 1 },
 	};
 
 	constexpr DesktopCapture::Rect defaultCaptureRegion = {0, 810, 1920, 270};
