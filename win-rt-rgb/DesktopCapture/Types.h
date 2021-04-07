@@ -25,6 +25,12 @@ namespace DesktopCapture
 		float saturationAdjustment;
 
 		/**
+		*	A value (brightness) amount to add to the calculated color for each region.
+		*	1.0f would mean a 100% increase (always fully bright), and -1.0f a 100% decrease (always black).
+		*/
+		float valueAdjustment;
+
+		/**
 		*	The amount of blur to apply to the output. 0 means no blurring. Note that using too high values (e.g. close to half
 		*	the number of regions) will also remove the blurring (the blurring algorithm needs to be improved).
 		*/

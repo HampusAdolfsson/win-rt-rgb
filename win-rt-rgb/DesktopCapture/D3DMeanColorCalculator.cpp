@@ -158,21 +158,23 @@ void D3DMeanColorCalculator::sample(std::vector<D3DMeanColorSpecificationHandle*
 		}
 	}
 
-	// Adjust saturation of outputs
+	// Adjust saturation and value of outputs
 	for (int h = 0; h < handles.size(); h++)
 	{
-		if (handles[h]->specification.saturationAdjustment == .0f) continue;
+		if (handles[h]->specification.saturationAdjustment == .0f && handles[h]->specification.valueAdjustment == .0f) continue;
 		#pragma omp parallel for
 		for (int i = 0; i < handles[h]->specification.numberOfRegions; i++)
 		{
 			HsvColor hsv = rgbToHsv(handles[h]->outputBuffer[i]);
 			if (hsv.saturation > 0.001f)
 			{
-				hsv.saturation = min(hsv.saturation + handles[h]->specification.saturationAdjustment, 1.0f);
-				handles[h]->outputBuffer[i] = hsvToRgb(hsv);
+				hsv.saturation = min(max(hsv.saturation + handles[h]->specification.saturationAdjustment, 0.0f), 1.0f);
 			}
+			hsv.value = min(max(hsv.value + handles[h]->specification.valueAdjustment, 0.0f), 1.0f);
+			handles[h]->outputBuffer[i] = hsvToRgb(hsv);
 		}
 	}
+}
 
 	bufferLock.unlock();
 }
