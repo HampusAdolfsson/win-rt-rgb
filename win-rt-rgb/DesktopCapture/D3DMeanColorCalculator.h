@@ -7,24 +7,7 @@
 
 namespace DesktopCapture
 {
-	class D3DMeanColorCalculator;
-	/**
-	 * Encapsulates a sampling specification that is to be used by a D3DMeanColorCalculator,
-	 * i.e. to be passed to the sample method.
-	 * An handle can be used multiple times, and can even be used by several
-	 * D3DMeanColorCalculators, in order to avoid allocating buffers too often.
-	 */
-	class D3DMeanColorSpecificationHandle
-	{
-		friend D3DMeanColorCalculator;
-		SamplingSpecification specification;
-		std::vector<RgbColor> outputBuffer;
-	public:
-		D3DMeanColorSpecificationHandle(SamplingSpecification specification);
-
-		/** Gets the results from the last sample call involving this handle **/
-		inline const std::vector<RgbColor>& getResults() const { return outputBuffer; };
-	};
+	typedef std::vector<RgbColor> ColorBuffer;
 
 	/**
 	*	Samples a d3d texture and returns one or more sets of its average colors,
@@ -59,13 +42,13 @@ namespace DesktopCapture
 		void setFrameData(ID3D11Texture2D *frame);
 
 		/**
-		*	Calculate the mean color of some columns within (a region of) the current frame.
-		*	Produces one array of colors for each specification handle passed, and places the results in
-		*	the respective handle.
+		*	Calculate the mean color of some columns within (a portion of) the current frame.
+		*	Produces one array of colors for each buffer passed, and places the results in
+		*	the respective buffer.
 		*	The contents of the color arrays may be overwritten and are valid until the next time the handles
 		*	are used to sample a frame.
 		*/
-		void sample(std::vector<D3DMeanColorSpecificationHandle*> handles, Rect activeRegion);
+		void sample(std::vector<ColorBuffer*> buffers, Rect activeRegion);
 
 		D3DMeanColorCalculator(D3DMeanColorCalculator const&) = delete;
 		D3DMeanColorCalculator operator=(D3DMeanColorCalculator const&) = delete;

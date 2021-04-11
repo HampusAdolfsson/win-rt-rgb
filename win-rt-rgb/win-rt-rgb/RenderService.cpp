@@ -1,5 +1,6 @@
-#include "AudioDesktopRenderer.h"
+#include "RenderService.h"
 #include "EnergyAudioHandler.h"
+#include "MaskingBehaviour.h"
 #include "Logger.h"
 #include <stdexcept>
 #include <numeric>
@@ -7,37 +8,43 @@
 using namespace WinRtRgb;
 
 
-AudioDesktopRenderer::AudioDesktopRenderer(DesktopCapture::Rect defaultCaptureRegion)
+RenderService::RenderService(DesktopCapture::Rect defaultCaptureRegion)
  : defaultCaptureRegion(defaultCaptureRegion)
 {
 }
 
-void AudioDesktopRenderer::addRenderOutput(std::unique_ptr<Rendering::RenderOutput> renderOutput,
-											DesktopCapture::SamplingSpecification desktopCaptureParams, bool useAudio, unsigned int preferredMonitor)
+void RenderService::setRenderOutputs(std::vector<RenderDeviceConfig> devices)
 {
 	if (started) { throw std::runtime_error("Already started"); }
-	RenderDevice device = {
-		std::move(renderOutput),
-		desktopCaptureParams,
-		Rendering::RenderTarget(desktopCaptureParams.numberOfRegions),
-		useAudio ? std::optional(Rendering::RenderTarget(desktopCaptureParams.numberOfRegions)) : std::nullopt,
-		preferredMonitor
-	};
-	devices.push_back(std::move(device));
+	this->devices.clear();
+	for (auto& devConf : devices)
+	{
+		devConf.output->initialize();
+		size_t ledCount = devConf.output->getLedCount();
+		RenderDevice device = {
+			std::move(devConf.output),
+			Rendering::RenderTarget(ledCount, std::unique_ptr<Rendering::MaskingBehaviour>(new Rendering::UniformMaskingBehaviour())),
+			devConf.useAudio ? std::optional(Rendering::RenderTarget(ledCount, std::unique_ptr<Rendering::MaskingBehaviour>(new Rendering::UniformMaskingBehaviour()))) : std::nullopt,
+			devConf.preferredMonitor,
+			devConf.saturationAdjustment,
+			devConf.valueAdjustment
+		};
+		this->devices.push_back(std::move(device));
+	}
 }
 
-void AudioDesktopRenderer::start()
+void RenderService::start()
 {
-	if (started) { throw std::runtime_error("Already started"); }
+	if (started) { return; }
 	started = true;
 
 	if (!desktopCaptureController.get())
 	{
-		std::vector<std::pair<DesktopCapture::SamplingSpecification, DesktopCapture::DesktopSamplingCallback>> specs;
+		std::vector<std::pair<size_t, DesktopCapture::DesktopSamplingCallback>> specs;
 		for (int i = 0; i < devices.size(); i++)
 		{
-			DesktopCapture::DesktopSamplingCallback callback = std::bind(&AudioDesktopRenderer::desktopCallback, this, i, std::placeholders::_1);
-			specs.push_back({devices[i].desktopCaptureParams, callback});
+			DesktopCapture::DesktopSamplingCallback callback = std::bind(&RenderService::desktopCallback, this, i, std::placeholders::_1);
+			specs.push_back({devices[i].renderOutput->getLedCount(), callback});
 		}
 		desktopCaptureController = std::make_unique<DesktopCapture::DesktopCaptureController>(specs);
 	}
@@ -47,7 +54,7 @@ void AudioDesktopRenderer::start()
 		{
 			if (dev.audioRenderTarget.has_value())
 			{
-				audioMonitor = std::make_unique<AudioCapture::AudioMonitor>(AudioCapture::AudioSink(30, std::make_unique<AudioCapture::EnergyAudioHandlerFactory>(std::bind(&AudioDesktopRenderer::audioCallback, this, std::placeholders::_1))));
+				audioMonitor = std::make_unique<AudioCapture::AudioMonitor>(AudioCapture::AudioSink(30, std::make_unique<AudioCapture::EnergyAudioHandlerFactory>(std::bind(&RenderService::audioCallback, this, std::placeholders::_1))));
 				audioMonitor->initialize();
 				audioMonitor->start();
 				break;
@@ -60,15 +67,15 @@ void AudioDesktopRenderer::start()
 	desktopCaptureController->start();
 }
 
-void AudioDesktopRenderer::stop()
+void RenderService::stop()
 {
-	if (!started) { throw std::runtime_error("Not running"); }
+	if (!started) { return; }
 	started = false;
-	desktopCaptureController->stop();
-	audioMonitor->stop();
+	if (desktopCaptureController.get()) { desktopCaptureController->stop(); }
+	if (audioMonitor.get()) { audioMonitor->stop(); }
 }
 
-void AudioDesktopRenderer::setActiveProfile(ProfileManager::ActiveProfileData profileData)
+void RenderService::setActiveProfile(ProfileManager::ActiveProfileData profileData)
 {
 	if (profileData.profile.has_value()) activeProfiles.insert(std::make_pair(profileData.monitorIndex, profileData));
 	else activeProfiles.erase(profileData.monitorIndex);
@@ -91,26 +98,28 @@ void AudioDesktopRenderer::setActiveProfile(ProfileManager::ActiveProfileData pr
 	}
 }
 
-void AudioDesktopRenderer::audioCallback(float intensity)
+void RenderService::audioCallback(float intensity)
 {
 	if (!started) { return; }
 	for (RenderDevice& device : devices)
 	{
 		if (!device.audioRenderTarget.has_value()) { continue; }
 		device.audioRenderTarget->cloneFrom(device.desktopRenderTarget);
+		device.audioRenderTarget->applyAdjustments(.0f, device.saturationAdjustment, device.valueAdjustment);
 		device.audioRenderTarget->setIntensity(intensity);
 		device.renderOutput->draw(*device.audioRenderTarget);
 	}
 }
-void AudioDesktopRenderer::desktopCallback(unsigned int deviceIdx, const RgbColor* colors)
+void RenderService::desktopCallback(unsigned int deviceIdx, const RgbColor* colors)
 {
 	if (!started) { return; }
 	RenderDevice& device = devices[deviceIdx];
 	device.desktopRenderTarget.beginFrame();
-	device.desktopRenderTarget.drawRange(deviceIdx == 0 ? 12 : 0, device.desktopCaptureParams.numberOfRegions, colors);
+	device.desktopRenderTarget.drawRange(0, device.desktopRenderTarget.getSize(), colors);
 	if (!device.audioRenderTarget.has_value())
 	{
 		// This device shouldn't use audio, so just render desktop colors
+		device.desktopRenderTarget.applyAdjustments(.0f, device.saturationAdjustment, device.valueAdjustment);
 		device.renderOutput->draw(device.desktopRenderTarget);
 		frames++;
 		auto timeSinceLastFps = std::chrono::system_clock::now() - lastFpsTime;

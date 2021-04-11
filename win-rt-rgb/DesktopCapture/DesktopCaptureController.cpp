@@ -4,13 +4,13 @@
 
 using namespace DesktopCapture;
 
-DesktopCaptureController::DesktopCaptureController(const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& outputSpecifications)
-	: isActive(false),
-	assignedCallbacks(outputSpecifications.size()),
-	assignedHandles(outputSpecifications.size())
+DesktopCaptureController::DesktopCaptureController(const std::vector<std::pair<size_t, DesktopSamplingCallback>>& outputSpecifications)
+	: isActive(false)
 {
 	// Initialize per-monitor data
 	UINT nOutputs = getNumberOfMonitors();
+	assignedCallbacks.resize(nOutputs);
+	assignedBuffers.resize(nOutputs);
 	for (UINT i = 0; i < nOutputs; i++)
 	{
 		ID3D11Device* device;
@@ -38,9 +38,9 @@ DesktopCaptureController::DesktopCaptureController(const std::vector<std::pair<S
 	for (UINT i = 0; i < outputSpecifications.size(); i++)
 	{
 		auto& spec = outputSpecifications[i];
-		this->outputSpecifications.push_back({D3DMeanColorSpecificationHandle(spec.first), spec.second});
+		this->outputSpecifications.push_back({ColorBuffer(spec.first), spec.second});
 		// Assign all outputs to monitor 0 by default
-		assignedHandles[0].push_back(&(this->outputSpecifications[i].first));
+		assignedBuffers[0].push_back(&(this->outputSpecifications[i].first));
 		assignedCallbacks[0].push_back(spec.second);
 	}
 }
@@ -72,11 +72,11 @@ void DesktopCaptureController::setCaptureMonitorForOutput(UINT outputIdx, UINT m
 	}
 	// Find if this output is already assigned to a monitor
 	std::pair<size_t, size_t> prevAssignment(-1, -1);
-	for (int mon = 0; mon < assignedHandles.size(); mon++)
+	for (int mon = 0; mon < assignedBuffers.size(); mon++)
 	{
-		for (int i = 0; i < assignedHandles.at(mon).size(); i++)
+		for (int i = 0; i < assignedBuffers.at(mon).size(); i++)
 		{
-			if (assignedHandles.at(mon).at(i) == &outputSpecifications.at(outputIdx).first)
+			if (assignedBuffers.at(mon).at(i) == &outputSpecifications.at(outputIdx).first)
 			{
 				prevAssignment = {mon, i};
 				break;
@@ -88,17 +88,17 @@ void DesktopCaptureController::setCaptureMonitorForOutput(UINT outputIdx, UINT m
 	// handlesLocks[prevAssignment.first].lock();
 	if (prevAssignment.first >= 0)
 	{
-		auto handleIt = assignedHandles[prevAssignment.first].begin() + prevAssignment.second;
+		auto handleIt = assignedBuffers[prevAssignment.first].begin() + prevAssignment.second;
 		auto callbackIt = assignedCallbacks[prevAssignment.first].begin() + prevAssignment.second;
-		assignedHandles[prevAssignment.first].erase(handleIt);
+		assignedBuffers[prevAssignment.first].erase(handleIt);
 		assignedCallbacks[prevAssignment.first].erase(callbackIt);
 	}
-	D3DMeanColorSpecificationHandle* handle = &outputSpecifications[outputIdx].first;
+	ColorBuffer* buffer = &outputSpecifications[outputIdx].first;
 	DesktopSamplingCallback callback = outputSpecifications[outputIdx].second;
 
 	// handlesLocks[monitorIdx].lock();
 
-	assignedHandles[monitorIdx].push_back(handle);
+	assignedBuffers[monitorIdx].push_back(buffer);
 	assignedCallbacks[monitorIdx].push_back(callback);
 	if (assignedCallbacks[prevAssignment.first].size() == 0) stopWorker(prevAssignment.first);
 	if (assignedCallbacks[monitorIdx].size() == 1 && !workerRunning[monitorIdx]) startWorker(monitorIdx);
@@ -193,11 +193,11 @@ void DesktopCaptureController::samplingLoop(UINT monitorIdx)
 		{
 			sampler.setFrameData(frame);
 			dup.releaseFrame();
-			sampler.sample(assignedHandles[monitorIdx], captureRegions[monitorIdx]);
+			sampler.sample(assignedBuffers[monitorIdx], captureRegions[monitorIdx]);
 		}
 		for (int i = 0; i < assignedCallbacks[monitorIdx].size(); i++)
 		{
-			assignedCallbacks[monitorIdx][i](assignedHandles[monitorIdx][i]->getResults().data());
+			assignedCallbacks[monitorIdx][i](assignedBuffers[monitorIdx][i]->data());
 		}
 		// lock.unlock();
 	}

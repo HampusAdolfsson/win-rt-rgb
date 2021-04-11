@@ -10,12 +10,6 @@ constexpr unsigned int MIP_LEVEL = 2;
 constexpr unsigned int SCALING_FACTOR = 1 << MIP_LEVEL;
 constexpr unsigned int RGBA_COLOR_SIZE = 4;
 
-D3DMeanColorSpecificationHandle::D3DMeanColorSpecificationHandle(SamplingSpecification specification)
-	: specification(specification),
-	outputBuffer(specification.numberOfRegions)
-{
-}
-
 D3DMeanColorCalculator::D3DMeanColorCalculator(ID3D11Device* device, const UINT& textureWidth, const UINT& textureHeight)
 {
 	width = textureWidth;
@@ -98,7 +92,7 @@ void D3DMeanColorCalculator::setFrameData(ID3D11Texture2D *frame)
 	deviceContext->CopySubresourceRegion(frameBuffer, 0, 0, 0, 0, frame, 0, nullptr);
 }
 
-void D3DMeanColorCalculator::sample(std::vector<D3DMeanColorSpecificationHandle*> handles, Rect activeRegion)
+void D3DMeanColorCalculator::sample(std::vector<ColorBuffer*> buffers, Rect activeRegion)
 {
 	activeRegion.left /= SCALING_FACTOR;
 	activeRegion.width /= SCALING_FACTOR;
@@ -106,8 +100,6 @@ void D3DMeanColorCalculator::sample(std::vector<D3DMeanColorSpecificationHandle*
 	activeRegion.height /= SCALING_FACTOR;
 
 	copyToCpuBuffer(activeRegion, MIP_LEVEL);
-
-	bufferLock.lock();
 
 	// TODO: make aligned
 	// Calculate vertical sums for active region
@@ -135,12 +127,12 @@ void D3DMeanColorCalculator::sample(std::vector<D3DMeanColorSpecificationHandle*
 
 	// TODO: If the number of regions for some handle is a multiple of another, we can avoid doing the full calculation for the smaller one
 	// Sum the vertical sums horizontally to form the right number of colors
-	for (int h = 0; h < handles.size(); h++)
+	for (int b = 0; b < buffers.size(); b++)
 	{
-		double outputWidth = double(activeRegion.width) / handles[h]->specification.numberOfRegions;
+		double outputWidth = double(activeRegion.width) / buffers[b]->size();
 		// TODO: put this in the handle
-		std::vector<uint32_t> regionSums(3 * handles[h]->specification.numberOfRegions);
-		for (int i = 0; i < handles[h]->specification.numberOfRegions; i++)
+		std::vector<uint32_t> regionSums(3 * (buffers[b]->size()));
+		for (int i = 0; i < buffers[b]->size(); i++)
 		{
 			unsigned int regionStart = ceil(outputWidth * i);
 			unsigned int regionEnd = ceil(outputWidth * (i+1));
@@ -151,32 +143,14 @@ void D3DMeanColorCalculator::sample(std::vector<D3DMeanColorSpecificationHandle*
 				regionSums[3*i+1] += verticalSums[nColors + x];
 				regionSums[3*i+2] += verticalSums[2*nColors + x];
 			}
-			int index = handles[h]->specification.flipHorizontally ? handles[h]->specification.numberOfRegions - 1 - i : i;
-			handles[h]->outputBuffer[index].red = regionSums[3*i] / (pixelsPerRegion * 255.0);
-			handles[h]->outputBuffer[index].green = regionSums[3*i+1] / (pixelsPerRegion * 255.0);
-			handles[h]->outputBuffer[index].blue = regionSums[3*i+2] / (pixelsPerRegion * 255.0);
+			buffers[b]->at(i).red = regionSums[3*i] / (pixelsPerRegion * 255.0);
+			buffers[b]->at(i).green = regionSums[3*i+1] / (pixelsPerRegion * 255.0);
+			buffers[b]->at(i).blue = regionSums[3*i+2] / (pixelsPerRegion * 255.0);
 		}
 	}
-
-	// Adjust saturation and value of outputs
-	for (int h = 0; h < handles.size(); h++)
-	{
-		if (handles[h]->specification.saturationAdjustment == .0f && handles[h]->specification.valueAdjustment == .0f) continue;
-		#pragma omp parallel for
-		for (int i = 0; i < handles[h]->specification.numberOfRegions; i++)
-		{
-			HsvColor hsv = rgbToHsv(handles[h]->outputBuffer[i]);
-			if (hsv.saturation > 0.001f)
-			{
-				hsv.saturation = min(max(hsv.saturation + handles[h]->specification.saturationAdjustment, 0.0f), 1.0f);
-			}
-			hsv.value = min(max(hsv.value + handles[h]->specification.valueAdjustment, 0.0f), 1.0f);
-			handles[h]->outputBuffer[i] = hsvToRgb(hsv);
-		}
-	}
-}
 
 	bufferLock.unlock();
+
 }
 
 void D3DMeanColorCalculator::copyToCpuBuffer(Rect region, unsigned int srcMipLevel)

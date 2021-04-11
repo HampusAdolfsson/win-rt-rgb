@@ -6,10 +6,17 @@ using namespace Rendering;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-WledRenderOutput::WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port,
+WledRenderOutput::WledRenderOutput(size_t ledCount, const std::string& address, const unsigned int& port,
 									unsigned int colorTemp, float gamma)
-: RenderOutput(colorTemp, gamma),
-  outputBuffer(2 + 3 * size, 0)
+: RenderOutput(ledCount, colorTemp, gamma),
+  address(address),
+  port(port),
+  sockHandle(INVALID_SOCKET),
+  outputBuffer(2 + 3 * ledCount, 0)
+{
+}
+
+void WledRenderOutput::initialize()
 {
 	sockHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sockHandle == SOCKET_ERROR)
@@ -25,7 +32,11 @@ WledRenderOutput::WledRenderOutput(const unsigned int& size, const std::string& 
 
 WledRenderOutput::~WledRenderOutput()
 {
-	closesocket(sockHandle);
+	if (sockHandle != INVALID_SOCKET)
+	{
+		closesocket(sockHandle);
+		sockHandle = INVALID_SOCKET;
+	}
 }
 
 void WledRenderOutput::drawImpl(const RenderTarget& target)

@@ -26,10 +26,10 @@ namespace DesktopCapture
 		std::vector<std::thread> samplingWorkers;
 		std::vector<bool> workerRunning;
 		std::vector<std::mutex> handlesLocks;
-		std::vector<std::vector<D3DMeanColorSpecificationHandle*>> assignedHandles;
+		std::vector<std::vector<ColorBuffer*>> assignedBuffers;
 		std::vector<std::vector<DesktopSamplingCallback>> assignedCallbacks;
 
-		std::vector<std::pair<D3DMeanColorSpecificationHandle, DesktopSamplingCallback>> outputSpecifications;
+		std::vector<std::pair<ColorBuffer, DesktopSamplingCallback>> outputSpecifications;
 		// Keeps track of where each output specification is assigned (to which monitor and in what position)
 		std::vector<std::pair<size_t, size_t>> outputAssignments;
 
@@ -45,10 +45,10 @@ namespace DesktopCapture
 	public:
 		/**
 		*	Creates a new capture controller
-		*	@param outputSpecifications For each frame, an array of colors will be generated for each sampling specification,
+		*	@param outputSpecifications For each frame, an array of colors will be generated of the given size(s),
 		*		and the colors will provided to the associated callback function.
 		*/
-		DesktopCaptureController(const std::vector<std::pair<SamplingSpecification, DesktopSamplingCallback>>& outputSpecifications);
+		DesktopCaptureController(const std::vector<std::pair<size_t, DesktopSamplingCallback>>& outputSpecifications);
 		~DesktopCaptureController();
 
 		/**

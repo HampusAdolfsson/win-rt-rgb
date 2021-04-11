@@ -1,5 +1,7 @@
 #pragma once
 #include "Profiles/ApplicationProfile.h"
+#include "RenderOutput.h"
+#include "RenderService.h"
 #include <string>
 #include <vector>
 #include <optional>
@@ -22,6 +24,7 @@ namespace WinRtRgb
 	{
 	public:
 		WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
+						std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback,
 						std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback);
 		~WebsocketServer();
 
@@ -34,9 +37,11 @@ namespace WinRtRgb
 		std::optional<websocketpp::connection_hdl> client;
 
 		std::function<void(std::vector<ApplicationProfile>)> profilesCallback;
+		std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback;
 		std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback;
 
 		void handleProfileMessage(const nlohmann::json& contents);
+		void handleDeviceMessage(const nlohmann::json& contents);
 		void handleLockMessage(const nlohmann::json& contents);
 	};
 }

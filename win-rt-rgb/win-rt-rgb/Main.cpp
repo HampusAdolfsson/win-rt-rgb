@@ -1,12 +1,13 @@
 #include <Windows.h>
 #include "Config.h"
-#include "AudioDesktopRenderer.h"
+#include "RenderService.h"
 #include "Logger.h"
 #include "Profiles/ProfileManager.h"
 #include "Profiles/ApplicationProfile.h"
 #include "RenderTarget.h"
 #include "WledRenderOutput.h"
 #include "WebsocketServer.h"
+#include "QmkRenderOutput.h"
 
 using namespace WinRtRgb;
 
@@ -14,22 +15,14 @@ int main(int argc, char** argv)
 {
 	Logger::Instance().setLogFile("log");
 	LOGINFO("Starting application");
+	// Rendering::QmkRenderOutput("Razer Naga Trinity", 5700, 2.0f);
 
 	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
 	WSAData wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	AudioDesktopRenderer renderer(Config::defaultCaptureRegion);
-	for (const auto& output : Config::outputs)
-	{
-		renderer.addRenderOutput(std::make_unique<Rendering::WledRenderOutput>(output.samplingSpec.numberOfRegions,
-																				output.ipAddress, WLED_UDP_PORT,
-																				output.colorTemperature,
-																				output.gamma),
-									output.samplingSpec, output.useAudio, output.preferredMonitor);
-	}
-	renderer.start();
+	RenderService renderer(Config::defaultCaptureRegion);
 
 
 	int capturedOutput = 0;
@@ -47,7 +40,14 @@ int main(int argc, char** argv)
 	WebsocketServer server([](std::vector<ApplicationProfile> newProfiles)
 	{ /* Profiles callback */
 		ProfileManager::setProfiles(newProfiles);
-	}, [](std::optional<std::pair<unsigned int, unsigned int>> profileAndMonitorIdx)
+	},
+	[&](std::vector<RenderDeviceConfig> newDevices)
+	{ /* Devices callback */
+		renderer.stop();
+		renderer.setRenderOutputs(std::move(newDevices));
+		renderer.start();
+	},
+	[](std::optional<std::pair<unsigned int, unsigned int>> profileAndMonitorIdx)
 	{ /* LockProfile callback */
 		if (profileAndMonitorIdx.has_value())
 		{

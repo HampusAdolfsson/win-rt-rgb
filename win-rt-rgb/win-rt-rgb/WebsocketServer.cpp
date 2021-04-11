@@ -1,12 +1,16 @@
 #include "WebsocketServer.h"
 #include "Logger.h"
+#include "WledRenderOutput.h"
+#include "Config.h"
 #include <cstdio>
 
 using namespace WinRtRgb;
 
 WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
+								std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback,
 								std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback)
  : profilesCallback(profilesCallback),
+ devicesCallback(devicesCallback),
  lockCallback(lockCallback)
 { }
 
@@ -36,6 +40,10 @@ void WebsocketServer::start(const unsigned int& port)
 		if (subject == "profiles") {
 			LOGINFO("Got profiles message");
 			handleProfileMessage(contents);
+
+		} else if (subject == "devices") {
+			LOGINFO("Got devices message");
+			handleDeviceMessage(contents);
 		} else if (subject == "lock") {
 			LOGINFO("Got lock message");
 			handleLockMessage(contents);
@@ -78,6 +86,42 @@ void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 		receivedProfiles.push_back(ApplicationProfile(regex, DesktopCapture::Rect{x, y, width, height}));
 	}
 	profilesCallback(receivedProfiles);
+}
+
+void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
+{
+	std::vector<RenderDeviceConfig> receivedDevices;
+	for (const auto& deviceJson : contents) {
+		int nLeds = deviceJson["numberOfLeds"].get<int>();
+		float colorTemp = deviceJson["colorTemp"].get<int>();
+		float gamma = deviceJson["gamma"].get<float>();
+		float saturationAdjustment = deviceJson["saturationAdjustment"].get<int>() / 100.0f;
+		float valueAdjustment = deviceJson["valueAdjustment"].get<int>() / 100.0f;
+		bool useAudio = deviceJson["useAudio"].get<boolean>();
+		bool preferredMonitor = deviceJson["preferredMonitor"].get<int>();
+		int type = deviceJson["type"].get<int>();
+
+		RenderDeviceConfig deviceConfig;
+		deviceConfig.saturationAdjustment = saturationAdjustment;
+		deviceConfig.valueAdjustment = valueAdjustment;
+		deviceConfig.useAudio = useAudio;
+		deviceConfig.preferredMonitor = preferredMonitor;
+
+		switch (type)
+		{
+		case 0:
+		{
+			std::string ipAddress = deviceJson["wledData"]["ipAddress"].get<std::string>();
+			deviceConfig.output = std::make_unique<Rendering::WledRenderOutput>(nLeds == 50 ? 89 : nLeds, ipAddress, WLED_UDP_PORT, colorTemp, gamma);
+			break;
+		}
+		default:
+			LOGWARNING("Got unknown device type: %d", type);
+			continue;
+		}
+		receivedDevices.push_back(std::move(deviceConfig));
+	}
+	devicesCallback(std::move(receivedDevices));
 }
 
 void WebsocketServer::handleLockMessage(const nlohmann::json& contents)

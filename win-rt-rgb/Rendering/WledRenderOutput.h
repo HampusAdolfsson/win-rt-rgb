@@ -9,8 +9,10 @@ namespace Rendering
 	class WledRenderOutput : public RenderOutput
 	{
 	public:
-		WledRenderOutput(const unsigned int& size, const std::string& address, const unsigned int& port, unsigned int colorTemp, float gamma);
+		WledRenderOutput(size_t ledCount, const std::string& address, const unsigned int& port, unsigned int colorTemp, float gamma);
 		~WledRenderOutput() override;
+
+		void initialize() override;
 
 		void drawImpl(const RenderTarget& target) override;
 
@@ -19,6 +21,8 @@ namespace Rendering
 		WledRenderOutput& operator=(WledRenderOutput const&) = delete;
 
 	private:
+		std::string address;
+		unsigned int port;
 		SOCKET				sockHandle;
 		struct sockaddr_in	sockAddr;
 

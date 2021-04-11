@@ -12,20 +12,32 @@
 
 namespace WinRtRgb
 {
+	/**
+	*	A device to render colors to. When passed to a RenderService, it will continuously render
+	*	colors to the given RenderOutput using the other parameters.
+	*/
+	struct RenderDeviceConfig {
+		std::unique_ptr<Rendering::RenderOutput> output;
+		bool useAudio;
+		unsigned int preferredMonitor;
+		float saturationAdjustment;
+		float valueAdjustment;
+	};
+
 	struct RenderDevice;
 
 	/**
 	*   Renders colors captured from the desktop and (optionally) captured audio to a
 	*   set of render outputs.
 	*/
-	class AudioDesktopRenderer
+	class RenderService
 	{
 	public:
 		/**
 		 *	Creates a new renderer
 		 *	@param defaultCaptureRegion The monitor region to capture when no profiles are active
 		 */
-		AudioDesktopRenderer(DesktopCapture::Rect defaultCaptureRegion);
+		RenderService(DesktopCapture::Rect defaultCaptureRegion);
 
 		/**
 		 *	Add a render output to render colors to.
@@ -35,7 +47,7 @@ namespace WinRtRgb
 		 *	@param useAudio Whether to use computer audio to set the brightness of the rendered colors
 		 *	@param preferredMonitor	The monitor this device should prefer sampling from, when multiple monitors have active profiles.
 		 */
-		void addRenderOutput(std::unique_ptr<Rendering::RenderOutput> renderOutput, DesktopCapture::SamplingSpecification desktopCaptureParams, bool useAudio, unsigned int preferredMonitor);
+		void setRenderOutputs(std::vector<RenderDeviceConfig> devices);
 
 		void start();
 		void stop();
@@ -66,9 +78,10 @@ namespace WinRtRgb
 
 	struct RenderDevice {
 		std::unique_ptr<Rendering::RenderOutput> renderOutput;
-		DesktopCapture::SamplingSpecification desktopCaptureParams;
 		Rendering::RenderTarget desktopRenderTarget;
 		std::optional<Rendering::RenderTarget> audioRenderTarget;
 		unsigned int preferredMonitor;
+		float saturationAdjustment;
+		float valueAdjustment;
 	};
 }
