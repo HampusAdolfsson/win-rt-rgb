@@ -56,7 +56,6 @@ void RenderService::start()
 			{
 				audioMonitor = std::make_unique<AudioCapture::AudioMonitor>(AudioCapture::AudioSink(30, std::make_unique<AudioCapture::EnergyAudioHandlerFactory>(std::bind(&RenderService::audioCallback, this, std::placeholders::_1))));
 				audioMonitor->initialize();
-				audioMonitor->start();
 				break;
 			}
 		}
@@ -65,6 +64,7 @@ void RenderService::start()
 
 	lastFpsTime = std::chrono::system_clock::now();
 	desktopCaptureController->start();
+	if (audioMonitor.get()) audioMonitor->start();
 }
 
 void RenderService::stop()
