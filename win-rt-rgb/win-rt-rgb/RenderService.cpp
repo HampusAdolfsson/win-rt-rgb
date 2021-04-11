@@ -105,7 +105,10 @@ void RenderService::audioCallback(float intensity)
 	{
 		if (!device.audioRenderTarget.has_value()) { continue; }
 		device.audioRenderTarget->cloneFrom(device.desktopRenderTarget);
-		device.audioRenderTarget->applyAdjustments(.0f, device.saturationAdjustment, device.valueAdjustment);
+		device.audioRenderTarget->applyAdjustments(0, device.audioRenderTarget->getSize(),
+													.0f,
+													device.saturationAdjustment,
+													device.valueAdjustment);
 		device.audioRenderTarget->setIntensity(intensity);
 		device.renderOutput->draw(*device.audioRenderTarget);
 	}
@@ -119,7 +122,10 @@ void RenderService::desktopCallback(unsigned int deviceIdx, const RgbColor* colo
 	if (!device.audioRenderTarget.has_value())
 	{
 		// This device shouldn't use audio, so just render desktop colors
-		device.desktopRenderTarget.applyAdjustments(.0f, device.saturationAdjustment, device.valueAdjustment);
+		device.desktopRenderTarget.applyAdjustments(0, device.desktopRenderTarget.getSize(),
+													.0f,
+													device.saturationAdjustment,
+													device.valueAdjustment);
 		device.renderOutput->draw(device.desktopRenderTarget);
 		frames++;
 		auto timeSinceLastFps = std::chrono::system_clock::now() - lastFpsTime;

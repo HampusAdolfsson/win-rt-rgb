@@ -26,7 +26,7 @@ namespace Rendering
 
 		void beginFrame();
 
-		void applyAdjustments(float hue, float saturation, float value);
+		void applyAdjustments(unsigned int startIndex, unsigned int length, float hue, float saturation, float value);
 
 		void setIntensity(const float& intensity);
 

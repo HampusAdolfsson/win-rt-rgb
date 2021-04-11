@@ -36,11 +36,11 @@ void RenderTarget::beginFrame()
 	memset(colors.get(), 0, size);
 }
 
-void RenderTarget::applyAdjustments(float hue, float saturation, float value)
+void RenderTarget::applyAdjustments(unsigned int startIndex, unsigned int length, float hue, float saturation, float value)
 {
 	if (hue == .0f && saturation == .0f && value == .0f) return;
 	#pragma omp parallel for
-	for (int i = 0; i < size; i++)
+	for (int i = startIndex; i < length; i++)
 	{
 		HsvColor hsv = rgbToHsv(colors[i]);
 		hsv.hue += hue;
