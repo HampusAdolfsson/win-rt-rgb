@@ -45,11 +45,17 @@ namespace DesktopCapture
 	public:
 		/**
 		*	Creates a new capture controller
-		*	@param outputSpecifications For each frame, an array of colors will be generated of the given size(s),
-		*		and the colors will provided to the associated callback function.
 		*/
-		DesktopCaptureController(const std::vector<std::pair<size_t, DesktopSamplingCallback>>& outputSpecifications);
+		DesktopCaptureController();
 		~DesktopCaptureController();
+
+		/**
+		*	Specifies the outputs to generate, and the callbacks for them. Should not be called while the controller is
+		*	running.
+		*	@param outputSpecifications For each frame, an array of colors will be generated of the given size(s), and
+		*	    the colors will provided to the associated callback function.
+		*/
+		void setOutputSpecifications(const std::vector<std::pair<size_t, DesktopSamplingCallback>>& outputSpecifications);
 
 		/**
 		*	Sets the region to capture from for the given monitor

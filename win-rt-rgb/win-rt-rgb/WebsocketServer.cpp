@@ -91,7 +91,11 @@ void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
 {
 	std::vector<RenderDeviceConfig> receivedDevices;
-	for (const auto& deviceJson : contents) {
+	for (const auto& json : contents) {
+		bool enabled = json["enabled"].get<bool>();
+		if (!enabled) continue;
+
+		const nlohmann::json& deviceJson = json["device"];
 		int nLeds = deviceJson["numberOfLeds"].get<int>();
 		float colorTemp = deviceJson["colorTemp"].get<int>();
 		float gamma = deviceJson["gamma"].get<float>();

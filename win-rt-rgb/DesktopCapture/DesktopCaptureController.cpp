@@ -4,13 +4,11 @@
 
 using namespace DesktopCapture;
 
-DesktopCaptureController::DesktopCaptureController(const std::vector<std::pair<size_t, DesktopSamplingCallback>>& outputSpecifications)
+DesktopCaptureController::DesktopCaptureController()
 	: isActive(false)
 {
 	// Initialize per-monitor data
 	UINT nOutputs = getNumberOfMonitors();
-	assignedCallbacks.resize(nOutputs);
-	assignedBuffers.resize(nOutputs);
 	for (UINT i = 0; i < nOutputs; i++)
 	{
 		ID3D11Device* device;
@@ -34,6 +32,24 @@ DesktopCaptureController::DesktopCaptureController(const std::vector<std::pair<s
 	workerRunning = std::vector<bool>(nOutputs, false);
 	handlesLocks = std::vector<std::mutex>(nOutputs);
 
+}
+
+DesktopCaptureController::~DesktopCaptureController()
+{
+	for (int i = 0; i < duplicators.size(); i++)
+	{
+		stopWorker(i);
+	}
+}
+
+void DesktopCaptureController::setOutputSpecifications(const std::vector<std::pair<size_t, DesktopSamplingCallback>>& outputSpecifications)
+{
+	UINT nOutputs = getNumberOfMonitors();
+	assignedCallbacks.clear();
+	assignedCallbacks.resize(nOutputs);
+	assignedBuffers.clear();
+	assignedBuffers.resize(nOutputs);
+	this->outputSpecifications.clear();
 	this->outputSpecifications.reserve(outputSpecifications.size());
 	for (UINT i = 0; i < outputSpecifications.size(); i++)
 	{
@@ -42,14 +58,6 @@ DesktopCaptureController::DesktopCaptureController(const std::vector<std::pair<s
 		// Assign all outputs to monitor 0 by default
 		assignedBuffers[0].push_back(&(this->outputSpecifications[i].first));
 		assignedCallbacks[0].push_back(spec.second);
-	}
-}
-
-DesktopCaptureController::~DesktopCaptureController()
-{
-	for (int i = 0; i < duplicators.size(); i++)
-	{
-		stopWorker(i);
 	}
 }
 
@@ -67,7 +75,7 @@ void DesktopCaptureController::setCaptureMonitorForOutput(UINT outputIdx, UINT m
 {
 	if (outputIdx >= outputSpecifications.size())
 	{
-		LOGSEVERE("Tried to set monitor for output spec that does not exist");
+		LOGSEVERE("Tried to set monitor for output spec %d, which does not exist", outputIdx);
 		return;
 	}
 	// Find if this output is already assigned to a monitor

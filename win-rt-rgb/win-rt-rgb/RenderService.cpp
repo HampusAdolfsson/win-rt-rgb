@@ -36,17 +36,10 @@ void RenderService::setRenderOutputs(std::vector<RenderDeviceConfig> devices)
 void RenderService::start()
 {
 	if (started) { return; }
-	started = true;
 
 	if (!desktopCaptureController.get())
 	{
-		std::vector<std::pair<size_t, DesktopCapture::DesktopSamplingCallback>> specs;
-		for (int i = 0; i < devices.size(); i++)
-		{
-			DesktopCapture::DesktopSamplingCallback callback = std::bind(&RenderService::desktopCallback, this, i, std::placeholders::_1);
-			specs.push_back({devices[i].renderOutput->getLedCount(), callback});
-		}
-		desktopCaptureController = std::make_unique<DesktopCapture::DesktopCaptureController>(specs);
+		desktopCaptureController = std::make_unique<DesktopCapture::DesktopCaptureController>();
 	}
 	if (!audioMonitor.get())
 	{
@@ -63,8 +56,18 @@ void RenderService::start()
 	}
 
 	lastFpsTime = std::chrono::system_clock::now();
+
+	std::vector<std::pair<size_t, DesktopCapture::DesktopSamplingCallback>> specs;
+	for (int i = 0; i < devices.size(); i++)
+	{
+		DesktopCapture::DesktopSamplingCallback callback = std::bind(&RenderService::desktopCallback, this, i, std::placeholders::_1);
+		specs.push_back({devices[i].renderOutput->getLedCount(), callback});
+	}
+	desktopCaptureController->setOutputSpecifications(specs);
 	desktopCaptureController->start();
 	if (audioMonitor.get()) audioMonitor->start();
+
+	started = true;
 }
 
 void RenderService::stop()
