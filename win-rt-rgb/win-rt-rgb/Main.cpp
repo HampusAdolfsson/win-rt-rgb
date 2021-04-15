@@ -7,7 +7,6 @@
 #include "RenderTarget.h"
 #include "WledRenderOutput.h"
 #include "WebsocketServer.h"
-#include "QmkRenderOutput.h"
 
 using namespace WinRtRgb;
 
@@ -15,7 +14,6 @@ int main(int argc, char** argv)
 {
 	Logger::Instance().setLogFile("log");
 	LOGINFO("Starting application");
-	// Rendering::QmkRenderOutput("Razer Naga Trinity", 5700, 2.0f);
 
 	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
@@ -46,18 +44,6 @@ int main(int argc, char** argv)
 		renderer.stop();
 		renderer.setRenderOutputs(std::move(newDevices));
 		renderer.start();
-	},
-	[](std::optional<std::pair<unsigned int, unsigned int>> profileAndMonitorIdx)
-	{ /* LockProfile callback */
-		if (profileAndMonitorIdx.has_value())
-		{
-			ProfileManager::lockProfile(profileAndMonitorIdx->first, profileAndMonitorIdx->second);
-		}
-		else
-		{
-			ProfileManager::unlock();
-		}
-
 	});
 	ProfileManager::addCallback([&](ProfileManager::ActiveProfileData profileData) {
 		if (profileData.profile.has_value())

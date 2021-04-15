@@ -10,7 +10,6 @@ std::vector<std::function<void(ProfileManager::ActiveProfileData)>> callbacks;
 std::vector<ApplicationProfile> appProfiles;
 // Stores the last active profile for each monitor
 std::map<unsigned int, ProfileManager::ActiveProfileData> activeProfiles;
-bool isLocked;
 HWINEVENTHOOK eventHook;
 
 void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime);
@@ -18,7 +17,6 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 void ProfileManager::start(const std::vector<ApplicationProfile> &profiles)
 {
 	appProfiles = profiles;
-	isLocked = false;
 	eventHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, &eventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 }
 
@@ -39,35 +37,10 @@ void ProfileManager::setProfiles(const std::vector<ApplicationProfile> &profiles
 	appProfiles = profiles;
 }
 
-void ProfileManager::lockProfile(const unsigned int &profileIndex, const unsigned int &monitorIndex)
-{
-	if (profileIndex >= appProfiles.size())
-		return;
-	LOGINFO("Locking profile %s on output %d.", appProfiles[profileIndex].regexSpecifier.c_str(), monitorIndex);
-	isLocked = true;
-	for (auto &callback : callbacks)
-	{
-		for (const auto& prof : activeProfiles)
-		{
-			if (prof.first != monitorIndex)
-			{
-				callback(ProfileManager::ActiveProfileData{ prof.first, std::nullopt, 0 });
-			}
-		}
-		callback(ProfileManager::ActiveProfileData{ monitorIndex, appProfiles[profileIndex], profileIndex });
-	}
-}
-
-void ProfileManager::unlock()
-{
-	isLocked = false;
-}
-
 void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
 {
 	if (event == EVENT_SYSTEM_FOREGROUND && hwnd)
 	{
-		if (isLocked) return;
 		char title[255];
 		GetWindowTextA(hwnd, title, 255);
 		if (strnlen(title, 255) == 0) return; // Ignores focusing e.g. the task bar

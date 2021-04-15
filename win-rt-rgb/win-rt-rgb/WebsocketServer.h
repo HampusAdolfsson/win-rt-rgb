@@ -24,8 +24,7 @@ namespace WinRtRgb
 	{
 	public:
 		WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
-						std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback,
-						std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback);
+						std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback);
 		~WebsocketServer();
 
 		void start(const unsigned int& port);
@@ -38,10 +37,8 @@ namespace WinRtRgb
 
 		std::function<void(std::vector<ApplicationProfile>)> profilesCallback;
 		std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback;
-		std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback;
 
 		void handleProfileMessage(const nlohmann::json& contents);
 		void handleDeviceMessage(const nlohmann::json& contents);
-		void handleLockMessage(const nlohmann::json& contents);
 	};
 }

@@ -34,17 +34,5 @@ namespace WinRtRgb
 		*	Sets the profiles to use
 		*/
 		void setProfiles(const std::vector<ApplicationProfile>& profiles);
-
-		/**
-		*	Locks a profile, sending it as the current profile and ignoring any further window focus changes.
-		*	@param profileIndex The index of the profile to lock.
-		*	@param monitorIndex The index of the monitor to use this profile on.
-		*/
-		void lockProfile(const unsigned int& profileIndex, const unsigned int& monitorIndex);
-
-		/**
-		*	Undos any previous call to lockProfile, to once again listen to window focus changes and send profile updates.
-		*/
-		void unlock();
 	}
 }

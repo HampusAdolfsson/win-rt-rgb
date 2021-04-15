@@ -7,11 +7,9 @@
 using namespace WinRtRgb;
 
 WebsocketServer::WebsocketServer(std::function<void(std::vector<ApplicationProfile>)> profilesCallback,
-								std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback,
-								std::function<void(std::optional<std::pair<unsigned int, unsigned int>>)> lockCallback)
+								std::function<void(std::vector<RenderDeviceConfig>)> devicesCallback)
  : profilesCallback(profilesCallback),
- devicesCallback(devicesCallback),
- lockCallback(lockCallback)
+ devicesCallback(devicesCallback)
 { }
 
 WebsocketServer::~WebsocketServer()
@@ -35,6 +33,7 @@ void WebsocketServer::start(const unsigned int& port)
 	});
 	endpoint.set_message_handler([&](websocketpp::connection_hdl conn, std::shared_ptr<websocketpp::config::asio::message_type> message){
 		nlohmann::json json = nlohmann::json::parse(message->get_payload());
+		LOGINFO("%s", message->get_payload().c_str());
 		std::string subject = json["subject"].get<std::string>();
 		nlohmann::json contents = json["contents"];
 		if (subject == "profiles") {
@@ -44,9 +43,6 @@ void WebsocketServer::start(const unsigned int& port)
 		} else if (subject == "devices") {
 			LOGINFO("Got devices message");
 			handleDeviceMessage(contents);
-		} else if (subject == "lock") {
-			LOGINFO("Got lock message");
-			handleLockMessage(contents);
 		} else {
 			LOGSEVERE("Received message with unknown subject: %s", subject.c_str());
 		}
@@ -102,7 +98,7 @@ void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
 		float saturationAdjustment = deviceJson["saturationAdjustment"].get<int>() / 100.0f;
 		float valueAdjustment = deviceJson["valueAdjustment"].get<int>() / 100.0f;
 		bool useAudio = deviceJson["useAudio"].get<boolean>();
-		bool preferredMonitor = deviceJson["preferredMonitor"].get<int>();
+		int preferredMonitor = deviceJson["preferredMonitor"].get<int>();
 		int type = deviceJson["type"].get<int>();
 
 		RenderDeviceConfig deviceConfig;
@@ -126,18 +122,4 @@ void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
 		receivedDevices.push_back(std::move(deviceConfig));
 	}
 	devicesCallback(std::move(receivedDevices));
-}
-
-void WebsocketServer::handleLockMessage(const nlohmann::json& contents)
-{
-	if (contents.find("profile") != contents.end())
-	{
-		unsigned int profile = (unsigned int) contents["profile"].get<int>();
-		unsigned int monitor = (unsigned int) contents["monitor"].get<int>();
-		lockCallback(std::make_pair(profile, monitor));
-	}
-	else
-	{
-		lockCallback(std::nullopt);
-	}
 }
