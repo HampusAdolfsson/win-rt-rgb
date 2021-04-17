@@ -43,7 +43,9 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 	{
 		char title[255];
 		GetWindowTextA(hwnd, title, 255);
-		if (strnlen(title, 255) == 0) return; // Ignores focusing e.g. the task bar
+		if (strnlen(title, 255) == 0 ||
+			strncmp("Task Switching", title, 255) == 0 ||
+			strncmp("Search", title, 255) == 0) return; // Ignores focusing e.g. the task bar
 		WINDOWINFO winInfo;
 		winInfo.cbSize = sizeof(winInfo);
 		GetWindowInfo(hwnd, &winInfo);
