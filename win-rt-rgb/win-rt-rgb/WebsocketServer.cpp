@@ -1,6 +1,7 @@
 #include "WebsocketServer.h"
 #include "Logger.h"
 #include "WledRenderOutput.h"
+#include "QmkRenderOutput.h"
 #include "Config.h"
 #include <cstdio>
 
@@ -53,16 +54,19 @@ void WebsocketServer::start(const unsigned int& port)
 	endpoint.run();
 }
 
-void WebsocketServer::notifyActiveProfileChanged(const std::optional<unsigned int>& activeProfileIndex)
+void WebsocketServer::notifyActiveProfileChanged(unsigned int monitorIdx, const std::optional<unsigned int>& activeProfileId)
 {
 	if (client.has_value())
 	{
 		nlohmann::json message;
 		message["subject"] = "activeProfile";
-		if (activeProfileIndex.has_value())
+		nlohmann::json contents;
+		contents["monitor"] = monitorIdx;
+		if (activeProfileId.has_value())
 		{
-			message["contents"] = *activeProfileIndex;
+			contents["profile"] = *activeProfileId;
 		}
+		message["contents"] = contents;
 		auto connection = endpoint.get_con_from_hdl(*client);
 		connection->send(message.dump());
 	}
@@ -73,13 +77,14 @@ void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 {
 	std::vector<ApplicationProfile> receivedProfiles;
 	for (const auto& profileJson : contents) {
+		auto id = profileJson["id"].get<int>();
 		auto regex = profileJson["regex"].get<std::string>();
 		nlohmann::json areaJson = profileJson["area"];
 		unsigned int x = (unsigned int) areaJson["x"].get<int>();
 		unsigned int y = (unsigned int) areaJson["y"].get<int>();
 		unsigned int width = (unsigned int) areaJson["width"].get<int>();
 		unsigned int height = (unsigned int) areaJson["height"].get<int>();
-		receivedProfiles.push_back(ApplicationProfile(regex, DesktopCapture::Rect{x, y, width, height}));
+		receivedProfiles.push_back(ApplicationProfile(id, regex, DesktopCapture::Rect{x, y, width, height}));
 	}
 	profilesCallback(receivedProfiles);
 }
@@ -112,7 +117,13 @@ void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
 		case 0:
 		{
 			std::string ipAddress = deviceJson["wledData"]["ipAddress"].get<std::string>();
-			deviceConfig.output = std::make_unique<Rendering::WledRenderOutput>(nLeds == 50 ? 89 : nLeds, ipAddress, WLED_UDP_PORT, colorTemp, gamma);
+			deviceConfig.output = std::make_unique<Rendering::WledRenderOutput>(nLeds, ipAddress, WLED_UDP_PORT, colorTemp, gamma);
+			break;
+		}
+		case 1:
+		{
+			std::string hardwareId = deviceJson["qmkData"]["hardwareId"].get<std::string>();
+			deviceConfig.output = std::make_unique<Rendering::QmkRenderOutput>(hardwareId, nLeds, colorTemp, gamma);
 			break;
 		}
 		default:

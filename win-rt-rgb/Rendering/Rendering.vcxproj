@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -28,12 +28,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MaskingBehaviour.cpp" />
+    <ClCompile Include="QmkRenderOutput.cpp" />
     <ClCompile Include="RenderOutput.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="WledRenderOutput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MaskingBehaviour.h" />
+    <ClInclude Include="QmkRenderOutput.h" />
     <ClInclude Include="RenderOutput.h" />
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="WledRenderOutput.h" />
