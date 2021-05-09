@@ -28,13 +28,12 @@ void GradientMaskingBehaviour::applyMask(RgbColor* colors, unsigned int size, fl
 	float breakingPoint = opacity * size;
 	int low = (int) breakingPoint;
 	float decimals = breakingPoint - low;
-	int gradientEnd = breakingPoint + 1;
-	for (size_t i = gradientEnd + 1; i < size; i++)
+	for (size_t i = low + 1; i < size; i++)
 	{
 		colors[i] = RgbColor { 0.0f, 0.0f, 0.0f };
 	}
-	if (low + 1 < size) {
-		colors[low+1] = colors[low + 1] * decimals;
+	if (low < size) {
+		colors[low] = colors[low] * decimals;
 	}
 	// if (gradientEnd < size) {
 	// 	colors[gradientEnd] = colors[gradientEnd] * 0.1f;
