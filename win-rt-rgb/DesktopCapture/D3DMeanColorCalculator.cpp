@@ -143,9 +143,9 @@ void D3DMeanColorCalculator::sample(std::vector<ColorBuffer*> buffers, Rect acti
 				regionSums[3*i+1] += verticalSums[nColors + x];
 				regionSums[3*i+2] += verticalSums[2*nColors + x];
 			}
-			buffers[b]->at(i).red = regionSums[3*i] / (pixelsPerRegion * 255.0);
+			buffers[b]->at(i).blue = regionSums[3*i] / (pixelsPerRegion * 255.0);
 			buffers[b]->at(i).green = regionSums[3*i+1] / (pixelsPerRegion * 255.0);
-			buffers[b]->at(i).blue = regionSums[3*i+2] / (pixelsPerRegion * 255.0);
+			buffers[b]->at(i).red = regionSums[3*i+2] / (pixelsPerRegion * 255.0);
 		}
 	}
 

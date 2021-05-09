@@ -115,9 +115,9 @@ void QmkRenderOutput::drawImpl(const RenderTarget& target)
 	for (int i = 0; i < target.getSize(); i++)
 	{
 		const auto& color = colors[i];
-		outputBuffer[2 + 3*i] = static_cast<uint8_t>(color.blue * 0xff);
+		outputBuffer[2 + 3*i] = static_cast<uint8_t>(color.red * 0xff);
 		outputBuffer[2 + 3*i + 1] = static_cast<uint8_t>(color.green * 0xff);
-		outputBuffer[2 + 3*i + 2] = static_cast<uint8_t>(color.red * 0xff);
+		outputBuffer[2 + 3*i + 2] = static_cast<uint8_t>(color.blue * 0xff);
 	}
     DWORD siz;
     auto a = WriteFile(writeHandle, outputBuffer.data(), outputBuffer.size(), &siz, nullptr);
