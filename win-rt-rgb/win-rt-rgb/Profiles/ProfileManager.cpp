@@ -57,7 +57,7 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 			if (std::regex_search(title, appProfiles[i].windowTitle))
 			{
 				LOGINFO("Activating profile %s on output %d.", appProfiles[i].regexSpecifier.c_str(), outputIdx);
-				auto prof = ProfileManager::ActiveProfileData{ outputIdx, appProfiles[i], i };
+				auto prof = ProfileManager::ActiveProfileData{ outputIdx, appProfiles[i] };
 				activeProfiles.insert(std::make_pair(outputIdx, prof));
 				for (auto &callback : callbacks)
 				{
@@ -69,7 +69,7 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 		activeProfiles.erase(outputIdx);
 		for (auto &callback : callbacks)
 		{
-			callback(ProfileManager::ActiveProfileData{outputIdx, std::nullopt, 0});
+			callback(ProfileManager::ActiveProfileData{outputIdx, std::nullopt});
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace WinRtRgb
 
 		void start(const unsigned int& port);
 
-		void notifyActiveProfileChanged(const std::optional<unsigned int>& activeProfileIndex);
+		void notifyActiveProfileChanged(unsigned int monitorIdx, const std::optional<unsigned int>& activeProfileId);
 
 	private:
 		server endpoint;

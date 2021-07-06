@@ -10,6 +10,7 @@
 
 using namespace WinRtRgb;
 
+
 int main(int argc, char** argv)
 {
 	Logger::Instance().setLogFile("log");
@@ -48,11 +49,11 @@ int main(int argc, char** argv)
 	ProfileManager::addCallback([&](ProfileManager::ActiveProfileData profileData) {
 		if (profileData.profile.has_value())
 		{
-			server.notifyActiveProfileChanged(profileData.profileIndex);
+			server.notifyActiveProfileChanged(profileData.monitorIndex, profileData.profile->id);
 		}
 		else
 		{
-			server.notifyActiveProfileChanged(std::nullopt);
+			server.notifyActiveProfileChanged(profileData.monitorIndex, std::nullopt);
 		}
 	});
 	std::thread wsThread(&WebsocketServer::start, &server, Config::websocketPort);

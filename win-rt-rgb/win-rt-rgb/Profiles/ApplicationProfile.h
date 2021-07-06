@@ -12,7 +12,8 @@ namespace WinRtRgb
 	*/
 	struct ApplicationProfile
 	{
-		ApplicationProfile(std::string regexSpecifier, DesktopCapture::Rect region);
+		ApplicationProfile(unsigned int id, std::string regexSpecifier, DesktopCapture::Rect region);
+		unsigned int id;
 		std::regex windowTitle;
 		std::string regexSpecifier;
 		DesktopCapture::Rect captureRegion;

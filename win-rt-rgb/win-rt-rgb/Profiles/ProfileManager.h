@@ -12,7 +12,6 @@ namespace WinRtRgb
 		typedef struct {
 			unsigned int monitorIndex;
 			std::optional<ApplicationProfile> profile;
-			unsigned int profileIndex;
 		} ActiveProfileData;
 
 		/**

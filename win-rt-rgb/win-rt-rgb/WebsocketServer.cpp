@@ -117,7 +117,7 @@ void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
 		case 0:
 		{
 			std::string ipAddress = deviceJson["wledData"]["ipAddress"].get<std::string>();
-			deviceConfig.output = std::make_unique<Rendering::WledRenderOutput>(nLeds, ipAddress, WLED_UDP_PORT, colorTemp, gamma);
+			deviceConfig.output = std::make_unique<Rendering::WledRenderOutput>(nLeds == 50 ? 89 : nLeds, ipAddress, WLED_UDP_PORT, colorTemp, gamma);
 			break;
 		}
 		case 1:
