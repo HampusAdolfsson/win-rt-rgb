@@ -196,7 +196,7 @@ void DesktopCaptureController::samplingLoop(UINT monitorIdx)
 	while(workerRunning[monitorIdx])
 	{
 		ID3D11Texture2D* frame = dup.captureFrame();
-		// lock.lock();
+		lock.lock();
 		if (frame)
 		{
 			sampler.setFrameData(frame);
@@ -207,6 +207,7 @@ void DesktopCaptureController::samplingLoop(UINT monitorIdx)
 		{
 			assignedCallbacks[monitorIdx][i](assignedBuffers[monitorIdx][i]->data());
 		}
-		// lock.unlock();
+		lock.unlock();
+		Sleep(25);
 	}
 }

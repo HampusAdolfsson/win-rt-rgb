@@ -89,7 +89,9 @@ D3DMeanColorCalculator::D3DMeanColorCalculator(D3DMeanColorCalculator && other)
 
 void D3DMeanColorCalculator::setFrameData(ID3D11Texture2D *frame)
 {
+	bufferLock.lock();
 	deviceContext->CopySubresourceRegion(frameBuffer, 0, 0, 0, 0, frame, 0, nullptr);
+	bufferLock.unlock();
 }
 
 void D3DMeanColorCalculator::sample(std::vector<ColorBuffer*> buffers, Rect activeRegion)
@@ -98,6 +100,8 @@ void D3DMeanColorCalculator::sample(std::vector<ColorBuffer*> buffers, Rect acti
 	activeRegion.width /= SCALING_FACTOR;
 	activeRegion.top /= SCALING_FACTOR;
 	activeRegion.height /= SCALING_FACTOR;
+
+	bufferLock.lock();
 
 	copyToCpuBuffer(activeRegion, MIP_LEVEL);
 
