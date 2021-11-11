@@ -36,6 +36,26 @@ void AudioSink::receiveSamples(float* samples, unsigned int nFrames)
 	bufferPosition += nSamples;
 }
 
+void AudioSink::receiveEmptySamples(unsigned int nFrames)
+{
+	assert(nChannels && sampleRate);
+	size_t nSamples = nFrames * nChannels;
+	if (bufferPosition + nSamples >= buffers[0].size())
+	{
+		assert(this->audioHandler);
+		size_t remaining = buffers[0].size() - bufferPosition;
+		memset(&buffers[activeBuffer][bufferPosition], 0, remaining * sizeof(buffers[0][0]));
+		audioHandler->handleWaveData(buffers[activeBuffer].data());
+
+		nSamples -= remaining;
+		bufferPosition = 0;
+		activeBuffer = (activeBuffer + 1) % 2;
+	}
+	assert(bufferPosition + nSamples < sampleRate * nChannels / buffersPerSecond);
+	memset(&buffers[activeBuffer][bufferPosition], 0, nSamples * sizeof(buffers[0][0]));
+	bufferPosition += nSamples;
+}
+
 void AudioSink::setFormat(unsigned int samplesPerSec, unsigned int nChannels)
 {
 	this->sampleRate = samplesPerSec;

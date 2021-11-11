@@ -23,19 +23,28 @@ static const IID IID_IAudioClient = __uuidof(IAudioClient);
 						}\
 						} while(0)
 
-AudioMonitor::AudioMonitor(AudioSink sink)
+AudioMonitor::AudioMonitor()
 	: audioClient(nullptr),
 	captureClient(nullptr),
+	pwfx(nullptr),
 	hnsRequestedDuration(REFTIMES_PER_SEC / 30),
-	sink(std::move(sink)),
+	sinks(),
 	isRunning(false) {}
+
+void AudioMonitor::addAudioSink(AudioSink sink)
+{
+	if (pwfx)
+	{
+		sink.setFormat(pwfx->nSamplesPerSec, pwfx->nChannels);
+	}
+	sinks.emplace_back(std::move(sink));
+}
 
 bool AudioMonitor::initialize()
 {
 	bool opened = openDevice();
 	if (!opened) return false;
 
-	WAVEFORMATEX* pwfx = nullptr;
 	HRESULT hr = audioClient->GetMixFormat(&pwfx);
 	EXIT_ON_ERROR(hr);
 
@@ -62,7 +71,10 @@ bool AudioMonitor::initialize()
 	hr = audioClient->GetService(IID_IAudioCaptureClient, (void**) &captureClient);
 	EXIT_ON_ERROR(hr);
 
-	sink.setFormat(pwfx->nSamplesPerSec, pwfx->nChannels);
+	for (auto& sink : sinks)
+	{
+		sink.setFormat(pwfx->nSamplesPerSec, pwfx->nChannels);
+	}
 
 	hnsActualDuration = (double)REFTIMES_PER_SEC * bufferSize / pwfx->nSamplesPerSec;
 
@@ -76,6 +88,7 @@ Exit:
 
 bool AudioMonitor::start()
 {
+	if (isRunning) return true;
 	HRESULT hr = audioClient->Start();
 	EXIT_ON_ERROR(hr);
 	isRunning = true;
@@ -89,7 +102,12 @@ Exit:
 
 bool AudioMonitor::stop()
 {
+	if (!isRunning) return true;
 	isRunning = false;
+	if (handlerThread.joinable())
+	{
+		handlerThread.join();
+	}
 	return true;
 }
 
@@ -123,19 +141,18 @@ Exit:
 
 AudioMonitor::~AudioMonitor()
 {
+	stop();
+
 	if (audioClient != nullptr) audioClient->Release();
 	if (captureClient != nullptr) audioClient->Release();
-
-	if (handlerThread.joinable())
-	{
-		handlerThread.join();
-	}
 }
 
 void AudioMonitor::handleWaveMessages()
 {
+	std::chrono::time_point<std::chrono::system_clock> lastCaptureTime = std::chrono::system_clock::now();
 	while (isRunning)
 	{
+
 		// Sleep for half the buffer duration.
         Sleep(hnsActualDuration / 2 / REFTIMES_PER_MILLISEC);
 
@@ -143,12 +160,34 @@ void AudioMonitor::handleWaveMessages()
         HRESULT hr = captureClient->GetNextPacketSize(&packetSize);
 		EXIT_ON_ERROR(hr);
 
+		if (packetSize == 0)
+		{
+			for (auto& sink : sinks)
+			{
+				sink.receiveEmptySamples(hnsActualDuration / 2 / REFTIMES_PER_MILLISEC * 44.100);
+			}
+		}
+
 		while (packetSize > 0)
 		{
+Start:
 			BYTE* packetData;
 			UINT nFrames;
 			DWORD flags;
 			hr = captureClient->GetBuffer(&packetData, &nFrames, &flags, nullptr, nullptr);
+			if (hr == 0x88890007)  // returned sometimes when no program is playing audio
+			{
+				for (auto& sink : sinks)
+				{
+					sink.receiveEmptySamples(packetSize);
+				}
+				if (audioClient != nullptr) audioClient->Release();
+				if (captureClient != nullptr) audioClient->Release();
+				initialize();
+				HRESULT hr = audioClient->Start();
+				EXIT_ON_ERROR(hr);
+				goto Start;
+			}
 			if (FAILED(hr))
 			{
 				LOGSEVERE("Audiomonitor got error: 0x%08lx, line %d", hr, __LINE__);
@@ -160,7 +199,10 @@ void AudioMonitor::handleWaveMessages()
 				break;
 			}
 
-			sink.receiveSamples(reinterpret_cast<float*>(packetData), nFrames);
+			for (auto& sink : sinks)
+			{
+				sink.receiveSamples(reinterpret_cast<float*>(packetData), nFrames);
+			}
 
 			hr = captureClient->ReleaseBuffer(nFrames);
 			EXIT_ON_ERROR(hr);

@@ -18,29 +18,35 @@ namespace AudioCapture
 	{
 		IAudioClient*			audioClient;
 		IAudioCaptureClient*	captureClient;
+		WAVEFORMATEX*			pwfx;
 		REFERENCE_TIME			hnsRequestedDuration;
 		REFERENCE_TIME			hnsActualDuration;
 
 		std::thread				handlerThread;
 		bool					isRunning;
-		AudioSink				sink;
+		std::vector<AudioSink>	sinks;
 
 		void handleWaveMessages();
 		bool openDevice();
 	public:
 		/**
 		*	Starts an audio monitor for the default output device, capturing its output.
-		*	@param handler to pass all captured audio onto
 		*/
-		AudioMonitor(AudioSink sink);
+		AudioMonitor();
 		~AudioMonitor();
 
 		/**
 		*	Initializes the monitor, readying it to receive audio. Should be called ONCE before
-		*	calling any other methods.
+		*	calling start.
 		*	@return true on success
 		*/
 		bool initialize();
+
+		/**
+		*	Adds an audio sink which will receive all captured audio.
+		*	@param sink The audio sink to add. The audio monitor takes ownership of the sink.
+		*/
+		void addAudioSink(AudioSink sink);
 
 		/**
 		*	Starts recording audio, if not already running.

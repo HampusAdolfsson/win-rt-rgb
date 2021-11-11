@@ -5,7 +5,7 @@
 namespace AudioCapture
 {
 	/**
-	*	Receives audio captured as float (i.e. WAVE_FORMAT_IEEE_FLOAT) arrays,
+	*	Receives audio represented as float (i.e. WAVE_FORMAT_IEEE_FLOAT) arrays,
 	*	and handles the data in some way when enough samples have been buffered.
 	*/
 	class AudioSink
@@ -24,6 +24,12 @@ namespace AudioCapture
 		*	@param nFrames The number of frames in the array (a frame consists of one sample per channel)
 		*/
 		void receiveSamples(float* samples, unsigned int nFrames);
+
+		/**
+		*	Adds 0-valued samples to the buffer, e.g. because no data was received from the audio source.
+		*	@param nFrames The number of frames to add (a frame consists of one sample per channel)
+		*/
+		void receiveEmptySamples(unsigned int nFrames);
 
 		void setFormat(unsigned int samplesPerSec, unsigned int nChannels);
 

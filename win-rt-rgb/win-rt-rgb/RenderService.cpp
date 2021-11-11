@@ -47,7 +47,8 @@ void RenderService::start()
 		{
 			if (dev.audioRenderTarget.has_value())
 			{
-				audioMonitor = std::make_unique<AudioCapture::AudioMonitor>(AudioCapture::AudioSink(30, std::make_unique<AudioCapture::EnergyAudioHandlerFactory>(std::bind(&RenderService::audioCallback, this, std::placeholders::_1))));
+				audioMonitor = std::make_unique<AudioCapture::AudioMonitor>();
+				audioMonitor->addAudioSink(AudioCapture::AudioSink(30, std::make_unique<AudioCapture::EnergyAudioHandlerFactory>(std::bind(&RenderService::audioCallback, this, std::placeholders::_1))));
 				audioMonitor->initialize();
 				break;
 			}
