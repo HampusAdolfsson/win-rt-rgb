@@ -80,8 +80,8 @@ void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 		auto id = profileJson["id"].get<int>();
 		auto regex = profileJson["regex"].get<std::string>();
 		nlohmann::json areaJson = profileJson["area"];
-		unsigned int x = (unsigned int) areaJson["x"].get<int>();
-		unsigned int y = (unsigned int) areaJson["y"].get<int>();
+		int x = (unsigned int) areaJson["x"].get<int>();
+		int y = (unsigned int) areaJson["y"].get<int>();
 		unsigned int width = (unsigned int) areaJson["width"].get<int>();
 		unsigned int height = (unsigned int) areaJson["height"].get<int>();
 		receivedProfiles.push_back(ApplicationProfile(id, regex, DesktopCapture::Rect{x, y, width, height}));

@@ -1,5 +1,6 @@
 #include "ProfileManager.h"
 #include "Logger.h"
+#include "Config.h"
 #include <Windows.h>
 #include <functional>
 #include <map>
@@ -49,8 +50,24 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 		WINDOWINFO winInfo;
 		winInfo.cbSize = sizeof(winInfo);
 		GetWindowInfo(hwnd, &winInfo);
-		unsigned int outputIdx = (winInfo.rcWindow.left + winInfo.cxWindowBorders) / 1920; // assumes 1080p monitors placed side by side
-		if (outputIdx > 1) outputIdx = 0;
+
+		unsigned int nMonitors = sizeof(Config::monitors) / sizeof(*Config::monitors);
+		unsigned int outputIdx = nMonitors;
+		for (int i = 0; i < nMonitors; i++) {
+			auto& monitor = Config::monitors[i];
+			if (winInfo.rcClient.left >= monitor.left &&
+				winInfo.rcClient.left < monitor.left + static_cast<int>(monitor.width) &&
+				winInfo.rcClient.top >= monitor.top &&
+				winInfo.rcClient.top < monitor.top + static_cast<int>(monitor.height)) {
+				outputIdx = i;
+				break;
+			}
+		}
+		if (outputIdx == nMonitors) {
+			LOGSEVERE("Couldn't match monitor to window at (%ld, %ld)", winInfo.rcClient.left, winInfo.rcClient.top);
+			return;
+		}
+		LOGINFO("Matched window at (%ld, %ld) to monitor %u", winInfo.rcClient.left, winInfo.rcClient.top, outputIdx);
 
 		for (unsigned int i = 0; i < appProfiles.size(); i++)
 		{

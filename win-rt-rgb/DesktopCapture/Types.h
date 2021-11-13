@@ -7,7 +7,8 @@ namespace DesktopCapture
 {
 	typedef struct
 	{
-		unsigned int left, top, width, height;
+		int left, top;
+		unsigned int width, height;
 	} Rect;
 
 	/**
