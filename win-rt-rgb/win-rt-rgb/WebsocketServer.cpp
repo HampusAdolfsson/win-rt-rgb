@@ -102,14 +102,14 @@ void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
 		float gamma = deviceJson["gamma"].get<float>();
 		float saturationAdjustment = deviceJson["saturationAdjustment"].get<int>() / 100.0f;
 		float valueAdjustment = deviceJson["valueAdjustment"].get<int>() / 100.0f;
-		bool useAudio = deviceJson["useAudio"].get<boolean>();
+		float audioAmount = deviceJson["audioAmount"].get<float>() / 100.0f;
 		int preferredMonitor = deviceJson["preferredMonitor"].get<int>();
 		int type = deviceJson["type"].get<int>();
 
 		RenderDeviceConfig deviceConfig;
 		deviceConfig.saturationAdjustment = saturationAdjustment;
 		deviceConfig.valueAdjustment = valueAdjustment;
-		deviceConfig.useAudio = useAudio;
+		deviceConfig.audioAmount = audioAmount;
 		deviceConfig.preferredMonitor = preferredMonitor;
 
 		switch (type)

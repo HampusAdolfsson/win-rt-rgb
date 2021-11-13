@@ -24,10 +24,11 @@ void RenderService::setRenderOutputs(std::vector<RenderDeviceConfig> devices)
 		RenderDevice device = {
 			std::move(devConf.output),
 			Rendering::RenderTarget(ledCount, std::unique_ptr<Rendering::MaskingBehaviour>(new Rendering::UniformMaskingBehaviour())),
-			devConf.useAudio ? std::optional(Rendering::RenderTarget(ledCount, std::unique_ptr<Rendering::MaskingBehaviour>(new Rendering::UniformMaskingBehaviour()))) : std::nullopt,
+			devConf.audioAmount > .0f ? std::optional(Rendering::RenderTarget(ledCount, std::unique_ptr<Rendering::MaskingBehaviour>(new Rendering::UniformMaskingBehaviour()))) : std::nullopt,
 			devConf.preferredMonitor,
 			devConf.saturationAdjustment,
-			devConf.valueAdjustment
+			devConf.valueAdjustment,
+			devConf.audioAmount
 		};
 		this->devices.push_back(std::move(device));
 	}
@@ -113,7 +114,8 @@ void RenderService::audioCallback(float intensity)
 													.0f,
 													device.saturationAdjustment,
 													device.valueAdjustment);
-		device.audioRenderTarget->setIntensity(intensity);
+		float actualIntensity = intensity * device.audioAmount + (1.f - device.audioAmount);
+		device.audioRenderTarget->setIntensity(actualIntensity);
 		device.renderOutput->draw(*device.audioRenderTarget);
 	}
 }

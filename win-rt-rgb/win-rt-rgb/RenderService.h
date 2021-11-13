@@ -18,7 +18,7 @@ namespace WinRtRgb
 	*/
 	struct RenderDeviceConfig {
 		std::unique_ptr<Rendering::RenderOutput> output;
-		bool useAudio;
+		float audioAmount;
 		unsigned int preferredMonitor;
 		float saturationAdjustment;
 		float valueAdjustment;
@@ -83,5 +83,6 @@ namespace WinRtRgb
 		unsigned int preferredMonitor;
 		float saturationAdjustment;
 		float valueAdjustment;
+		float audioAmount;
 	};
 }
