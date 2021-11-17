@@ -19,7 +19,6 @@ namespace WinRtRgb
 	struct RenderDeviceConfig {
 		std::unique_ptr<Rendering::RenderOutput> output;
 		float audioAmount;
-		unsigned int preferredMonitor;
 		float saturationAdjustment;
 		float valueAdjustment;
 	};
@@ -65,7 +64,7 @@ namespace WinRtRgb
 		std::unique_ptr<DesktopCapture::DesktopCaptureController> desktopCaptureController = nullptr;
 		std::unique_ptr<AudioCapture::AudioMonitor> audioMonitor = nullptr;
 
-		std::map<unsigned int, ProfileManager::ActiveProfileData> activeProfiles;
+		std::map<unsigned int, ApplicationProfile> activeProfiles;
 		DesktopCapture::Rect defaultCaptureRegion;
 
 		// measuring fps
@@ -80,7 +79,6 @@ namespace WinRtRgb
 		std::unique_ptr<Rendering::RenderOutput> renderOutput;
 		Rendering::RenderTarget desktopRenderTarget;
 		std::optional<Rendering::RenderTarget> audioRenderTarget;
-		unsigned int preferredMonitor;
 		float saturationAdjustment;
 		float valueAdjustment;
 		float audioAmount;

@@ -84,7 +84,8 @@ void WebsocketServer::handleProfileMessage(const nlohmann::json& contents)
 		int y = (unsigned int) areaJson["y"].get<int>();
 		unsigned int width = (unsigned int) areaJson["width"].get<int>();
 		unsigned int height = (unsigned int) areaJson["height"].get<int>();
-		receivedProfiles.push_back(ApplicationProfile(id, regex, DesktopCapture::Rect{x, y, width, height}));
+		int priority = profileJson["priority"].get<int>();
+		receivedProfiles.push_back(ApplicationProfile(id, regex, DesktopCapture::Rect{x, y, width, height}, priority));
 	}
 	profilesCallback(receivedProfiles);
 }
@@ -103,14 +104,12 @@ void WebsocketServer::handleDeviceMessage(const nlohmann::json& contents)
 		float saturationAdjustment = deviceJson["saturationAdjustment"].get<int>() / 100.0f;
 		float valueAdjustment = deviceJson["valueAdjustment"].get<int>() / 100.0f;
 		float audioAmount = deviceJson["audioAmount"].get<float>() / 100.0f;
-		int preferredMonitor = deviceJson["preferredMonitor"].get<int>();
 		int type = deviceJson["type"].get<int>();
 
 		RenderDeviceConfig deviceConfig;
 		deviceConfig.saturationAdjustment = saturationAdjustment;
 		deviceConfig.valueAdjustment = valueAdjustment;
 		deviceConfig.audioAmount = audioAmount;
-		deviceConfig.preferredMonitor = preferredMonitor;
 
 		switch (type)
 		{

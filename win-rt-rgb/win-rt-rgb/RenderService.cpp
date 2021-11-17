@@ -25,7 +25,6 @@ void RenderService::setRenderOutputs(std::vector<RenderDeviceConfig> devices)
 			std::move(devConf.output),
 			Rendering::RenderTarget(ledCount, std::unique_ptr<Rendering::MaskingBehaviour>(new Rendering::UniformMaskingBehaviour())),
 			devConf.audioAmount > .0f ? std::optional(Rendering::RenderTarget(ledCount, std::unique_ptr<Rendering::MaskingBehaviour>(new Rendering::UniformMaskingBehaviour()))) : std::nullopt,
-			devConf.preferredMonitor,
 			devConf.saturationAdjustment,
 			devConf.valueAdjustment,
 			devConf.audioAmount
@@ -82,23 +81,32 @@ void RenderService::stop()
 
 void RenderService::setActiveProfile(ProfileManager::ActiveProfileData profileData)
 {
-	if (profileData.profile.has_value()) activeProfiles.insert(std::make_pair(profileData.monitorIndex, profileData));
+	if (profileData.profile.has_value()) activeProfiles.insert(std::make_pair(profileData.monitorIndex, profileData.profile.value()));
 	else activeProfiles.erase(profileData.monitorIndex);
 	if (desktopCaptureController.get())
 	{
 		desktopCaptureController->setCaptureRegionForMonitor(profileData.monitorIndex,
 			profileData.profile.has_value() ? profileData.profile->captureRegion : defaultCaptureRegion);
-		for (int i = 0; i < devices.size(); i++)
+		std::optional<std::pair<unsigned int, int>> maxPriority;
+		for (const auto& prof : activeProfiles)
 		{
-			if (activeProfiles.count(devices[i].preferredMonitor) != 0)
+			if (maxPriority.has_value())
 			{
-				desktopCaptureController->setCaptureMonitorForOutput(i, devices[i].preferredMonitor);
+				if (prof.second.priority > maxPriority->second)
+				{
+					maxPriority = std::make_pair(prof.first, prof.second.priority);
+				}
 			}
 			else
 			{
-				desktopCaptureController->setCaptureMonitorForOutput(i, activeProfiles.empty() ? 0 : activeProfiles.begin()->first);
+				maxPriority = std::make_pair(prof.first, prof.second.priority);
 			}
 
+		}
+		unsigned int monitorIndex = maxPriority.has_value() ? maxPriority->first : 0;
+		for (int i = 0; i < devices.size(); i++)
+		{
+			desktopCaptureController->setCaptureMonitorForOutput(i, monitorIndex);
 		}
 	}
 }
