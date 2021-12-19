@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -36,40 +36,40 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNoSIMD|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNoSIMD|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -103,12 +103,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>USE_SSE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WINSOCKAPI_;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(SolutionDir)Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>NotSet</SubSystem>
     </Link>
@@ -119,12 +119,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_SSE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WINSOCKAPI_;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\lib\x64;$(SolutionDir)\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(SolutionDir)\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,14 +134,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>USE_SSE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WINSOCKAPI_;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(SolutionDir)Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>NotSet</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -154,14 +154,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WINSOCKAPI_;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>NotSet</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -175,14 +175,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_SSE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WINSOCKAPI_;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\lib\x64;$(SolutionDir)\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(SolutionDir)\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -194,14 +194,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WINSOCKAPI_;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rendering;$(SolutionDir)Color;$(SolutionDir)AudioCapture;$(SolutionDir)Logger;$(SolutionDir)ApiWrapper;$(SolutionDir)DesktopCapture;%(AdditionalIncludeDirectories);$(SolutionDir)/win-rt-rgb;$(SolutionDir)/win-rt-rgb/asio</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;curand.lib;cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\lib\x64;$(SolutionDir)\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Hid.lib;Setupapi.lib;libfftw3f-3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Color.lib;Logger.lib;DesktopCapture.lib;AudioCapture.lib;Rendering.lib;Ws2_32.lib;winmm.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(SolutionDir)\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -796,6 +796,5 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.0.targets" />
   </ImportGroup>
 </Project>
