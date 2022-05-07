@@ -85,8 +85,6 @@ void RenderService::setActiveProfile(ProfileManager::ActiveProfileData profileDa
 	else activeProfiles.erase(profileData.monitorIndex);
 	if (desktopCaptureController.get())
 	{
-		desktopCaptureController->setCaptureRegionForMonitor(profileData.monitorIndex,
-			profileData.profile.has_value() ? profileData.profile->captureRegion : defaultCaptureRegion);
 		std::optional<std::pair<unsigned int, int>> maxPriority;
 		for (const auto& prof : activeProfiles)
 		{
@@ -104,10 +102,45 @@ void RenderService::setActiveProfile(ProfileManager::ActiveProfileData profileDa
 
 		}
 		unsigned int monitorIndex = maxPriority.has_value() ? maxPriority->first : 0;
-		for (int i = 0; i < devices.size(); i++)
+		setActiveMonitor(monitorIndex);
+	}
+}
+
+void RenderService::setActiveMonitor(unsigned  int monitorIdx)
+{
+	LOGINFO("Activating monitor %d.", monitorIdx);
+	if (activeProfiles.count(monitorIdx) == 1)
+	{
+		std::optional<AreaSpecification> matchingArea;
+		auto monitorDimensions = desktopCaptureController->getMonitorDimensions(monitorIdx);
+		for (const AreaSpecification area : activeProfiles.at(monitorIdx).areas)
 		{
-			desktopCaptureController->setCaptureMonitorForOutput(i, monitorIndex);
+			if (!area.resolution.has_value() && !matchingArea.has_value()) matchingArea = area;
+			else if (area.resolution.has_value() && area.resolution.value() == monitorDimensions) matchingArea = area;
 		}
+
+		if (matchingArea.has_value())
+		{
+			DesktopCapture::Rect resolvedArea;
+			resolvedArea.left = resolveMonitorDistance(matchingArea->x, monitorDimensions.first);
+			resolvedArea.width = resolveMonitorDistance(matchingArea->width, monitorDimensions.first);
+			resolvedArea.top = resolveMonitorDistance(matchingArea->y, monitorDimensions.second);
+			resolvedArea.height = resolveMonitorDistance(matchingArea->height, monitorDimensions.second);
+			desktopCaptureController->setCaptureRegionForMonitor(monitorIdx, resolvedArea);
+		}
+		else
+		{
+			LOGWARNING("Profile %s has no matching area for %dx%d.", activeProfiles.at(monitorIdx).regexSpecifier, monitorDimensions.first, monitorDimensions.second);
+			desktopCaptureController->setCaptureRegionForMonitor(monitorIdx, defaultCaptureRegion);
+		}
+	}
+	else
+	{
+		desktopCaptureController->setCaptureRegionForMonitor(monitorIdx, defaultCaptureRegion);
+	}
+	for (int i = 0; i < devices.size(); i++)
+	{
+		desktopCaptureController->setCaptureMonitorForOutput(i, monitorIdx);
 	}
 }
 

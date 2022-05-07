@@ -137,6 +137,11 @@ void DesktopCaptureController::stop()
 	}
 }
 
+std::pair<UINT, UINT> DesktopCaptureController::getMonitorDimensions(UINT monitorIdx)
+{
+	return std::make_pair(this->duplicators[monitorIdx].getFrameWidth(), this->duplicators[monitorIdx].getFrameHeight());
+}
+
 const UINT DesktopCaptureController::getNumberOfMonitors() const
 {
 	ID3D11Device* device;

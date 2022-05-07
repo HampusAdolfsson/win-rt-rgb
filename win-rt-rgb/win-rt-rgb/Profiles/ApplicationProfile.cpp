@@ -2,11 +2,11 @@
 
 using namespace WinRtRgb;
 
-ApplicationProfile::ApplicationProfile(unsigned int id, std::string regexSpecifier, DesktopCapture::Rect region, int priority)
+ApplicationProfile::ApplicationProfile(unsigned int id, std::string regexSpecifier, std::vector<AreaSpecification> areas, int priority)
  : id(id),
  windowTitle(std::regex(regexSpecifier)),
  regexSpecifier(regexSpecifier),
- captureRegion(region),
+ areas(areas),
  priority(priority)
 {
 }

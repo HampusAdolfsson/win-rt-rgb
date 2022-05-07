@@ -71,6 +71,8 @@ namespace WinRtRgb
 		unsigned int frames = 0;
 		std::chrono::time_point<std::chrono::system_clock> lastFpsTime;
 
+		void setActiveMonitor(unsigned  int monitorIdx);
+
 		void audioCallback(float intensity);
 		void desktopCallback(unsigned int deviceIdx, const RgbColor* colors);
 	};

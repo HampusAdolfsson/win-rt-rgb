@@ -74,6 +74,8 @@ namespace DesktopCapture
 		void start();
 		void stop();
 
+		std::pair<UINT, UINT> getMonitorDimensions(UINT monitorIdx);
+
 		DesktopCaptureController(DesktopCaptureController const&) = delete;
 		DesktopCaptureController(DesktopCaptureController &&) = delete;
 		DesktopCaptureController operator=(DesktopCaptureController const&) = delete;

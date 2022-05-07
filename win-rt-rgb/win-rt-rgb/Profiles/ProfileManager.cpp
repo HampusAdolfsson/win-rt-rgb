@@ -44,6 +44,7 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 	{
 		char title[255];
 		GetWindowTextA(hwnd, title, 255);
+		LOGINFO("Window: %s", title);
 		if (strnlen(title, 255) == 0 ||
 			strncmp("Task Switching", title, 255) == 0 ||
 			strncmp("Search", title, 255) == 0) return; // Ignores focusing e.g. the task bar
@@ -64,8 +65,13 @@ void eventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObjec
 			}
 		}
 		if (outputIdx == nMonitors) {
-			LOGSEVERE("Couldn't match monitor to window at (%ld, %ld)", winInfo.rcClient.left, winInfo.rcClient.top);
-			return;
+			// A hack to detect some fullscreen windows
+			if (winInfo.rcClient.left == -32000 && winInfo.rcClient.right == -32000) {
+				outputIdx = 0;
+			} else {
+				LOGSEVERE("Couldn't match monitor to window '%s' at (%ld, %ld)", title, winInfo.rcClient.left, winInfo.rcClient.top);
+				return;
+			}
 		}
 		LOGINFO("Matched window at (%ld, %ld) to monitor %u", winInfo.rcClient.left, winInfo.rcClient.top, outputIdx);
 
